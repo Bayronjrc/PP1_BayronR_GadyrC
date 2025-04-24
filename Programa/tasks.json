@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Generate Lexer",
+      "type": "shell",
+      "command": "java -jar ${workspaceFolder}/lib/jflex-full-1.8.2.jar ${workspaceFolder}/src/main/flex/Scanner.flex -d ${workspaceFolder}/src/main/java/lexer/",
+      "group": "build"
+    },
+    {
+      "label": "Generate Parser",
+      "type": "shell",
+      "command": "java -jar ${workspaceFolder}/lib/java-cup-11b.jar -parser parser -symbols sym ${workspaceFolder}/src/main/cup/Parser.cup",
+      "group": "build"
+    }
+  ]
+}

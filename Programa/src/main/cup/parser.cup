@@ -1,0 +1,191 @@
+/* Sección de importaciones y paquetes */
+package parser;
+
+import java_cup.runtime.*;
+import java.util.*;
+import lexer.*;
+
+/* Sección de declaraciones */
+parser code {:
+    // Reporte de error sintáctico
+    public void syntax_error(Symbol s) {
+        System.err.println("Error sintáctico en línea " + (s.left+1) + ", columna " + (s.right+1) + ": " +
+                           "Símbolo inesperado \"" + s.value + "\"");
+    }
+
+    // Recuperación de modo pánico
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception {
+        System.err.println("Error sintáctico fatal en línea " + (s.left+1) + ", columna " + (s.right+1) +
+                          ": Símbolo inesperado \"" + s.value + "\"");
+        // No lanzamos excepción para continuar con la siguiente línea
+    }
+:}
+
+/* Terminales (tokens desde el scanner) */
+terminal MAIN, IF, ELIF, ELSE, DO, WHILE, FOR, RETURN, BREAK;
+terminal INT, FLOAT, CHAR, STRING, BOOLEAN, VOID;
+terminal TRUE, FALSE;
+terminal PLUS, MINUS, TIMES, DIV, MOD, POW, INCREMENT, DECREMENT;
+terminal LT, LE, GT, GE, EQ, NE, AND, OR, NOT;
+terminal ASSIGN, SEMI, PAREN, ARRAY_SEP, BLOCK_START, BLOCK_END, COMMA;
+terminal LPAREN, RPAREN, LBRACK, RBRACK;
+terminal String ID;
+terminal Integer INT_LITERAL;
+terminal Float FLOAT_LITERAL;
+terminal Character CHAR_LITERAL;
+terminal String STRING_LITERAL;
+
+/* No terminales */
+non terminal program;
+non terminal function_decl_list, function_decl, main_function;
+non terminal param_list, param, type;
+non terminal statement_list, statement, block;
+non terminal var_declaration, assignment;
+non terminal if_statement, while_statement, do_while_statement, for_statement;
+non terminal return_statement, break_statement;
+non terminal expression, term, factor;
+non terminal arithmetic_expr, logical_expr, relational_expr;
+non terminal function_call, argument_list;
+
+/* Precedencias */
+precedence left OR;
+precedence left AND;
+precedence left EQ, NE;
+precedence left LT, LE, GT, GE;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIV, MOD;
+precedence right POW;
+precedence right NOT, INCREMENT, DECREMENT;
+
+/* Gramática */
+start with program;
+
+program ::= function_decl_list main_function
+          | main_function
+          ;
+
+function_decl_list ::= function_decl_list function_decl
+                     | function_decl
+                     ;
+
+function_decl ::= type ID LPAREN param_list RPAREN BLOCK_START statement_list BLOCK_END
+                | type ID LPAREN RPAREN BLOCK_START statement_list BLOCK_END
+                ;
+
+main_function ::= VOID MAIN LPAREN RPAREN BLOCK_START statement_list BLOCK_END
+                ;
+
+param_list ::= param_list COMMA param
+             | param
+             ;
+
+param ::= type ID
+        ;
+
+type ::= INT
+       | FLOAT
+       | CHAR
+       | STRING
+       | BOOLEAN
+       ;
+
+statement_list ::= statement_list statement
+                 | statement
+                 ;
+
+statement ::= var_declaration SEMI
+            | assignment SEMI
+            | if_statement
+            | while_statement
+            | do_while_statement
+            | for_statement
+            | return_statement SEMI
+            | break_statement SEMI
+            | function_call SEMI
+            | block
+            ;
+
+block ::= BLOCK_START statement_list BLOCK_END
+        | BLOCK_START BLOCK_END
+        ;
+
+var_declaration ::= type ID
+                  | type ID ASSIGN expression
+                  | type ID LBRACK INT_LITERAL RBRACK
+                  | type ID LBRACK INT_LITERAL RBRACK LBRACK INT_LITERAL RBRACK
+                  ;
+
+assignment ::= ID ASSIGN expression
+             | ID LBRACK expression RBRACK ASSIGN expression
+             | ID LBRACK expression RBRACK LBRACK expression RBRACK ASSIGN expression
+             ;
+
+if_statement ::= IF PAREN expression PAREN statement
+               | IF PAREN expression PAREN statement ELSE statement
+               | IF PAREN expression PAREN statement ELIF PAREN expression PAREN statement
+               | IF PAREN expression PAREN statement ELIF PAREN expression PAREN statement ELSE statement
+               ;
+
+while_statement ::= WHILE PAREN expression PAREN statement
+                  ;
+
+do_while_statement ::= DO statement WHILE PAREN expression PAREN SEMI
+                     ;
+
+for_statement ::= FOR PAREN expression SEMI expression SEMI expression PAREN statement
+                ;
+
+return_statement ::= RETURN expression
+                   | RETURN
+                   ;
+
+break_statement ::= BREAK
+                  ;
+
+expression ::= arithmetic_expr
+             | logical_expr
+             | relational_expr
+             | ID
+             | ID LBRACK expression RBRACK
+             | ID LBRACK expression RBRACK LBRACK expression RBRACK
+             | INT_LITERAL
+             | FLOAT_LITERAL
+             | CHAR_LITERAL
+             | STRING_LITERAL
+             | TRUE
+             | FALSE
+             | function_call
+             | LPAREN expression RPAREN
+             ;
+
+arithmetic_expr ::= expression PLUS expression
+                  | expression MINUS expression
+                  | expression TIMES expression
+                  | expression DIV expression
+                  | expression MOD expression
+                  | expression POW expression
+                  | MINUS expression
+                  | INCREMENT ID
+                  | DECREMENT ID
+                  ;
+
+logical_expr ::= expression AND expression
+               | expression OR expression
+               | NOT expression
+               ;
+
+relational_expr ::= expression LT expression
+                  | expression LE expression
+                  | expression GT expression
+                  | expression GE expression
+                  | expression EQ expression
+                  | expression NE expression
+                  ;
+
+function_call ::= ID LPAREN argument_list RPAREN
+                | ID LPAREN RPAREN
+                ;
+
+argument_list ::= argument_list COMMA expression
+                | expression
+                ;
