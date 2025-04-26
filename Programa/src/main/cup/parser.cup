@@ -1,191 +1,254 @@
-/* Sección de importaciones y paquetes */
-package parser;
-
+/* Imports y paquetes */
 import java_cup.runtime.*;
 import java.util.*;
-import lexer.*;
 
-/* Sección de declaraciones */
+/* Código de usuario */
 parser code {:
-    // Reporte de error sintáctico
+    /* Métodos para manejo de errores */
     public void syntax_error(Symbol s) {
-        System.err.println("Error sintáctico en línea " + (s.left+1) + ", columna " + (s.right+1) + ": " +
-                           "Símbolo inesperado \"" + s.value + "\"");
+        System.out.println("Error sintáctico en línea " + s.left + ", columna " + s.right + ": " + s.value);
     }
 
-    // Recuperación de modo pánico
     public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception {
-        System.err.println("Error sintáctico fatal en línea " + (s.left+1) + ", columna " + (s.right+1) +
-                          ": Símbolo inesperado \"" + s.value + "\"");
-        // No lanzamos excepción para continuar con la siguiente línea
+        System.out.println("Error sintáctico fatal en línea " + s.left + ", columna " + s.right + ": " + s.value);
+        done_parsing();
     }
 :}
 
-/* Terminales (tokens desde el scanner) */
-terminal MAIN, IF, ELIF, ELSE, DO, WHILE, FOR, RETURN, BREAK;
-terminal INT, FLOAT, CHAR, STRING, BOOLEAN, VOID;
-terminal TRUE, FALSE;
-terminal PLUS, MINUS, TIMES, DIV, MOD, POW, INCREMENT, DECREMENT;
-terminal LT, LE, GT, GE, EQ, NE, AND, OR, NOT;
-terminal ASSIGN, SEMI, PAREN, ARRAY_SEP, BLOCK_START, BLOCK_END, COMMA;
-terminal LPAREN, RPAREN, LBRACK, RBRACK;
-terminal String ID;
-terminal Integer INT_LITERAL;
-terminal Float FLOAT_LITERAL;
-terminal Character CHAR_LITERAL;
-terminal String STRING_LITERAL;
+/* Símbolos terminales */
+terminal IF, ELIF, ELSE, DO, WHILE, FOR, BREAK, RETURN;
+terminal INT, FLOAT, BOOL, CHAR, STRING, VOID;
+terminal READ, WRITE, MAIN, TRUE, FALSE;
+terminal PLUS, MINUS, TIMES, DIVIDE, MOD, POW;
+terminal INCREMENT, DECREMENT;
+terminal LT, LTE, GT, GTE, EQ, NEQ;
+terminal AND, OR, NOT;
+terminal LPAREN, RPAREN, LBLOCK, RBLOCK;
+terminal QUESTION, COMMA, ASSIGN;
+terminal COMMENT_LINE, LCOMMENT_BLOCK, RCOMMENT_BLOCK;
+terminal LBRACKET, RBRACKET;
+terminal UMINUS;  // Para operador unario
+terminal ID, LIT_INT, LIT_FLOAT, LIT_BOOL, LIT_CHAR, LIT_STRING;
 
-/* No terminales */
+/* Símbolos no terminales */
 non terminal program;
-non terminal function_decl_list, function_decl, main_function;
-non terminal param_list, param, type;
-non terminal statement_list, statement, block;
-non terminal var_declaration, assignment;
-non terminal if_statement, while_statement, do_while_statement, for_statement;
-non terminal return_statement, break_statement;
-non terminal expression, term, factor;
-non terminal arithmetic_expr, logical_expr, relational_expr;
-non terminal function_call, argument_list;
+non terminal block;
+non terminal decl_var, decl_fun, decl_arr;
+non terminal stmt;
+non terminal assign;
+non terminal exp;
+non terminal exp_arit, term_arit, factor_arit;
+non terminal exp_rel;
+non terminal exp_log, term_log, factor_log;
+non terminal unary_exp;
+non terminal ctrl, if_stmt, do_while, for_stmt;
+non terminal break_stmt, return_stmt;
+non terminal read_stmt, write_stmt;
+non terminal tipo, tipo_r;
+non terminal arr_access;
+non terminal exp_list, exp_matrix, matrix_row;
+non terminal param, param_list, arg_list;
+non terminal comment, comment_block;
+non terminal valor_literal;
+non terminal llamada_fun;
 
-/* Precedencias */
+/* Precedencias - ordenadas de menor a mayor */
 precedence left OR;
 precedence left AND;
-precedence left EQ, NE;
-precedence left LT, LE, GT, GE;
+precedence right NOT;
+precedence nonassoc LT, LTE, GT, GTE, EQ, NEQ;
 precedence left PLUS, MINUS;
-precedence left TIMES, DIV, MOD;
+precedence left TIMES, DIVIDE, MOD;
 precedence right POW;
-precedence right NOT, INCREMENT, DECREMENT;
-
+precedence right UMINUS, INCREMENT, DECREMENT;
+precedence left LPAREN, RPAREN, LBRACKET, RBRACKET;
+/* Errores esperados */
+expect 11;
 /* Gramática */
 start with program;
 
-program ::= function_decl_list main_function
-          | main_function
+program ::= VOID MAIN LPAREN RPAREN LBLOCK block RBLOCK
+          | decl_fun program
+          | /* programa vacío */
           ;
 
-function_decl_list ::= function_decl_list function_decl
-                     | function_decl
-                     ;
+decl_fun ::= tipo_r ID LPAREN param_list RPAREN LBLOCK block RBLOCK
+           | tipo_r ID LPAREN RPAREN LBLOCK block RBLOCK
+           ;
 
-function_decl ::= type ID LPAREN param_list RPAREN BLOCK_START statement_list BLOCK_END
-                | type ID LPAREN RPAREN BLOCK_START statement_list BLOCK_END
-                ;
+tipo_r ::= INT | FLOAT | CHAR | BOOL | VOID;
 
-main_function ::= VOID MAIN LPAREN RPAREN BLOCK_START statement_list BLOCK_END
-                ;
-
-param_list ::= param_list COMMA param
-             | param
+param_list ::= param
+             | param_list COMMA param
              ;
 
-param ::= type ID
+param ::= tipo ID;
+
+block ::= stmt block
+        | /* bloque vacío */
         ;
 
-type ::= INT
+/* Tipos de datos */
+tipo ::= INT
        | FLOAT
+       | BOOL
        | CHAR
        | STRING
-       | BOOLEAN
        ;
 
-statement_list ::= statement_list statement
-                 | statement
-                 ;
+/* Arreglos - sólo bidimensionales */
+decl_arr ::= tipo ID LBRACKET exp RBRACKET LBRACKET exp RBRACKET QUESTION
+           | tipo ID LBRACKET exp RBRACKET LBRACKET exp RBRACKET ASSIGN exp_matrix QUESTION
+           ;
 
-statement ::= var_declaration SEMI
-            | assignment SEMI
-            | if_statement
-            | while_statement
-            | do_while_statement
-            | for_statement
-            | return_statement SEMI
-            | break_statement SEMI
-            | function_call SEMI
-            | block
+// Estructura de matriz usando filas separadas para evitar ambigüedad
+exp_matrix ::= LBRACKET matrix_row RBRACKET
+             | LBRACKET matrix_row COMMA matrix_row RBRACKET
+             ;
+
+matrix_row ::= LBRACKET exp_list RBRACKET;
+
+exp_list ::= exp
+           | exp COMMA exp_list
+           ;
+
+arr_access ::= ID LBRACKET exp RBRACKET LBRACKET exp RBRACKET;
+
+/* Sentencias */
+stmt ::= exp QUESTION
+       | assign
+       | decl_var
+       | decl_arr
+       | ctrl
+       | break_stmt
+       | return_stmt
+       | read_stmt
+       | write_stmt
+       | comment
+       | comment_block
+       ;
+
+assign ::= ID ASSIGN exp QUESTION
+         | arr_access ASSIGN exp QUESTION
+         ;
+
+decl_var ::= tipo ID ASSIGN exp QUESTION
+           | tipo ID QUESTION
+           ;
+
+/* Valores literales para reutilizar */
+valor_literal ::= LIT_INT
+                | LIT_FLOAT
+                | LIT_BOOL
+                | LIT_CHAR
+                | LIT_STRING
+                ;
+
+/* Llamadas a funciones */
+llamada_fun ::= ID LPAREN arg_list RPAREN
+              | ID LPAREN RPAREN
+              ;
+
+/* Expresiones - estructura única */
+exp ::= exp_log
+      | exp_arit
+      | unary_exp
+      | ID
+      | valor_literal
+      | arr_access
+      | llamada_fun 
+      | LPAREN exp RPAREN
+      ;
+
+/* Expresiones aritméticas - estructura jerárquica */
+exp_arit ::= exp_arit PLUS term_arit
+           | exp_arit MINUS term_arit
+           | term_arit
+           ;
+
+term_arit ::= term_arit TIMES factor_arit
+            | term_arit DIVIDE factor_arit
+            | term_arit MOD factor_arit
+            | factor_arit
             ;
 
-block ::= BLOCK_START statement_list BLOCK_END
-        | BLOCK_START BLOCK_END
-        ;
+factor_arit ::= factor_arit POW unary_exp
+              | unary_exp
+              | ID
+              | LIT_INT
+              | LIT_FLOAT
+              | arr_access
+              | llamada_fun
+              | LPAREN exp_arit RPAREN
+              ;
 
-var_declaration ::= type ID
-                  | type ID ASSIGN expression
-                  | type ID LBRACK INT_LITERAL RBRACK
-                  | type ID LBRACK INT_LITERAL RBRACK LBRACK INT_LITERAL RBRACK
-                  ;
+/* Expresiones unarias */
+unary_exp ::= MINUS exp %prec UMINUS
+            | INCREMENT ID
+            | DECREMENT ID
+            ;
 
-assignment ::= ID ASSIGN expression
-             | ID LBRACK expression RBRACK ASSIGN expression
-             | ID LBRACK expression RBRACK LBRACK expression RBRACK ASSIGN expression
-             ;
+arg_list ::= exp
+           | exp COMMA arg_list
+           ;
 
-if_statement ::= IF PAREN expression PAREN statement
-               | IF PAREN expression PAREN statement ELSE statement
-               | IF PAREN expression PAREN statement ELIF PAREN expression PAREN statement
-               | IF PAREN expression PAREN statement ELIF PAREN expression PAREN statement ELSE statement
-               ;
+/* Expresiones relacionales */
+exp_rel ::= exp_arit LT exp_arit
+          | exp_arit LTE exp_arit
+          | exp_arit GT exp_arit
+          | exp_arit GTE exp_arit
+          | exp_arit EQ exp_arit
+          | exp_arit NEQ exp_arit
+          | exp_log EQ exp_log
+          | exp_log NEQ exp_log
+          ;
 
-while_statement ::= WHILE PAREN expression PAREN statement
-                  ;
+/* Expresiones lógicas - estructura jerárquica */
+exp_log ::= exp_log OR term_log
+          | term_log
+          ;
 
-do_while_statement ::= DO statement WHILE PAREN expression PAREN SEMI
-                     ;
+term_log ::= term_log AND factor_log
+           | factor_log
+           ;
 
-for_statement ::= FOR PAREN expression SEMI expression SEMI expression PAREN statement
-                ;
-
-return_statement ::= RETURN expression
-                   | RETURN
-                   ;
-
-break_statement ::= BREAK
-                  ;
-
-expression ::= arithmetic_expr
-             | logical_expr
-             | relational_expr
-             | ID
-             | ID LBRACK expression RBRACK
-             | ID LBRACK expression RBRACK LBRACK expression RBRACK
-             | INT_LITERAL
-             | FLOAT_LITERAL
-             | CHAR_LITERAL
-             | STRING_LITERAL
+factor_log ::= NOT factor_log
+             | exp_rel
              | TRUE
              | FALSE
-             | function_call
-             | LPAREN expression RPAREN
+             | LPAREN exp_log RPAREN
              ;
 
-arithmetic_expr ::= expression PLUS expression
-                  | expression MINUS expression
-                  | expression TIMES expression
-                  | expression DIV expression
-                  | expression MOD expression
-                  | expression POW expression
-                  | MINUS expression
-                  | INCREMENT ID
-                  | DECREMENT ID
-                  ;
+/* Estructuras de control */
+ctrl ::= if_stmt
+       | do_while
+       | for_stmt
+       ;
 
-logical_expr ::= expression AND expression
-               | expression OR expression
-               | NOT expression
-               ;
+if_stmt ::= IF LPAREN exp_log RPAREN LBLOCK block RBLOCK
+          | IF LPAREN exp_log RPAREN LBLOCK block RBLOCK ELIF LPAREN exp_log RPAREN LBLOCK block RBLOCK
+          | IF LPAREN exp_log RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
+          | IF LPAREN exp_log RPAREN LBLOCK block RBLOCK ELIF LPAREN exp_log RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
+          ;
 
-relational_expr ::= expression LT expression
-                  | expression LE expression
-                  | expression GT expression
-                  | expression GE expression
-                  | expression EQ expression
-                  | expression NE expression
-                  ;
+do_while ::= DO LBLOCK block RBLOCK WHILE LPAREN exp_log RPAREN QUESTION;
 
-function_call ::= ID LPAREN argument_list RPAREN
-                | ID LPAREN RPAREN
-                ;
+for_stmt ::= FOR LPAREN decl_var exp_log QUESTION exp RPAREN LBLOCK block RBLOCK
+           | FOR LPAREN assign exp_log QUESTION exp RPAREN LBLOCK block RBLOCK
+           | FOR LPAREN QUESTION exp_log QUESTION exp RPAREN LBLOCK block RBLOCK
+           ;
 
-argument_list ::= argument_list COMMA expression
-                | expression
-                ;
+break_stmt ::= BREAK QUESTION;
+
+return_stmt ::= RETURN exp QUESTION
+              | RETURN QUESTION
+              ;
+
+/* Funciones de entrada/salida */
+read_stmt ::= READ LPAREN ID RPAREN QUESTION;
+
+write_stmt ::= WRITE LPAREN exp RPAREN QUESTION;
+
+/* Comentarios */
+comment ::= COMMENT_LINE;
+comment_block ::= LCOMMENT_BLOCK RCOMMENT_BLOCK;
