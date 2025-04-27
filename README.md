@@ -14,7 +14,7 @@
 
 ## 🎓 Número de carnet de los estudiantes
 - **2020114659**
-- *(Número de carnet faltante)*
+- **2022327328**
 
 ## 🛠️ Número de proyecto programado
 **I Proyecto**
