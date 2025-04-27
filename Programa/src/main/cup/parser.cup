@@ -37,7 +37,7 @@ non terminal decl_var, decl_fun, decl_arr;
 non terminal stmt;
 non terminal assign;
 non terminal exp;
-non terminal exp_arit, term_arit, factor_arit;
+non terminal exp_arit, term_arit, factor_arit, power_arit, atom_arit;
 non terminal exp_rel;
 non terminal exp_log, term_log, factor_log;
 non terminal unary_exp;
@@ -49,7 +49,7 @@ non terminal arr_access;
 non terminal exp_list, exp_matrix, matrix_row;
 non terminal param, param_list, arg_list;
 non terminal comment, comment_block;
-non terminal valor_literal;
+non terminal literal;
 non terminal llamada_fun;
 
 /* Precedencias - ordenadas de menor a mayor */
@@ -62,8 +62,7 @@ precedence left TIMES, DIVIDE, MOD;
 precedence right POW;
 precedence right UMINUS, INCREMENT, DECREMENT;
 precedence left LPAREN, RPAREN, LBRACKET, RBRACKET;
-/* Errores esperados */
-expect 11;
+
 /* Gramática */
 start with program;
 
@@ -136,31 +135,51 @@ decl_var ::= tipo ID ASSIGN exp QUESTION
            | tipo ID QUESTION
            ;
 
-/* Valores literales para reutilizar */
-valor_literal ::= LIT_INT
-                | LIT_FLOAT
-                | LIT_BOOL
-                | LIT_CHAR
-                | LIT_STRING
-                ;
+/* Valores literales - unificados para evitar conflictos */
+literal ::= LIT_INT
+         | LIT_FLOAT
+         | LIT_BOOL
+         | LIT_CHAR
+         | LIT_STRING
+         | TRUE
+         | FALSE
+         ;
 
 /* Llamadas a funciones */
 llamada_fun ::= ID LPAREN arg_list RPAREN
               | ID LPAREN RPAREN
               ;
 
-/* Expresiones - estructura única */
+/* Expresiones unificadas - enfoque simplificado */
 exp ::= exp_log
-      | exp_arit
-      | unary_exp
-      | ID
-      | valor_literal
-      | arr_access
-      | llamada_fun 
-      | LPAREN exp RPAREN
       ;
 
-/* Expresiones aritméticas - estructura jerárquica */
+/* Expresiones lógicas - simplificadas para evitar conflictos */
+exp_log ::= exp_log OR term_log
+          | term_log
+          ;
+
+term_log ::= term_log AND factor_log
+           | factor_log
+           ;
+
+/* Factor lógico revisado */
+factor_log ::= NOT atom_arit  /* Cambiado para evitar recursión problemática */
+             | exp_rel
+             | LPAREN exp_log RPAREN
+             ;
+
+/* Expresiones relacionales */
+exp_rel ::= exp_arit LT exp_arit
+          | exp_arit LTE exp_arit
+          | exp_arit GT exp_arit
+          | exp_arit GTE exp_arit
+          | exp_arit EQ exp_arit
+          | exp_arit NEQ exp_arit
+          | exp_arit    /* Permite expresiones aritméticas como relacionales */
+          ;
+
+/* Expresiones aritméticas - estructura jerárquica clara */
 exp_arit ::= exp_arit PLUS term_arit
            | exp_arit MINUS term_arit
            | term_arit
@@ -172,52 +191,31 @@ term_arit ::= term_arit TIMES factor_arit
             | factor_arit
             ;
 
-factor_arit ::= factor_arit POW unary_exp
-              | unary_exp
-              | ID
-              | LIT_INT
-              | LIT_FLOAT
-              | arr_access
-              | llamada_fun
-              | LPAREN exp_arit RPAREN
+factor_arit ::= factor_arit POW power_arit
+              | power_arit
               ;
 
-/* Expresiones unarias */
-unary_exp ::= MINUS exp %prec UMINUS
+power_arit ::= unary_exp
+             | atom_arit
+             ;
+
+/* Operadores unarios */
+unary_exp ::= MINUS atom_arit %prec UMINUS
             | INCREMENT ID
             | DECREMENT ID
+            ;
+
+/* Términos atómicos - sin conflictos */
+atom_arit ::= ID
+            | literal    /* Incluye TRUE y FALSE unificados */
+            | arr_access
+            | llamada_fun
+            | LPAREN exp RPAREN
             ;
 
 arg_list ::= exp
            | exp COMMA arg_list
            ;
-
-/* Expresiones relacionales */
-exp_rel ::= exp_arit LT exp_arit
-          | exp_arit LTE exp_arit
-          | exp_arit GT exp_arit
-          | exp_arit GTE exp_arit
-          | exp_arit EQ exp_arit
-          | exp_arit NEQ exp_arit
-          | exp_log EQ exp_log
-          | exp_log NEQ exp_log
-          ;
-
-/* Expresiones lógicas - estructura jerárquica */
-exp_log ::= exp_log OR term_log
-          | term_log
-          ;
-
-term_log ::= term_log AND factor_log
-           | factor_log
-           ;
-
-factor_log ::= NOT factor_log
-             | exp_rel
-             | TRUE
-             | FALSE
-             | LPAREN exp_log RPAREN
-             ;
 
 /* Estructuras de control */
 ctrl ::= if_stmt
@@ -225,17 +223,17 @@ ctrl ::= if_stmt
        | for_stmt
        ;
 
-if_stmt ::= IF LPAREN exp_log RPAREN LBLOCK block RBLOCK
-          | IF LPAREN exp_log RPAREN LBLOCK block RBLOCK ELIF LPAREN exp_log RPAREN LBLOCK block RBLOCK
-          | IF LPAREN exp_log RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
-          | IF LPAREN exp_log RPAREN LBLOCK block RBLOCK ELIF LPAREN exp_log RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
+if_stmt ::= IF LPAREN exp RPAREN LBLOCK block RBLOCK
+          | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK
+          | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
+          | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
           ;
 
-do_while ::= DO LBLOCK block RBLOCK WHILE LPAREN exp_log RPAREN QUESTION;
+do_while ::= DO LBLOCK block RBLOCK WHILE LPAREN exp RPAREN QUESTION;
 
-for_stmt ::= FOR LPAREN decl_var exp_log QUESTION exp RPAREN LBLOCK block RBLOCK
-           | FOR LPAREN assign exp_log QUESTION exp RPAREN LBLOCK block RBLOCK
-           | FOR LPAREN QUESTION exp_log QUESTION exp RPAREN LBLOCK block RBLOCK
+for_stmt ::= FOR LPAREN decl_var exp QUESTION exp RPAREN LBLOCK block RBLOCK
+           | FOR LPAREN assign exp QUESTION exp RPAREN LBLOCK block RBLOCK
+           | FOR LPAREN QUESTION exp QUESTION exp RPAREN LBLOCK block RBLOCK
            ;
 
 break_stmt ::= BREAK QUESTION;
