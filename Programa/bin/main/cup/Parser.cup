@@ -1,0 +1,252 @@
+/* Imports y paquetes */
+import java_cup.runtime.*;
+import java.util.*;
+
+/* Código de usuario */
+parser code {:
+    /* Métodos para manejo de errores */
+    public void syntax_error(Symbol s) {
+        System.out.println("Error sintáctico en línea " + s.left + ", columna " + s.right + ": " + s.value);
+    }
+
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception {
+        System.out.println("Error sintáctico fatal en línea " + s.left + ", columna " + s.right + ": " + s.value);
+        done_parsing();
+    }
+:}
+
+/* Símbolos terminales */
+terminal IF, ELIF, ELSE, DO, WHILE, FOR, BREAK, RETURN;
+terminal INT, FLOAT, BOOL, CHAR, STRING, VOID;
+terminal READ, WRITE, MAIN, TRUE, FALSE;
+terminal PLUS, MINUS, TIMES, DIVIDE, MOD, POW;
+terminal INCREMENT, DECREMENT;
+terminal LT, LTE, GT, GTE, EQ, NEQ;
+terminal AND, OR, NOT;
+terminal LPAREN, RPAREN, LBLOCK, RBLOCK;
+terminal QUESTION, COMMA, ASSIGN;
+terminal COMMENT_LINE, LCOMMENT_BLOCK, RCOMMENT_BLOCK;
+terminal LBRACKET, RBRACKET;
+terminal UMINUS;  // Para operador unario
+terminal ID, LIT_INT, LIT_FLOAT, LIT_BOOL, LIT_CHAR, LIT_STRING;
+
+/* Símbolos no terminales */
+non terminal program;
+non terminal block;
+non terminal decl_var, decl_fun, decl_arr;
+non terminal stmt;
+non terminal assign;
+non terminal exp;
+non terminal exp_arit, term_arit, factor_arit, power_arit, atom_arit;
+non terminal exp_rel;
+non terminal exp_log, term_log, factor_log;
+non terminal unary_exp;
+non terminal ctrl, if_stmt, do_while, for_stmt;
+non terminal break_stmt, return_stmt;
+non terminal read_stmt, write_stmt;
+non terminal tipo, tipo_r;
+non terminal arr_access;
+non terminal exp_list, exp_matrix, matrix_row;
+non terminal param, param_list, arg_list;
+non terminal comment, comment_block;
+non terminal literal;
+non terminal llamada_fun;
+
+/* Precedencias - ordenadas de menor a mayor */
+precedence left OR;
+precedence left AND;
+precedence right NOT;
+precedence nonassoc LT, LTE, GT, GTE, EQ, NEQ;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIVIDE, MOD;
+precedence right POW;
+precedence right UMINUS, INCREMENT, DECREMENT;
+precedence left LPAREN, RPAREN, LBRACKET, RBRACKET;
+
+/* Gramática */
+start with program;
+
+program ::= VOID MAIN LPAREN RPAREN LBLOCK block RBLOCK
+          | decl_fun program
+          | /* programa vacío */
+          ;
+
+decl_fun ::= tipo_r ID LPAREN param_list RPAREN LBLOCK block RBLOCK
+           | tipo_r ID LPAREN RPAREN LBLOCK block RBLOCK
+           ;
+
+tipo_r ::= INT | FLOAT | CHAR | BOOL | VOID;
+
+param_list ::= param
+             | param_list COMMA param
+             ;
+
+param ::= tipo ID;
+
+block ::= stmt block
+        | /* bloque vacío */
+        ;
+
+/* Tipos de datos */
+tipo ::= INT
+       | FLOAT
+       | BOOL
+       | CHAR
+       | STRING
+       ;
+
+/* Arreglos - sólo bidimensionales */
+decl_arr ::= tipo ID LBRACKET exp RBRACKET LBRACKET exp RBRACKET QUESTION
+           | tipo ID LBRACKET exp RBRACKET LBRACKET exp RBRACKET ASSIGN exp_matrix QUESTION
+           ;
+
+// Estructura de matriz usando filas separadas para evitar ambigüedad
+exp_matrix ::= LBRACKET matrix_row RBRACKET
+             | LBRACKET matrix_row COMMA matrix_row RBRACKET
+             ;
+
+matrix_row ::= LBRACKET exp_list RBRACKET;
+
+exp_list ::= exp
+           | exp COMMA exp_list
+           ;
+
+arr_access ::= ID LBRACKET exp RBRACKET LBRACKET exp RBRACKET;
+
+/* Sentencias */
+stmt ::= exp QUESTION
+       | assign
+       | decl_var
+       | decl_arr
+       | ctrl
+       | break_stmt
+       | return_stmt
+       | read_stmt
+       | write_stmt
+       | comment
+       | comment_block
+       ;
+
+assign ::= ID ASSIGN exp QUESTION
+         | arr_access ASSIGN exp QUESTION
+         ;
+
+decl_var ::= tipo ID ASSIGN exp QUESTION
+           | tipo ID QUESTION
+           ;
+
+/* Valores literales - unificados para evitar conflictos */
+literal ::= LIT_INT
+         | LIT_FLOAT
+         | LIT_BOOL
+         | LIT_CHAR
+         | LIT_STRING
+         | TRUE
+         | FALSE
+         ;
+
+/* Llamadas a funciones */
+llamada_fun ::= ID LPAREN arg_list RPAREN
+              | ID LPAREN RPAREN
+              ;
+
+/* Expresiones unificadas - enfoque simplificado */
+exp ::= exp_log
+      ;
+
+/* Expresiones lógicas - simplificadas para evitar conflictos */
+exp_log ::= exp_log OR term_log
+          | term_log
+          ;
+
+term_log ::= term_log AND factor_log
+           | factor_log
+           ;
+
+/* Factor lógico revisado */
+factor_log ::= NOT atom_arit  /* Cambiado para evitar recursión problemática */
+             | exp_rel
+             | LPAREN exp_log RPAREN
+             ;
+
+/* Expresiones relacionales */
+exp_rel ::= exp_arit LT exp_arit
+          | exp_arit LTE exp_arit
+          | exp_arit GT exp_arit
+          | exp_arit GTE exp_arit
+          | exp_arit EQ exp_arit
+          | exp_arit NEQ exp_arit
+          | exp_arit    /* Permite expresiones aritméticas como relacionales */
+          ;
+
+/* Expresiones aritméticas - estructura jerárquica clara */
+exp_arit ::= exp_arit PLUS term_arit
+           | exp_arit MINUS term_arit
+           | term_arit
+           ;
+
+term_arit ::= term_arit TIMES factor_arit
+            | term_arit DIVIDE factor_arit
+            | term_arit MOD factor_arit
+            | factor_arit
+            ;
+
+factor_arit ::= factor_arit POW power_arit
+              | power_arit
+              ;
+
+power_arit ::= unary_exp
+             | atom_arit
+             ;
+
+/* Operadores unarios */
+unary_exp ::= MINUS atom_arit %prec UMINUS
+            | INCREMENT ID
+            | DECREMENT ID
+            ;
+
+/* Términos atómicos - sin conflictos */
+atom_arit ::= ID
+            | literal    /* Incluye TRUE y FALSE unificados */
+            | arr_access
+            | llamada_fun
+            | LPAREN exp RPAREN
+            ;
+
+arg_list ::= exp
+           | exp COMMA arg_list
+           ;
+
+/* Estructuras de control */
+ctrl ::= if_stmt
+       | do_while
+       | for_stmt
+       ;
+
+if_stmt ::= IF LPAREN exp RPAREN LBLOCK block RBLOCK
+          | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK
+          | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
+          | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
+          ;
+
+do_while ::= DO LBLOCK block RBLOCK WHILE LPAREN exp RPAREN QUESTION;
+
+for_stmt ::= FOR LPAREN decl_var exp QUESTION exp RPAREN LBLOCK block RBLOCK
+           | FOR LPAREN assign exp QUESTION exp RPAREN LBLOCK block RBLOCK
+           | FOR LPAREN QUESTION exp QUESTION exp RPAREN LBLOCK block RBLOCK
+           ;
+
+break_stmt ::= BREAK QUESTION;
+
+return_stmt ::= RETURN exp QUESTION
+              | RETURN QUESTION
+              ;
+
+/* Funciones de entrada/salida */
+read_stmt ::= READ LPAREN ID RPAREN QUESTION;
+
+write_stmt ::= WRITE LPAREN exp RPAREN QUESTION;
+
+/* Comentarios */
+comment ::= COMMENT_LINE;
+comment_block ::= LCOMMENT_BLOCK RCOMMENT_BLOCK;
