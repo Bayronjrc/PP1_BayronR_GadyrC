@@ -18,6 +18,7 @@ public class sym {
   public static final int CHAR = 13;
   public static final int UMINUS = 50;
   public static final int LIT_FLOAT = 53;
+  public static final int CASE = 58;
   public static final int LPAREN = 38;
   public static final int INT = 10;
   public static final int FOR = 7;
@@ -50,12 +51,15 @@ public class sym {
   public static final int VOID = 15;
   public static final int EQ = 33;
   public static final int GTE = 32;
+  public static final int SWITCH = 57;
   public static final int LCOMMENT_BLOCK = 46;
   public static final int RBLOCK = 41;
   public static final int TIMES = 23;
+  public static final int COLON = 60;
   public static final int ELSE = 4;
   public static final int READ = 16;
   public static final int WHILE = 6;
+  public static final int DEFAULT = 59;
   public static final int FLOAT = 11;
   public static final int LIT_BOOL = 54;
   public static final int QUESTION = 42;
@@ -122,7 +126,11 @@ public class sym {
   "LIT_FLOAT",
   "LIT_BOOL",
   "LIT_CHAR",
-  "LIT_STRING"
+  "LIT_STRING",
+  "SWITCH",
+  "CASE",
+  "DEFAULT",
+  "COLON"
   };
 }
 
