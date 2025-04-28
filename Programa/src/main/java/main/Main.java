@@ -119,6 +119,11 @@ public class Main {
             case main.java.parser.sym.LBRACKET: return "LBRACKET";
             case main.java.parser.sym.RBRACKET: return "RBRACKET";
             case main.java.parser.sym.UMINUS: return "UMINUS";
+            // Nuevos símbolos añadidos
+            case main.java.parser.sym.SWITCH: return "SWITCH";
+            case main.java.parser.sym.CASE: return "CASE";
+            case main.java.parser.sym.DEFAULT: return "DEFAULT";
+            case main.java.parser.sym.COLON: return "COLON";
             default: return "SYMBOL_" + sym;
         }
     }
