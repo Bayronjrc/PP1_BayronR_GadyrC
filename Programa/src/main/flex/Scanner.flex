@@ -30,8 +30,8 @@ IntLiteral     = [0-9]+
 FloatLiteral   = [0-9]+\.[0-9]+
 CharLiteral    = \'[^\']\'
 StringLiteral  = \"[^\"]*\"
-CommentLine    = "//".*
-CommentBlock   = "/*" ~"*/"
+CommentLine    = "@".*
+CommentBlock   = "{"[^}]*"}"
 
 %%
 
@@ -43,7 +43,7 @@ CommentBlock   = "/*" ~"*/"
 "else"      { return symbol(sym.ELSE); }
 "do"        { return symbol(sym.DO); }
 "while"     { return symbol(sym.WHILE); }
-"for"       { return symbol(sym.FOR); }
+"?"         { return symbol(sym.FOR); }
 "break"     { return symbol(sym.BREAK); }
 "return"    { return symbol(sym.RETURN); }
 "int"       { return symbol(sym.INT); }
@@ -55,16 +55,19 @@ CommentBlock   = "/*" ~"*/"
 "read"      { return symbol(sym.READ); }
 "write"     { return symbol(sym.WRITE); }
 "main"      { return symbol(sym.MAIN); }
-"true"      { return symbol(sym.TRUE, Boolean.TRUE); }
-"false"     { return symbol(sym.FALSE, Boolean.FALSE); }
+"luna"      { return symbol(sym.TRUE, Boolean.TRUE); }
+"sol"       { return symbol(sym.FALSE, Boolean.FALSE); }
+"switch"    { return symbol(sym.SWITCH); }
+"case"      { return symbol(sym.CASE); }
+"default"   { return symbol(sym.DEFAULT); }
 
 /* Operadores aritméticos */
 "+"         { return symbol(sym.PLUS); }
 "-"         { return symbol(sym.MINUS); }
 "*"         { return symbol(sym.TIMES); }
-"/"         { return symbol(sym.DIVIDE); }
-"%"         { return symbol(sym.MOD); }
-"^"         { return symbol(sym.POW); }
+"//"        { return symbol(sym.DIVIDE); }
+"~"         { return symbol(sym.MOD); }
+"**"        { return symbol(sym.POW); }
 "++"        { return symbol(sym.INCREMENT); }
 "--"        { return symbol(sym.DECREMENT); }
 
@@ -77,25 +80,26 @@ CommentBlock   = "/*" ~"*/"
 "!="        { return symbol(sym.NEQ); }
 
 /* Operadores lógicos */
-"&&"        { return symbol(sym.AND); }
-"||"        { return symbol(sym.OR); }
+"^"         { return symbol(sym.AND); }
+"#"         { return symbol(sym.OR); }
 "!"         { return symbol(sym.NOT); }
 
 /* Delimitadores */
-"("         { return symbol(sym.LPAREN); }
-")"         { return symbol(sym.RPAREN); }
-"{"         { return symbol(sym.LBLOCK); }
-"}"         { return symbol(sym.RBLOCK); }
+"ʃ"         { return symbol(sym.LPAREN); }
+"ʅ"         { return symbol(sym.RPAREN); }
+"\\"        { return symbol(sym.LBLOCK); }
+"/"         { return symbol(sym.RBLOCK); }
 "["         { return symbol(sym.LBRACKET); }
 "]"         { return symbol(sym.RBRACKET); }
 "?"         { return symbol(sym.QUESTION); }
 ","         { return symbol(sym.COMMA); }
-"="         { return symbol(sym.ASSIGN); }
+"|"         { return symbol(sym.ASSIGN); }
+":"         { return symbol(sym.COLON); }
 
 /* Comentarios */
 {CommentLine}    { return symbol(sym.COMMENT_LINE); }
-"/*"            { return symbol(sym.LCOMMENT_BLOCK); }
-"*/"            { return symbol(sym.RCOMMENT_BLOCK); }
+"{"             { return symbol(sym.LCOMMENT_BLOCK); }
+"}"             { return symbol(sym.RCOMMENT_BLOCK); }
 
 /* Valores literales */
 {IntLiteral}    { return symbol(sym.LIT_INT, Integer.parseInt(yytext())); }
