@@ -1,0 +1,8 @@
+void main ʃ ʅ \
+  int x | 10 ?
+  int y | 20 ?
+  
+  if ʃ x < y ʅ \
+    write ʃ "x es menor que y" ʅ?
+  /
+/

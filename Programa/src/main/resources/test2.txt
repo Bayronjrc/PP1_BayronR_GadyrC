@@ -1,8 +1,9 @@
-void main() \
-    int a = 5?
-    int b = 10?
-    
-    if &a < b& \
-        a = b?
-    /
+int suma ʃ int a, int b ʅ \
+  return a + b?
+/
+
+void main ʃ ʅ \
+  int resultado | suma ʃ 5, 10 ʅ?
+  write ʃ "El resultado es: " ʅ?
+  write ʃ resultado ʅ?
 /
