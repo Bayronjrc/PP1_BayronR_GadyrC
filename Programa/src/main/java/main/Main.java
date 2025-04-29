@@ -3,7 +3,7 @@ package main.java.main;
 import java.io.*;
 import main.java.lexer.Scanner;
 import main.java.parser.parser;
-import symbol.SymbolTable;
+import main.java.symbol.SymbolTable;
 import java_cup.runtime.Symbol;
 
 public class Main {

@@ -1,7 +1,7 @@
 @ Este es un programa de prueba correctamente formateado
 
 { Este es un comentario
-  de múltiples líneas }
+  de multiples lineas }
 
 int factorial ʃ int n ʅ \
     if ʃ n == 0 ʅ \
@@ -46,13 +46,13 @@ void main ʃ ʅ \
     
     switch ʃ option ʅ \
         case 1: 
-            write ʃ "Opción 1 seleccionada" ʅ?
+            write ʃ "Opcion 1 seleccionada" ʅ?
             break?
         case 2:
-            write ʃ "Opción 2 seleccionada" ʅ?
+            write ʃ "Opcion 2 seleccionada" ʅ?
             break?
         default:
-            write ʃ "Opción desconocida" ʅ?
+            write ʃ "Opcion desconocida" ʅ?
     /
     
     @ Probando operadores lógicos
@@ -67,7 +67,7 @@ void main ʃ ʅ \
         write ʃ "Operador OR funciona correctamente" ʅ?
     /
     
-    @ Probando operadores aritméticos
+    @ Probando operadores aritmeticos
     int x | 10?
     int y | 3?
     

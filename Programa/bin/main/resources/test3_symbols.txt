@@ -1,0 +1,50 @@
+===== TABLA DE VARIABLES =====
+Lexema: lineas, Tipo: ID, Línea: 5, Columna: 17, Valor: lineas, Variable: Sí
+Lexema: de, Tipo: ID, Línea: 5, Columna: 4, Valor: de, Variable: Sí
+Lexema: a, Tipo: ID, Línea: 67, Columna: 11, Valor: a, Variable: Sí
+Lexema: b, Tipo: ID, Línea: 67, Columna: 15, Valor: b, Variable: Sí
+Lexema: factorial, Tipo: ID, Línea: 35, Columna: 14, Valor: factorial, Variable: Sí
+Lexema: num, Tipo: ID, Línea: 35, Columna: 26, Valor: num, Variable: Sí
+Lexema: i, Tipo: ID, Línea: 19, Columna: 30, Valor: i, Variable: Sí
+Lexema: counter, Tipo: ID, Línea: 99, Columna: 16, Valor: counter, Variable: Sí
+Lexema: comentario, Tipo: ID, Línea: 4, Columna: 15, Valor: comentario, Variable: Sí
+Lexema: es, Tipo: ID, Línea: 4, Columna: 9, Valor: es, Variable: Sí
+Lexema: n, Tipo: ID, Línea: 12, Columna: 33, Valor: n, Variable: Sí
+Lexema: result, Tipo: ID, Línea: 23, Columna: 13, Valor: result, Variable: Sí
+Lexema: x, Tipo: ID, Línea: 91, Columna: 14, Valor: x, Variable: Sí
+Lexema: un, Tipo: ID, Línea: 4, Columna: 12, Valor: un, Variable: Sí
+Lexema: y, Tipo: ID, Línea: 91, Columna: 19, Valor: y, Variable: Sí
+Lexema: power, Tipo: ID, Línea: 43, Columna: 14, Valor: power, Variable: Sí
+Lexema: exp, Tipo: ID, Línea: 43, Columna: 28, Valor: exp, Variable: Sí
+Lexema: Este, Tipo: ID, Línea: 4, Columna: 4, Valor: Este, Variable: Sí
+Lexema: multiples, Tipo: ID, Línea: 5, Columna: 7, Valor: multiples, Variable: Sí
+Lexema: base, Tipo: ID, Línea: 43, Columna: 22, Valor: base, Variable: Sí
+Lexema: option, Tipo: ID, Línea: 48, Columna: 15, Valor: option, Variable: Sí
+
+===== TABLA DE FUNCIONES =====
+
+===== TABLA DE CONSTANTES =====
+
+===== TABLA DE PALABRAS RESERVADAS =====
+Lexema: void, Tipo: VOID, Línea: 0, Columna: 0
+Lexema: read, Tipo: READ, Línea: 0, Columna: 0
+Lexema: bool, Tipo: BOOL, Línea: 0, Columna: 0
+Lexema: string, Tipo: STRING, Línea: 0, Columna: 0
+Lexema: break, Tipo: BREAK, Línea: 0, Columna: 0
+Lexema: for, Tipo: FOR, Línea: 0, Columna: 0
+Lexema: false, Tipo: FALSE, Línea: 0, Columna: 0
+Lexema: main, Tipo: MAIN, Línea: 0, Columna: 0
+Lexema: elif, Tipo: ELIF, Línea: 0, Columna: 0
+Lexema: do, Tipo: DO, Línea: 0, Columna: 0
+Lexema: while, Tipo: WHILE, Línea: 0, Columna: 0
+Lexema: float, Tipo: FLOAT, Línea: 0, Columna: 0
+Lexema: int, Tipo: INT, Línea: 0, Columna: 0
+Lexema: switch, Tipo: SWITCH, Línea: 0, Columna: 0
+Lexema: default, Tipo: DEFAULT, Línea: 0, Columna: 0
+Lexema: else, Tipo: ELSE, Línea: 0, Columna: 0
+Lexema: char, Tipo: CHAR, Línea: 0, Columna: 0
+Lexema: true, Tipo: TRUE, Línea: 0, Columna: 0
+Lexema: if, Tipo: IF, Línea: 0, Columna: 0
+Lexema: write, Tipo: WRITE, Línea: 0, Columna: 0
+Lexema: return, Tipo: RETURN, Línea: 0, Columna: 0
+Lexema: case, Tipo: CASE, Línea: 0, Columna: 0
