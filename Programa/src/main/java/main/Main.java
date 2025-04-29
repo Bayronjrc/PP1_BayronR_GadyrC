@@ -4,6 +4,7 @@ import java.io.*;
 import main.java.lexer.Scanner;
 import main.java.parser.parser;
 import main.java.symbol.SymbolTable;
+import main.java.symbol.SymbolInfo;
 import java_cup.runtime.Symbol;
 
 public class Main {
@@ -45,17 +46,18 @@ public class Main {
                 // Convertir numero de símbolo a nombre
                 String symbolName = symbolToString(token.sym);
                 
-                // Escribir token en archivo
-                tokenWriter.println("Token: " + symbolName + 
-                                   ", Lexema: " + token.value + 
-                                   ", Línea: " + (token.left+1) + 
-                                   ", Columna: " + (token.right+1));
-                
-                // Determinar la tabla de símbolos correspondiente e insertar
+                // Obtener lexema
                 String lexema = (token.value != null) ? token.value.toString() : symbolName;
                 
                 // Determinar a que tabla va el token
                 String tabla = symbolTable.determinarTabla(symbolName, lexema);
+                
+                // Escribir token en archivo con información de la tabla
+                tokenWriter.println("Token: " + symbolName + 
+                                   ", Lexema: " + token.value + 
+                                   ", Línea: " + (token.left+1) + 
+                                   ", Columna: " + (token.right+1) + 
+                                   ", Tabla: " + (tabla.equals("NINGUNO") ? "N/A" : tabla));
                 
                 // Insertar en la tabla de símbolos
                 if (!tabla.equals("NINGUNO")) {
@@ -147,7 +149,6 @@ public class Main {
             case main.java.parser.sym.LBRACKET: return "LBRACKET";
             case main.java.parser.sym.RBRACKET: return "RBRACKET";
             case main.java.parser.sym.UMINUS: return "UMINUS";
-            // Nuevos símbolos añadidos
             case main.java.parser.sym.SWITCH: return "SWITCH";
             case main.java.parser.sym.CASE: return "CASE";
             case main.java.parser.sym.DEFAULT: return "DEFAULT";
