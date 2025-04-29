@@ -3,96 +3,132 @@ package main.java.main;
 import java.io.*;
 import main.java.lexer.Scanner;
 import main.java.parser.parser;
+import main.java.parser.sym;
 import main.java.symbol.SymbolTable;
 import main.java.symbol.SymbolInfo;
 import java_cup.runtime.Symbol;
 
+/**
+ * Clase principal del compilador que coordina el análisis léxico y sintáctico.
+ * 
+ * Esta clase realiza las siguientes funciones:
+ * - Procesa argumentos de línea de comandos
+ * - Inicializa el analizador léxico y el analizador sintáctico
+ * - Ejecuta el análisis léxico completo para generar tokens
+ * - Construye las tablas de símbolos
+ * - Ejecuta el análisis sintáctico
+ * - Genera archivos de salida con los resultados
+ * 
+ * @author Compilador
+ * @version 1.0
+ */
 public class Main {
+    /**
+     * Método principal que ejecuta el proceso de compilación.
+     * 
+     * @param args Argumentos de línea de comandos. Se espera un único argumento
+     *             con la ruta al archivo fuente a compilar.
+     */
     public static void main(String[] args) {
         try {
-            // Verificar argumentos
+            // Verificar que se haya proporcionado un archivo fuente
             if (args.length != 1) {
                 System.out.println("Uso: java Main <archivo_fuente>");
                 return;
             }
             
-            // Archivo fuente
+            // Obtener ruta del archivo fuente
             String sourceFile = args[0];
             
-            // Archivo de salida para tokens
+            // Definir archivos de salida (tokens y tabla de símbolos)
             String tokenOutputFile = sourceFile.substring(0, sourceFile.lastIndexOf('.')) + "_tokens.txt";
             PrintWriter tokenWriter = new PrintWriter(new FileWriter(tokenOutputFile));
             
-            // Archivo de salida para tablas de símbolos
             String symbolTableFile = sourceFile.substring(0, sourceFile.lastIndexOf('.')) + "_symbols.txt";
             PrintWriter symbolWriter = new PrintWriter(new FileWriter(symbolTableFile));
             
-            // Crear tabla de símbolos
+            // Inicializar tabla de símbolos
             SymbolTable symbolTable = new SymbolTable();
             
-            // Crear scanner
+            // Inicializar el analizador léxico con el archivo fuente
             Scanner scanner = new Scanner(new FileReader(sourceFile));
             
-            // Procesar tokens
+            // === ANÁLISIS LÉXICO ===
             System.out.println("Analizando léxicamente el archivo: " + sourceFile);
             
+            // Procesar todos los tokens del archivo
             Symbol token;
             while (true) {
+                // Obtener siguiente token
                 token = scanner.next_token();
-                if (token.sym == 0) { // EOF
+                
+                // Si es fin de archivo, terminar
+                if (token.sym == 0) {
                     break;
                 }
                 
-                // Convertir numero de símbolo a nombre
+                // Convertir el código numérico del token a su nombre simbólico
                 String symbolName = symbolToString(token.sym);
                 
-                // Obtener lexema
+                // Obtener el lexema del token
                 String lexema = (token.value != null) ? token.value.toString() : symbolName;
                 
-                // Determinar a que tabla va el token
+                // Determinar en qué tabla debe almacenarse el token
                 String tabla = symbolTable.determinarTabla(symbolName, lexema);
                 
-                // Escribir token en archivo con información de la tabla
+                // Escribir información del token en el archivo de salida
                 tokenWriter.println("Token: " + symbolName + 
                                    ", Lexema: " + token.value + 
                                    ", Línea: " + (token.left+1) + 
                                    ", Columna: " + (token.right+1) + 
                                    ", Tabla: " + (tabla.equals("NINGUNO") ? "N/A" : tabla));
                 
-                // Insertar en la tabla de símbolos
+                // Insertar el token en la tabla de símbolos correspondiente
                 if (!tabla.equals("NINGUNO")) {
                     symbolTable.insertarSimbolo(lexema, symbolName, token.left+1, token.right+1, token.value);
                 }
             }
+            
+            // Cerrar el archivo de tokens
             tokenWriter.close();
             System.out.println("Análisis léxico completado. Tokens escritos en: " + tokenOutputFile);
             
-            // Escribir tablas de símbolos
+            // Escribir las tablas de símbolos en el archivo correspondiente
             symbolTable.escribirTablas(symbolTableFile);
             System.out.println("Tablas de símbolos escritas en: " + symbolTableFile);
             
-            // Reiniciar scanner para el análisis sintáctico
+            // === ANÁLISIS SINTÁCTICO ===
+            
+            // Reiniciar el scanner para el análisis sintáctico
             scanner = new Scanner(new FileReader(sourceFile));
             
-            // Crear parser
+            // Crear el analizador sintáctico
             parser p = new parser(scanner);
-            p.setSymbolTable(symbolTable);  // Pasar tabla de símbolos al parser
+            p.setSymbolTable(symbolTable);  // Pasar la tabla de símbolos al parser
+            
             System.out.println("Analizando sintácticamente el archivo: " + sourceFile);
             
-            // Iniciar análisis sintáctico
+            // Iniciar el análisis sintáctico
             p.parse();
             
             System.out.println("Análisis sintáctico completado sin errores.");
             
         } catch (Exception e) {
+            // Manejar cualquier error durante el proceso de compilación
             System.err.println("Error: " + e.getMessage());
             e.printStackTrace();
         }
     }
     
-    // Método auxiliar para convertir número de símbolo a su nombre
+    /**
+     * Convierte un código numérico de token (definido en sym.java generado por CUP)
+     * a su nombre simbólico correspondiente.
+     * 
+     * @param sym Código numérico del token según CUP
+     * @return Nombre simbólico del token como cadena
+     */
     public static String symbolToString(int sym) {
-        // Mapeo de símbolos a nombres según parser.cup
+        // Mapeo de códigos numéricos a nombres simbólicos según parser.cup
         switch(sym) {
             case main.java.parser.sym.ID: return "ID";
             case main.java.parser.sym.LIT_INT: return "INT_LITERAL";

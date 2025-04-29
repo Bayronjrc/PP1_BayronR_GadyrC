@@ -1,3 +1,23 @@
+/* 
+ * Analizador Léxico para el Compilador
+ * -----------------------------------
+ * 
+ * OBJETIVO: Reconocer los tokens del lenguaje y convertirlos en símbolos
+ * para el análisis sintáctico.
+ * 
+ * ENTRADAS: 
+ * - Stream de caracteres del código fuente
+ * 
+ * SALIDAS: 
+ * - Secuencia de tokens (objetos Symbol) con información sobre tipo,
+ *   valor, línea y columna
+ * 
+ * RESTRICCIONES:
+ * - Los identificadores deben comenzar con letra y pueden contener letras,
+ *   números y guiones bajos
+ * - Los tokens se clasifican en palabras reservadas, operadores, literales
+ *   e identificadores
+ */
 import java_cup.runtime.*;
 import parser.sym;
 
@@ -12,7 +32,11 @@ import parser.sym;
 %public
 
 %{
-  /* Código que se incluirá en el scanner */
+  /* 
+   * OBJETIVO: Generar objetos Symbol para el parser
+   * ENTRADAS: Tipo de token y opcionalmente su valor
+   * SALIDAS: Objeto Symbol con información de tipo, posición y valor
+   */
   private Symbol symbol(int type) {
     return new Symbol(type, yyline+1, yycolumn+1);
   }
@@ -22,7 +46,10 @@ import parser.sym;
   }
 %}
 
-/* Macros para expresiones regulares */
+/* 
+ * Macros para expresiones regulares
+ * OBJETIVO: Definir patrones comunes para simplificar las reglas léxicas
+ */
 LineTerminator = \r|\n|\r\n
 WhiteSpace     = {LineTerminator} | [ \t\f]
 Identifier     = [a-zA-Z][a-zA-Z0-9_]*
@@ -35,7 +62,10 @@ CommentBlock   = "{"[^}]*"}"
 
 %%
 
-/* Reglas léxicas */
+/* 
+ * Reglas léxicas
+ * OBJETIVO: Asociar patrones de texto con tokens del lenguaje
+ */
 
 /* Palabras reservadas */
 "if"        { return symbol(sym.IF); }
@@ -43,7 +73,7 @@ CommentBlock   = "{"[^}]*"}"
 "else"      { return symbol(sym.ELSE); }
 "do"        { return symbol(sym.DO); }
 "while"     { return symbol(sym.WHILE); }
-"?"         { return symbol(sym.FOR); }
+"for"         { return symbol(sym.FOR); }
 "break"     { return symbol(sym.BREAK); }
 "return"    { return symbol(sym.RETURN); }
 "int"       { return symbol(sym.INT); }
@@ -61,7 +91,10 @@ CommentBlock   = "{"[^}]*"}"
 "case"      { return symbol(sym.CASE); }
 "default"   { return symbol(sym.DEFAULT); }
 
-/* Operadores aritméticos */
+/* 
+ * Operadores aritméticos
+ * OBJETIVO: Reconocer símbolos para operaciones matemáticas
+ */
 "+"         { return symbol(sym.PLUS); }
 "-"         { return symbol(sym.MINUS); }
 "*"         { return symbol(sym.TIMES); }
@@ -71,7 +104,10 @@ CommentBlock   = "{"[^}]*"}"
 "++"        { return symbol(sym.INCREMENT); }
 "--"        { return symbol(sym.DECREMENT); }
 
-/* Operadores relacionales */
+/* 
+ * Operadores relacionales
+ * OBJETIVO: Reconocer símbolos para comparaciones
+ */
 "<"         { return symbol(sym.LT); }
 "<="        { return symbol(sym.LTE); }
 ">"         { return symbol(sym.GT); }
@@ -79,12 +115,18 @@ CommentBlock   = "{"[^}]*"}"
 "=="        { return symbol(sym.EQ); }
 "!="        { return symbol(sym.NEQ); }
 
-/* Operadores lógicos */
+/* 
+ * Operadores lógicos
+ * OBJETIVO: Reconocer símbolos para operaciones lógicas
+ */
 "^"         { return symbol(sym.AND); }
 "#"         { return symbol(sym.OR); }
 "!"         { return symbol(sym.NOT); }
 
-/* Delimitadores */
+/* 
+ * Delimitadores
+ * OBJETIVO: Reconocer símbolos que definen estructura y ámbitos
+ */
 "ʃ"         { return symbol(sym.LPAREN); }
 "ʅ"         { return symbol(sym.RPAREN); }
 "\\"        { return symbol(sym.LBLOCK); }
@@ -96,24 +138,39 @@ CommentBlock   = "{"[^}]*"}"
 "|"         { return symbol(sym.ASSIGN); }
 ":"         { return symbol(sym.COLON); }
 
-/* Comentarios */
+/* 
+ * Comentarios
+ * OBJETIVO: Manejar comentarios de línea y bloque
+ */
 {CommentLine}    { return symbol(sym.COMMENT_LINE); }
 "{"             { return symbol(sym.LCOMMENT_BLOCK); }
 "}"             { return symbol(sym.RCOMMENT_BLOCK); }
 
-/* Valores literales */
+/* 
+ * Valores literales
+ * OBJETIVO: Reconocer constantes en el código fuente
+ */
 {IntLiteral}    { return symbol(sym.LIT_INT, Integer.parseInt(yytext())); }
 {FloatLiteral}  { return symbol(sym.LIT_FLOAT, Float.parseFloat(yytext())); }
 {CharLiteral}   { return symbol(sym.LIT_CHAR, yytext().charAt(1)); }
 {StringLiteral} { return symbol(sym.LIT_STRING, yytext().substring(1, yytext().length() - 1)); }
 
-/* Identificadores */
+/* 
+ * Identificadores
+ * OBJETIVO: Reconocer nombres de variables, funciones, etc.
+ */
 {Identifier}    { return symbol(sym.ID, yytext()); }
 
-/* Espacios en blanco */
+/* 
+ * Espacios en blanco
+ * OBJETIVO: Ignorar espacios, tabulaciones y saltos de línea
+ */
 {WhiteSpace}    { /* ignorar */ }
 
-/* Error para cualquier otro carácter */
+/* 
+ * Error para cualquier otro carácter
+ * OBJETIVO: Detectar caracteres no permitidos en el lenguaje
+ */
 [^]             { 
                   System.out.println("Error léxico: Carácter ilegal <" + yytext() + "> en línea " + (yyline+1) + ", columna " + (yycolumn+1)); 
                 }

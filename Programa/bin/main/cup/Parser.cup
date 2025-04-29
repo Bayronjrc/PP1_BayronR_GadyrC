@@ -1,17 +1,49 @@
+/* 
+ * Analizador Sintáctico para el Compilador
+ * ---------------------------------------
+ * 
+ * OBJETIVO: Verificar la estructura del programa según las reglas gramaticales
+ * del lenguaje y construir un árbol de sintaxis abstracta.
+ * 
+ * ENTRADAS: 
+ * - Secuencia de tokens generados por el analizador léxico
+ * - Tabla de símbolos para actualización semántica
+ * 
+ * SALIDAS: 
+ * - Árbol de sintaxis abstracta (implícito)
+ * - Actualización de la tabla de símbolos con información semántica
+ * - Mensajes de error en caso de errores sintácticos
+ * 
+ * RESTRICCIONES:
+ * - La gramática debe ser LALR(1) para ser compatible con CUP
+ * - Manejo adecuado de precedencias y asociatividad para evitar conflictos
+ */
+
 /* Imports y paquetes */
 import java_cup.runtime.*;
 import java.util.*;
-import symbol.SymbolTable;
+import main.java.symbol.SymbolTable;
 
 /* Código de usuario */
 parser code {:
+    /* 
+     * Tabla de símbolos utilizada para el análisis semántico
+     * OBJETIVO: Almacenar y acceder a la información de variables y funciones
+     */
     private SymbolTable symbolTable;
     
+    /* 
+     * OBJETIVO: Establecer la tabla de símbolos para este análisis
+     * ENTRADA: Objeto SymbolTable inicializado
+     */
     public void setSymbolTable(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
     }
     
-    /* Métodos para manejo de errores */
+    /* 
+     * Métodos para manejo de errores
+     * OBJETIVO: Reportar errores sintácticos durante el análisis
+     */
     public void syntax_error(Symbol s) {
         System.out.println("Error sintáctico en línea " + s.left + ", columna " + s.right + ": " + s.value);
     }
@@ -21,14 +53,20 @@ parser code {:
         done_parsing();
     }
     
-    // Método para actualizar la información semántica en la tabla de símbolos
+    /* 
+     * OBJETIVO: Actualizar el tipo de una variable en la tabla de símbolos
+     * ENTRADAS: ID de la variable y su tipo declarado
+     */
     public void updateVariableType(String id, String type) {
         if (symbolTable != null) {
             symbolTable.actualizarTipoVariable(id, type);
         }
     }
     
-    // Método para marcar un ID como función
+    /* 
+     * OBJETIVO: Marcar un identificador como función en la tabla de símbolos
+     * ENTRADAS: ID de la función y su tipo de retorno
+     */
     public void markAsFunction(String id, String returnType) {
         if (symbolTable != null) {
             symbolTable.marcarComoFuncion(id, returnType);
@@ -36,7 +74,10 @@ parser code {:
     }
 :}
 
-/* Símbolos terminales */
+/* 
+ * Símbolos terminales
+ * OBJETIVO: Declarar todos los tokens que pueden aparecer en el programa
+ */
 terminal IF, ELIF, ELSE, DO, WHILE, FOR, BREAK, RETURN;
 terminal INT, FLOAT, BOOL, CHAR, STRING, VOID;
 terminal READ, WRITE, MAIN, TRUE, FALSE;
@@ -52,7 +93,10 @@ terminal UMINUS;  // Para operador unario
 terminal ID, LIT_INT, LIT_FLOAT, LIT_BOOL, LIT_CHAR, LIT_STRING;
 terminal SWITCH, CASE, DEFAULT, COLON;
 
-/* Símbolos no terminales */
+/* 
+ * Símbolos no terminales
+ * OBJETIVO: Declarar las categorías gramaticales del lenguaje
+ */
 non terminal program;
 non terminal block;
 non terminal decl_var, decl_fun, decl_arr;
@@ -75,7 +119,11 @@ non terminal literal;
 non terminal llamada_fun;
 non terminal switch_stmt, case_list, case_stmt, default_stmt;
 
-/* Precedencias - ordenadas de menor a mayor */
+/* 
+ * Precedencias - ordenadas de menor a mayor
+ * OBJETIVO: Resolver ambigüedades en expresiones complejas
+ * RESTRICCIÓN: Definir adecuadamente para evitar conflictos shift/reduce
+ */
 precedence left OR;
 precedence left AND;
 precedence right NOT;
@@ -86,14 +134,26 @@ precedence right POW;
 precedence right UMINUS, INCREMENT, DECREMENT;
 precedence left LPAREN, RPAREN, LBRACKET, RBRACKET;
 
-/* Gramática */
+/* 
+ * Gramática
+ * OBJETIVO: Definir la estructura sintáctica del lenguaje
+ */
 start with program;
 
+/* 
+ * Estructura del programa
+ * OBJETIVO: Define punto de entrada y estructura general
+ */
 program ::= VOID MAIN LPAREN RPAREN LBLOCK block RBLOCK
           | decl_fun program
           | /* programa vacío */
           ;
 
+/* 
+ * Declaración de funciones
+ * OBJETIVO: Define la estructura de funciones en el lenguaje
+ * ACCIÓN: Marca el ID como función en la tabla de símbolos
+ */
 decl_fun ::= tipo_r:t ID:id LPAREN param_list RPAREN LBLOCK block RBLOCK
            {: RESULT = id; 
               // Marcar el ID como función y establecer su tipo de retorno
@@ -106,6 +166,10 @@ decl_fun ::= tipo_r:t ID:id LPAREN param_list RPAREN LBLOCK block RBLOCK
            :}
            ;
 
+/* 
+ * Tipos de retorno para funciones
+ * OBJETIVO: Define los tipos posibles para valores de retorno
+ */
 tipo_r ::= INT {: RESULT = "INT"; :}
          | FLOAT {: RESULT = "FLOAT"; :}
          | CHAR {: RESULT = "CHAR"; :}
@@ -113,10 +177,19 @@ tipo_r ::= INT {: RESULT = "INT"; :}
          | VOID {: RESULT = "VOID"; :}
          ;
 
+/* 
+ * Lista de parámetros de función
+ * OBJETIVO: Define la estructura de parámetros en declaraciones de función
+ */
 param_list ::= param
              | param_list COMMA param
              ;
 
+/* 
+ * Parámetro individual
+ * OBJETIVO: Define la estructura de un parámetro
+ * ACCIÓN: Actualiza el tipo de la variable en la tabla de símbolos
+ */
 param ::= tipo:t ID:id 
         {: 
            // Actualizar el tipo de la variable en la tabla de símbolos
@@ -124,11 +197,18 @@ param ::= tipo:t ID:id
         :}
         ;
 
+/* 
+ * Bloque de código
+ * OBJETIVO: Define una secuencia de sentencias
+ */
 block ::= stmt block
         | /* bloque vacío */
         ;
 
-/* Tipos de datos */
+/* 
+ * Tipos de datos
+ * OBJETIVO: Define los tipos básicos del lenguaje
+ */
 tipo ::= INT {: RESULT = "INT"; :}
        | FLOAT {: RESULT = "FLOAT"; :}
        | BOOL {: RESULT = "BOOL"; :}
@@ -136,7 +216,11 @@ tipo ::= INT {: RESULT = "INT"; :}
        | STRING {: RESULT = "STRING"; :}
        ;
 
-/* Arreglos - sólo bidimensionales */
+/* 
+ * Arreglos - sólo bidimensionales
+ * OBJETIVO: Define la estructura para declaración de arreglos 2D
+ * ACCIÓN: Actualiza el tipo de la variable como arreglo en la tabla de símbolos
+ */
 decl_arr ::= tipo:t ID:id LBRACKET exp RBRACKET LBRACKET exp RBRACKET QUESTION
            {: 
               // Actualizar tipo de variable
@@ -149,20 +233,39 @@ decl_arr ::= tipo:t ID:id LBRACKET exp RBRACKET LBRACKET exp RBRACKET QUESTION
            :}
            ;
 
-// Estructura de matriz usando filas separadas para evitar ambigüedad
+/* 
+ * Estructura de matriz
+ * OBJETIVO: Define la estructura para inicialización de matrices
+ * RESTRICCIÓN: Usando filas separadas para evitar ambigüedad
+ */
 exp_matrix ::= LBRACKET matrix_row RBRACKET
              | LBRACKET matrix_row COMMA matrix_row RBRACKET
              ;
 
+/* 
+ * Fila de matriz
+ * OBJETIVO: Define una fila dentro de una matriz
+ */
 matrix_row ::= LBRACKET exp_list RBRACKET;
 
+/* 
+ * Lista de expresiones
+ * OBJETIVO: Define una secuencia de expresiones separadas por comas
+ */
 exp_list ::= exp
            | exp COMMA exp_list
            ;
 
+/* 
+ * Acceso a arreglos
+ * OBJETIVO: Define la estructura para acceder a elementos de un arreglo 2D
+ */
 arr_access ::= ID LBRACKET exp RBRACKET LBRACKET exp RBRACKET;
 
-/* Sentencias */
+/* 
+ * Sentencias
+ * OBJETIVO: Define los tipos de instrucciones permitidas en el lenguaje
+ */
 stmt ::= exp QUESTION
        | assign
        | decl_var
@@ -176,10 +279,19 @@ stmt ::= exp QUESTION
        | comment_block
        ;
 
+/* 
+ * Asignación
+ * OBJETIVO: Define la estructura para asignar valores a variables o elementos de arreglos
+ */
 assign ::= ID:id ASSIGN exp QUESTION
          | arr_access ASSIGN exp QUESTION
          ;
 
+/* 
+ * Declaración de variables
+ * OBJETIVO: Define la estructura para declarar variables simples
+ * ACCIÓN: Actualiza el tipo de la variable en la tabla de símbolos
+ */
 decl_var ::= tipo:t ID:id ASSIGN exp QUESTION
            {: 
               // Actualizar tipo de variable
@@ -192,7 +304,10 @@ decl_var ::= tipo:t ID:id ASSIGN exp QUESTION
            :}
            ;
 
-/* Valores literales - unificados para evitar conflictos */
+/* 
+ * Valores literales
+ * OBJETIVO: Unifica todos los tipos de literales para simplificar la gramática
+ */
 literal ::= LIT_INT
          | LIT_FLOAT
          | LIT_BOOL
@@ -202,16 +317,25 @@ literal ::= LIT_INT
          | FALSE
          ;
 
-/* Llamadas a funciones */
+/* 
+ * Llamadas a funciones
+ * OBJETIVO: Define la estructura para invocar funciones
+ */
 llamada_fun ::= ID LPAREN arg_list RPAREN
               | ID LPAREN RPAREN
               ;
 
-/* Expresiones unificadas - enfoque simplificado */
+/* 
+ * Expresiones
+ * OBJETIVO: Punto de entrada para todas las expresiones
+ */
 exp ::= exp_log
       ;
 
-/* Expresiones lógicas - simplificadas para evitar conflictos */
+/* 
+ * Expresiones lógicas
+ * OBJETIVO: Define las operaciones lógicas con precedencia apropiada
+ */
 exp_log ::= exp_log OR term_log
           | term_log
           ;
@@ -220,13 +344,20 @@ term_log ::= term_log AND factor_log
            | factor_log
            ;
 
-/* Factor lógico revisado */
+/* 
+ * Factor lógico
+ * OBJETIVO: Define operaciones lógicas de mayor precedencia
+ * RESTRICCIÓN: Revisado para evitar recursión problemática
+ */
 factor_log ::= NOT atom_arit  /* Cambiado para evitar recursión problemática */
              | exp_rel
              | LPAREN exp_log RPAREN
              ;
 
-/* Expresiones relacionales */
+/* 
+ * Expresiones relacionales
+ * OBJETIVO: Define operaciones de comparación
+ */
 exp_rel ::= exp_arit LT exp_arit
           | exp_arit LTE exp_arit
           | exp_arit GT exp_arit
@@ -236,7 +367,10 @@ exp_rel ::= exp_arit LT exp_arit
           | exp_arit    /* Permite expresiones aritméticas como relacionales */
           ;
 
-/* Expresiones aritméticas - estructura jerárquica clara */
+/* 
+ * Expresiones aritméticas
+ * OBJETIVO: Define operaciones aritméticas con estructura jerárquica clara
+ */
 exp_arit ::= exp_arit PLUS term_arit
            | exp_arit MINUS term_arit
            | term_arit
@@ -256,13 +390,20 @@ power_arit ::= unary_exp
              | atom_arit
              ;
 
-/* Operadores unarios */
+/* 
+ * Operadores unarios
+ * OBJETIVO: Define operaciones que afectan a un solo operando
+ */
 unary_exp ::= MINUS atom_arit %prec UMINUS
             | INCREMENT ID
             | DECREMENT ID
             ;
 
-/* Términos atómicos - sin conflictos */
+/* 
+ * Términos atómicos
+ * OBJETIVO: Define los elementos básicos que pueden aparecer en expresiones
+ * RESTRICCIÓN: Estructurado para evitar conflictos
+ */
 atom_arit ::= ID
             | literal    /* Incluye TRUE y FALSE unificados */
             | arr_access
@@ -270,53 +411,101 @@ atom_arit ::= ID
             | LPAREN exp RPAREN
             ;
 
+/* 
+ * Lista de argumentos
+ * OBJETIVO: Define la estructura para pasar argumentos a funciones
+ */
 arg_list ::= exp
            | exp COMMA arg_list
            ;
 
-/* Estructuras de control */
+/* 
+ * Estructuras de control
+ * OBJETIVO: Define construcciones para controlar el flujo del programa
+ */
 ctrl ::= if_stmt
        | do_while
        | for_stmt
        | switch_stmt
        ;
 
+/* 
+ * Estructura if-elif-else
+ * OBJETIVO: Define las variantes de la construcción condicional
+ */
 if_stmt ::= IF LPAREN exp RPAREN LBLOCK block RBLOCK
           | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK
           | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
           | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
           ;
 
+/* 
+ * Estructura do-while
+ * OBJETIVO: Define el bucle do-while
+ */
 do_while ::= DO LBLOCK block RBLOCK WHILE LPAREN exp RPAREN QUESTION;
 
+/* 
+ * Estructura for
+ * OBJETIVO: Define las variantes del bucle for
+ */
 for_stmt ::= FOR LPAREN decl_var exp QUESTION exp RPAREN LBLOCK block RBLOCK
            | FOR LPAREN assign exp QUESTION exp RPAREN LBLOCK block RBLOCK
            | FOR LPAREN QUESTION exp QUESTION exp RPAREN LBLOCK block RBLOCK
            ;
 
-/* Switch statement */
+/* 
+ * Estructura switch
+ * OBJETIVO: Define la estructura de selección múltiple
+ */
 switch_stmt ::= SWITCH LPAREN exp RPAREN LBLOCK case_list RBLOCK;
 
+/* 
+ * Lista de casos
+ * OBJETIVO: Define la secuencia de casos en un switch
+ */
 case_list ::= case_stmt case_list
            | default_stmt
            | /* vacío */
            ;
 
+/* 
+ * Caso individual
+ * OBJETIVO: Define un caso específico en un switch
+ */
 case_stmt ::= CASE exp COLON block;
 
+/* 
+ * Caso por defecto
+ * OBJETIVO: Define el caso por defecto en un switch
+ */
 default_stmt ::= DEFAULT COLON block;
 
+/* 
+ * Sentencia break
+ * OBJETIVO: Define la instrucción para salir de un bucle o switch
+ */
 break_stmt ::= BREAK QUESTION;
 
+/* 
+ * Sentencia return
+ * OBJETIVO: Define la instrucción para retornar valores de funciones
+ */
 return_stmt ::= RETURN exp QUESTION
               | RETURN QUESTION
               ;
 
-/* Funciones de entrada/salida */
+/* 
+ * Funciones de entrada/salida
+ * OBJETIVO: Define operaciones básicas de I/O
+ */
 read_stmt ::= READ LPAREN ID RPAREN QUESTION;
 
 write_stmt ::= WRITE LPAREN exp RPAREN QUESTION;
 
-/* Comentarios */
+/* 
+ * Comentarios
+ * OBJETIVO: Define la estructura para comentarios en el código fuente
+ */
 comment ::= COMMENT_LINE;
 comment_block ::= LCOMMENT_BLOCK RCOMMENT_BLOCK;

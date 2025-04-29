@@ -7,9 +7,8 @@ package main.java.parser;
 
 import java_cup.runtime.*;
 import java.util.*;
-
-import java_cup.runtime.XMLElement;
 import main.java.symbol.SymbolTable;
+import java_cup.runtime.XMLElement;
 
 /** CUP v0.11b 20160615 (GIT 4ac7450) generated parser.
   */
@@ -892,13 +891,24 @@ public class parser extends java_cup.runtime.lr_parser {
 
 
 
+    /* 
+     * Tabla de símbolos utilizada para el análisis semántico
+     * OBJETIVO: Almacenar y acceder a la información de variables y funciones
+     */
     private SymbolTable symbolTable;
     
+    /* 
+     * OBJETIVO: Establecer la tabla de símbolos para este análisis
+     * ENTRADA: Objeto SymbolTable inicializado
+     */
     public void setSymbolTable(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
     }
     
-    /* Métodos para manejo de errores */
+    /* 
+     * Métodos para manejo de errores
+     * OBJETIVO: Reportar errores sintácticos durante el análisis
+     */
     public void syntax_error(Symbol s) {
         System.out.println("Error sintáctico en línea " + s.left + ", columna " + s.right + ": " + s.value);
     }
@@ -908,14 +918,20 @@ public class parser extends java_cup.runtime.lr_parser {
         done_parsing();
     }
     
-    // Método para actualizar la información semántica en la tabla de símbolos
+    /* 
+     * OBJETIVO: Actualizar el tipo de una variable en la tabla de símbolos
+     * ENTRADAS: ID de la variable y su tipo declarado
+     */
     public void updateVariableType(String id, String type) {
         if (symbolTable != null) {
             symbolTable.actualizarTipoVariable(id, type);
         }
     }
     
-    // Método para marcar un ID como función
+    /* 
+     * OBJETIVO: Marcar un identificador como función en la tabla de símbolos
+     * ENTRADAS: ID de la función y su tipo de retorno
+     */
     public void markAsFunction(String id, String returnType) {
         if (symbolTable != null) {
             symbolTable.marcarComoFuncion(id, returnType);
