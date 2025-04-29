@@ -3,6 +3,7 @@ package main.java.main;
 import java.io.*;
 import main.java.lexer.Scanner;
 import main.java.parser.parser;
+import symbol.SymbolTable;
 import java_cup.runtime.Symbol;
 
 public class Main {
@@ -21,6 +22,13 @@ public class Main {
             String tokenOutputFile = sourceFile.substring(0, sourceFile.lastIndexOf('.')) + "_tokens.txt";
             PrintWriter tokenWriter = new PrintWriter(new FileWriter(tokenOutputFile));
             
+            // Archivo de salida para tablas de símbolos
+            String symbolTableFile = sourceFile.substring(0, sourceFile.lastIndexOf('.')) + "_symbols.txt";
+            PrintWriter symbolWriter = new PrintWriter(new FileWriter(symbolTableFile));
+            
+            // Crear tabla de símbolos
+            SymbolTable symbolTable = new SymbolTable();
+            
             // Crear scanner
             Scanner scanner = new Scanner(new FileReader(sourceFile));
             
@@ -33,20 +41,40 @@ public class Main {
                 if (token.sym == 0) { // EOF
                     break;
                 }
+                
+                // Convertir numero de símbolo a nombre
+                String symbolName = symbolToString(token.sym);
+                
                 // Escribir token en archivo
-                tokenWriter.println("Token: " + symbolToString(token.sym) + 
+                tokenWriter.println("Token: " + symbolName + 
                                    ", Lexema: " + token.value + 
                                    ", Línea: " + (token.left+1) + 
                                    ", Columna: " + (token.right+1));
+                
+                // Determinar la tabla de símbolos correspondiente e insertar
+                String lexema = (token.value != null) ? token.value.toString() : symbolName;
+                
+                // Determinar a que tabla va el token
+                String tabla = symbolTable.determinarTabla(symbolName, lexema);
+                
+                // Insertar en la tabla de símbolos
+                if (!tabla.equals("NINGUNO")) {
+                    symbolTable.insertarSimbolo(lexema, symbolName, token.left+1, token.right+1, token.value);
+                }
             }
             tokenWriter.close();
             System.out.println("Análisis léxico completado. Tokens escritos en: " + tokenOutputFile);
+            
+            // Escribir tablas de símbolos
+            symbolTable.escribirTablas(symbolTableFile);
+            System.out.println("Tablas de símbolos escritas en: " + symbolTableFile);
             
             // Reiniciar scanner para el análisis sintáctico
             scanner = new Scanner(new FileReader(sourceFile));
             
             // Crear parser
             parser p = new parser(scanner);
+            p.setSymbolTable(symbolTable);  // Pasar tabla de símbolos al parser
             System.out.println("Analizando sintácticamente el archivo: " + sourceFile);
             
             // Iniciar análisis sintáctico

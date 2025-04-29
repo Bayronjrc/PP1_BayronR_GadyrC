@@ -5,10 +5,8 @@ Token: ID, Lexema: es, Línea: 4, Columna: 9
 Token: ID, Lexema: un, Línea: 4, Columna: 12
 Token: ID, Lexema: comentario, Línea: 4, Columna: 15
 Token: ID, Lexema: de, Línea: 5, Columna: 4
-Token: ID, Lexema: m, Línea: 5, Columna: 7
-Token: ID, Lexema: ltiples, Línea: 5, Columna: 9
-Token: ID, Lexema: l, Línea: 5, Columna: 17
-Token: ID, Lexema: neas, Línea: 5, Columna: 19
+Token: ID, Lexema: multiples, Línea: 5, Columna: 7
+Token: ID, Lexema: lineas, Línea: 5, Columna: 17
 Token: RCOMMENT_BLOCK, Lexema: null, Línea: 5, Columna: 24
 Token: INT, Lexema: null, Línea: 7, Columna: 2
 Token: ID, Lexema: factorial, Línea: 7, Columna: 6
@@ -179,7 +177,7 @@ Token: INT_LITERAL, Lexema: 1, Línea: 49, Columna: 15
 Token: COLON, Lexema: null, Línea: 49, Columna: 16
 Token: WRITE, Lexema: null, Línea: 50, Columna: 14
 Token: LPAREN, Lexema: null, Línea: 50, Columna: 20
-Token: STRING_LITERAL, Lexema: Opción 1 seleccionada, Línea: 50, Columna: 22
+Token: STRING_LITERAL, Lexema: Opcion 1 seleccionada, Línea: 50, Columna: 22
 Token: RPAREN, Lexema: null, Línea: 50, Columna: 46
 Token: FOR, Lexema: null, Línea: 50, Columna: 47
 Token: BREAK, Lexema: null, Línea: 51, Columna: 14
@@ -189,7 +187,7 @@ Token: INT_LITERAL, Lexema: 2, Línea: 52, Columna: 15
 Token: COLON, Lexema: null, Línea: 52, Columna: 16
 Token: WRITE, Lexema: null, Línea: 53, Columna: 14
 Token: LPAREN, Lexema: null, Línea: 53, Columna: 20
-Token: STRING_LITERAL, Lexema: Opción 2 seleccionada, Línea: 53, Columna: 22
+Token: STRING_LITERAL, Lexema: Opcion 2 seleccionada, Línea: 53, Columna: 22
 Token: RPAREN, Lexema: null, Línea: 53, Columna: 46
 Token: FOR, Lexema: null, Línea: 53, Columna: 47
 Token: BREAK, Lexema: null, Línea: 54, Columna: 14
@@ -198,7 +196,7 @@ Token: DEFAULT, Lexema: null, Línea: 55, Columna: 10
 Token: COLON, Lexema: null, Línea: 55, Columna: 17
 Token: WRITE, Lexema: null, Línea: 56, Columna: 14
 Token: LPAREN, Lexema: null, Línea: 56, Columna: 20
-Token: STRING_LITERAL, Lexema: Opción desconocida, Línea: 56, Columna: 22
+Token: STRING_LITERAL, Lexema: Opcion desconocida, Línea: 56, Columna: 22
 Token: RPAREN, Lexema: null, Línea: 56, Columna: 43
 Token: FOR, Lexema: null, Línea: 56, Columna: 44
 Token: RBLOCK, Lexema: null, Línea: 57, Columna: 6

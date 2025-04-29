@@ -1,9 +1,16 @@
 /* Imports y paquetes */
 import java_cup.runtime.*;
 import java.util.*;
+import symbol.SymbolTable;
 
 /* Código de usuario */
 parser code {:
+    private SymbolTable symbolTable;
+    
+    public void setSymbolTable(SymbolTable symbolTable) {
+        this.symbolTable = symbolTable;
+    }
+    
     /* Métodos para manejo de errores */
     public void syntax_error(Symbol s) {
         System.out.println("Error sintáctico en línea " + s.left + ", columna " + s.right + ": " + s.value);
@@ -12,6 +19,20 @@ parser code {:
     public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception {
         System.out.println("Error sintáctico fatal en línea " + s.left + ", columna " + s.right + ": " + s.value);
         done_parsing();
+    }
+    
+    // Método para actualizar la información semántica en la tabla de símbolos
+    public void updateVariableType(String id, String type) {
+        if (symbolTable != null) {
+            symbolTable.actualizarTipoVariable(id, type);
+        }
+    }
+    
+    // Método para marcar un ID como función
+    public void markAsFunction(String id, String returnType) {
+        if (symbolTable != null) {
+            symbolTable.marcarComoFuncion(id, returnType);
+        }
     }
 :}
 
@@ -29,6 +50,7 @@ terminal COMMENT_LINE, LCOMMENT_BLOCK, RCOMMENT_BLOCK;
 terminal LBRACKET, RBRACKET;
 terminal UMINUS;  // Para operador unario
 terminal ID, LIT_INT, LIT_FLOAT, LIT_BOOL, LIT_CHAR, LIT_STRING;
+terminal SWITCH, CASE, DEFAULT, COLON;
 
 /* Símbolos no terminales */
 non terminal program;
@@ -51,6 +73,7 @@ non terminal param, param_list, arg_list;
 non terminal comment, comment_block;
 non terminal literal;
 non terminal llamada_fun;
+non terminal switch_stmt, case_list, case_stmt, default_stmt;
 
 /* Precedencias - ordenadas de menor a mayor */
 precedence left OR;
@@ -71,33 +94,59 @@ program ::= VOID MAIN LPAREN RPAREN LBLOCK block RBLOCK
           | /* programa vacío */
           ;
 
-decl_fun ::= tipo_r ID LPAREN param_list RPAREN LBLOCK block RBLOCK
-           | tipo_r ID LPAREN RPAREN LBLOCK block RBLOCK
+decl_fun ::= tipo_r:t ID:id LPAREN param_list RPAREN LBLOCK block RBLOCK
+           {: RESULT = id; 
+              // Marcar el ID como función y establecer su tipo de retorno
+              parser.markAsFunction(id.toString(), t.toString()); 
+           :}
+           | tipo_r:t ID:id LPAREN RPAREN LBLOCK block RBLOCK
+           {: RESULT = id; 
+              // Marcar el ID como función y establecer su tipo de retorno
+              parser.markAsFunction(id.toString(), t.toString()); 
+           :}
            ;
 
-tipo_r ::= INT | FLOAT | CHAR | BOOL | VOID;
+tipo_r ::= INT {: RESULT = "INT"; :}
+         | FLOAT {: RESULT = "FLOAT"; :}
+         | CHAR {: RESULT = "CHAR"; :}
+         | BOOL {: RESULT = "BOOL"; :}
+         | VOID {: RESULT = "VOID"; :}
+         ;
 
 param_list ::= param
              | param_list COMMA param
              ;
 
-param ::= tipo ID;
+param ::= tipo:t ID:id 
+        {: 
+           // Actualizar el tipo de la variable en la tabla de símbolos
+           parser.updateVariableType(id.toString(), t.toString());
+        :}
+        ;
 
 block ::= stmt block
         | /* bloque vacío */
         ;
 
 /* Tipos de datos */
-tipo ::= INT
-       | FLOAT
-       | BOOL
-       | CHAR
-       | STRING
+tipo ::= INT {: RESULT = "INT"; :}
+       | FLOAT {: RESULT = "FLOAT"; :}
+       | BOOL {: RESULT = "BOOL"; :}
+       | CHAR {: RESULT = "CHAR"; :}
+       | STRING {: RESULT = "STRING"; :}
        ;
 
 /* Arreglos - sólo bidimensionales */
-decl_arr ::= tipo ID LBRACKET exp RBRACKET LBRACKET exp RBRACKET QUESTION
-           | tipo ID LBRACKET exp RBRACKET LBRACKET exp RBRACKET ASSIGN exp_matrix QUESTION
+decl_arr ::= tipo:t ID:id LBRACKET exp RBRACKET LBRACKET exp RBRACKET QUESTION
+           {: 
+              // Actualizar tipo de variable
+              parser.updateVariableType(id.toString(), t.toString() + "[][]");
+           :}
+           | tipo:t ID:id LBRACKET exp RBRACKET LBRACKET exp RBRACKET ASSIGN exp_matrix QUESTION
+           {: 
+              // Actualizar tipo de variable
+              parser.updateVariableType(id.toString(), t.toString() + "[][]");
+           :}
            ;
 
 // Estructura de matriz usando filas separadas para evitar ambigüedad
@@ -127,12 +176,20 @@ stmt ::= exp QUESTION
        | comment_block
        ;
 
-assign ::= ID ASSIGN exp QUESTION
+assign ::= ID:id ASSIGN exp QUESTION
          | arr_access ASSIGN exp QUESTION
          ;
 
-decl_var ::= tipo ID ASSIGN exp QUESTION
-           | tipo ID QUESTION
+decl_var ::= tipo:t ID:id ASSIGN exp QUESTION
+           {: 
+              // Actualizar tipo de variable
+              parser.updateVariableType(id.toString(), t.toString());
+           :}
+           | tipo:t ID:id QUESTION
+           {: 
+              // Actualizar tipo de variable
+              parser.updateVariableType(id.toString(), t.toString());
+           :}
            ;
 
 /* Valores literales - unificados para evitar conflictos */
@@ -221,6 +278,7 @@ arg_list ::= exp
 ctrl ::= if_stmt
        | do_while
        | for_stmt
+       | switch_stmt
        ;
 
 if_stmt ::= IF LPAREN exp RPAREN LBLOCK block RBLOCK
@@ -235,6 +293,18 @@ for_stmt ::= FOR LPAREN decl_var exp QUESTION exp RPAREN LBLOCK block RBLOCK
            | FOR LPAREN assign exp QUESTION exp RPAREN LBLOCK block RBLOCK
            | FOR LPAREN QUESTION exp QUESTION exp RPAREN LBLOCK block RBLOCK
            ;
+
+/* Switch statement */
+switch_stmt ::= SWITCH LPAREN exp RPAREN LBLOCK case_list RBLOCK;
+
+case_list ::= case_stmt case_list
+           | default_stmt
+           | /* vacío */
+           ;
+
+case_stmt ::= CASE exp COLON block;
+
+default_stmt ::= DEFAULT COLON block;
 
 break_stmt ::= BREAK QUESTION;
 
