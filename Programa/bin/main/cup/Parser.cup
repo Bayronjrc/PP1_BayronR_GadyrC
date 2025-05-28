@@ -32,6 +32,9 @@ parser code {:
      */
     private SymbolTable symbolTable;
     
+    /* Contador de errores para implementar recuperación en modo pánico */
+    private int errorCount = 0;
+    
     /* 
      * OBJETIVO: Establecer la tabla de símbolos para este análisis
      * ENTRADA: Objeto SymbolTable inicializado
@@ -41,16 +44,44 @@ parser code {:
     }
     
     /* 
-     * Métodos para manejo de errores
-     * OBJETIVO: Reportar errores sintácticos durante el análisis
+     * Métodos para manejo de errores con recuperación en modo pánico
+     * OBJETIVO: Continuar el análisis después de encontrar errores
      */
     public void syntax_error(Symbol s) {
-        System.out.println("Error sintáctico en línea " + s.left + ", columna " + s.right + ": " + s.value);
+        errorCount++;
+        System.err.println("Error sintáctico #" + errorCount + " en línea " + (s.left + 1) + 
+                          ", columna " + (s.right + 1) + ": Token inesperado '" + s.value + "'");
+        
+        // No lanzar excepción, continuar con el análisis
     }
 
     public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception {
-        System.out.println("Error sintáctico fatal en línea " + s.left + ", columna " + s.right + ": " + s.value);
-        done_parsing();
+        errorCount++;
+        System.err.println("Error sintáctico fatal #" + errorCount + " en línea " + (s.left + 1) + 
+                          ", columna " + (s.right + 1) + ": No se pudo recuperar del error");
+        
+        // Reportar el total de errores encontrados antes de terminar
+        System.err.println("Total de errores encontrados: " + errorCount);
+        
+        // Continuar hasta el final del análisis en lugar de terminar inmediatamente
+        // done_parsing();
+    }
+    
+    /* Método para reportar errores de recuperación */
+    public void report_error(String message, Object info) {
+        errorCount++;
+        if (info instanceof Symbol) {
+            Symbol s = (Symbol) info;
+            System.err.println("Error de recuperación #" + errorCount + " en línea " + (s.left + 1) + 
+                              ", columna " + (s.right + 1) + ": " + message);
+        } else {
+            System.err.println("Error de recuperación #" + errorCount + ": " + message);
+        }
+    }
+    
+    /* Método para obtener el número total de errores */
+    public int getErrorCount() {
+        return errorCount;
     }
     
     /* 
@@ -87,7 +118,6 @@ terminal LT, LTE, GT, GTE, EQ, NEQ;
 terminal AND, OR, NOT;
 terminal LPAREN, RPAREN, LBLOCK, RBLOCK;
 terminal QUESTION, COMMA, ASSIGN;
-terminal COMMENT_LINE, LCOMMENT_BLOCK, RCOMMENT_BLOCK;
 terminal LBRACKET, RBRACKET;
 terminal UMINUS;  // Para operador unario
 terminal ID, LIT_INT, LIT_FLOAT, LIT_BOOL, LIT_CHAR, LIT_STRING;
@@ -114,7 +144,6 @@ non terminal tipo, tipo_r;
 non terminal arr_access;
 non terminal exp_list, exp_matrix, matrix_row;
 non terminal param, param_list, arg_list;
-non terminal comment, comment_block;
 non terminal literal;
 non terminal llamada_fun;
 non terminal switch_stmt, case_list, case_stmt, default_stmt;
@@ -135,33 +164,32 @@ precedence right UMINUS, INCREMENT, DECREMENT;
 precedence left LPAREN, RPAREN, LBRACKET, RBRACKET;
 
 /* 
- * Gramática
- * OBJETIVO: Definir la estructura sintáctica del lenguaje
+ * Gramática con recuperación de errores
+ * OBJETIVO: Definir la estructura sintáctica del lenguaje con puntos de recuperación
  */
 start with program;
 
 /* 
- * Estructura del programa
+ * Estructura del programa con recuperación de errores
  * OBJETIVO: Define punto de entrada y estructura general
  */
 program ::= VOID MAIN LPAREN RPAREN LBLOCK block RBLOCK
           | decl_fun program
+          | error program  {: System.err.println("Error en la estructura del programa. Continuando análisis..."); :}
           | /* programa vacío */
           ;
 
 /* 
- * Declaración de funciones
+ * Declaración de funciones con recuperación de errores
  * OBJETIVO: Define la estructura de funciones en el lenguaje
  * ACCIÓN: Marca el ID como función en la tabla de símbolos
  */
 decl_fun ::= tipo_r:t ID:id LPAREN param_list RPAREN LBLOCK block RBLOCK
            {: RESULT = id; 
-              // Marcar el ID como función y establecer su tipo de retorno
               parser.markAsFunction(id.toString(), t.toString()); 
            :}
            | tipo_r:t ID:id LPAREN RPAREN LBLOCK block RBLOCK
            {: RESULT = id; 
-              // Marcar el ID como función y establecer su tipo de retorno
               parser.markAsFunction(id.toString(), t.toString()); 
            :}
            ;
@@ -178,7 +206,7 @@ tipo_r ::= INT {: RESULT = "INT"; :}
          ;
 
 /* 
- * Lista de parámetros de función
+ * Lista de parámetros de función con recuperación de errores
  * OBJETIVO: Define la estructura de parámetros en declaraciones de función
  */
 param_list ::= param
@@ -192,16 +220,16 @@ param_list ::= param
  */
 param ::= tipo:t ID:id 
         {: 
-           // Actualizar el tipo de la variable en la tabla de símbolos
            parser.updateVariableType(id.toString(), t.toString());
         :}
         ;
 
 /* 
- * Bloque de código
+ * Bloque de código con recuperación de errores
  * OBJETIVO: Define una secuencia de sentencias
  */
 block ::= stmt block
+        | error block  {: System.err.println("Error en bloque de código. Continuando..."); :}
         | /* bloque vacío */
         ;
 
@@ -217,18 +245,16 @@ tipo ::= INT {: RESULT = "INT"; :}
        ;
 
 /* 
- * Arreglos - sólo bidimensionales
+ * Arreglos - sólo bidimensionales con recuperación de errores
  * OBJETIVO: Define la estructura para declaración de arreglos 2D
  * ACCIÓN: Actualiza el tipo de la variable como arreglo en la tabla de símbolos
  */
 decl_arr ::= tipo:t ID:id LBRACKET exp RBRACKET LBRACKET exp RBRACKET QUESTION
            {: 
-              // Actualizar tipo de variable
               parser.updateVariableType(id.toString(), t.toString() + "[][]");
            :}
            | tipo:t ID:id LBRACKET exp RBRACKET LBRACKET exp RBRACKET ASSIGN exp_matrix QUESTION
            {: 
-              // Actualizar tipo de variable
               parser.updateVariableType(id.toString(), t.toString() + "[][]");
            :}
            ;
@@ -249,7 +275,7 @@ exp_matrix ::= LBRACKET matrix_row RBRACKET
 matrix_row ::= LBRACKET exp_list RBRACKET;
 
 /* 
- * Lista de expresiones
+ * Lista de expresiones con recuperación de errores
  * OBJETIVO: Define una secuencia de expresiones separadas por comas
  */
 exp_list ::= exp
@@ -263,7 +289,7 @@ exp_list ::= exp
 arr_access ::= ID LBRACKET exp RBRACKET LBRACKET exp RBRACKET;
 
 /* 
- * Sentencias
+ * Sentencias con recuperación de errores
  * OBJETIVO: Define los tipos de instrucciones permitidas en el lenguaje
  */
 stmt ::= exp QUESTION
@@ -275,31 +301,29 @@ stmt ::= exp QUESTION
        | return_stmt
        | read_stmt
        | write_stmt
-       | comment
-       | comment_block
+       | error QUESTION  {: System.err.println("Error en sentencia. Recuperando en ';'..."); :}
        ;
 
 /* 
- * Asignación
+ * Asignación con recuperación de errores
  * OBJETIVO: Define la estructura para asignar valores a variables o elementos de arreglos
  */
 assign ::= ID:id ASSIGN exp QUESTION
          | arr_access ASSIGN exp QUESTION
+         | ID ASSIGN error QUESTION  {: System.err.println("Error en expresión de asignación. Continuando..."); :}
          ;
 
 /* 
- * Declaración de variables
+ * Declaración de variables con recuperación de errores
  * OBJETIVO: Define la estructura para declarar variables simples
  * ACCIÓN: Actualiza el tipo de la variable en la tabla de símbolos
  */
 decl_var ::= tipo:t ID:id ASSIGN exp QUESTION
            {: 
-              // Actualizar tipo de variable
               parser.updateVariableType(id.toString(), t.toString());
            :}
            | tipo:t ID:id QUESTION
            {: 
-              // Actualizar tipo de variable
               parser.updateVariableType(id.toString(), t.toString());
            :}
            ;
@@ -318,7 +342,7 @@ literal ::= LIT_INT
          ;
 
 /* 
- * Llamadas a funciones
+ * Llamadas a funciones con recuperación de errores
  * OBJETIVO: Define la estructura para invocar funciones
  */
 llamada_fun ::= ID LPAREN arg_list RPAREN
@@ -326,7 +350,7 @@ llamada_fun ::= ID LPAREN arg_list RPAREN
               ;
 
 /* 
- * Expresiones
+ * Expresiones con recuperación de errores
  * OBJETIVO: Punto de entrada para todas las expresiones
  */
 exp ::= exp_log
@@ -349,7 +373,7 @@ term_log ::= term_log AND factor_log
  * OBJETIVO: Define operaciones lógicas de mayor precedencia
  * RESTRICCIÓN: Revisado para evitar recursión problemática
  */
-factor_log ::= NOT atom_arit  /* Cambiado para evitar recursión problemática */
+factor_log ::= NOT atom_arit
              | exp_rel
              | LPAREN exp_log RPAREN
              ;
@@ -364,7 +388,7 @@ exp_rel ::= exp_arit LT exp_arit
           | exp_arit GTE exp_arit
           | exp_arit EQ exp_arit
           | exp_arit NEQ exp_arit
-          | exp_arit    /* Permite expresiones aritméticas como relacionales */
+          | exp_arit
           ;
 
 /* 
@@ -405,14 +429,14 @@ unary_exp ::= MINUS atom_arit %prec UMINUS
  * RESTRICCIÓN: Estructurado para evitar conflictos
  */
 atom_arit ::= ID
-            | literal    /* Incluye TRUE y FALSE unificados */
+            | literal
             | arr_access
             | llamada_fun
             | LPAREN exp RPAREN
             ;
 
 /* 
- * Lista de argumentos
+ * Lista de argumentos con recuperación de errores
  * OBJETIVO: Define la estructura para pasar argumentos a funciones
  */
 arg_list ::= exp
@@ -430,38 +454,44 @@ ctrl ::= if_stmt
        ;
 
 /* 
- * Estructura if-elif-else
+ * Estructura if-elif-else con recuperación de errores
  * OBJETIVO: Define las variantes de la construcción condicional
  */
 if_stmt ::= IF LPAREN exp RPAREN LBLOCK block RBLOCK
           | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK
           | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
           | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
+          | IF LPAREN error RPAREN LBLOCK block RBLOCK  {: System.err.println("Error en condición IF. Continuando..."); :}
           ;
 
 /* 
- * Estructura do-while
+ * Estructura do-while con recuperación de errores
  * OBJETIVO: Define el bucle do-while
  */
-do_while ::= DO LBLOCK block RBLOCK WHILE LPAREN exp RPAREN QUESTION;
+do_while ::= DO LBLOCK block RBLOCK WHILE LPAREN exp RPAREN QUESTION
+           | DO LBLOCK block RBLOCK WHILE LPAREN error RPAREN QUESTION  {: System.err.println("Error en condición WHILE. Continuando..."); :}
+           ;
 
 /* 
- * Estructura for
+ * Estructura for con recuperación de errores
  * OBJETIVO: Define las variantes del bucle for
  */
 for_stmt ::= FOR LPAREN decl_var exp QUESTION exp RPAREN LBLOCK block RBLOCK
            | FOR LPAREN assign exp QUESTION exp RPAREN LBLOCK block RBLOCK
            | FOR LPAREN QUESTION exp QUESTION exp RPAREN LBLOCK block RBLOCK
+           | FOR LPAREN error RPAREN LBLOCK block RBLOCK  {: System.err.println("Error en estructura FOR. Continuando..."); :}
            ;
 
 /* 
- * Estructura switch
+ * Estructura switch con recuperación de errores
  * OBJETIVO: Define la estructura de selección múltiple
  */
-switch_stmt ::= SWITCH LPAREN exp RPAREN LBLOCK case_list RBLOCK;
+switch_stmt ::= SWITCH LPAREN exp RPAREN LBLOCK case_list RBLOCK
+              | SWITCH LPAREN error RPAREN LBLOCK case_list RBLOCK  {: System.err.println("Error en expresión SWITCH. Continuando..."); :}
+              ;
 
 /* 
- * Lista de casos
+ * Lista de casos con recuperación de errores
  * OBJETIVO: Define la secuencia de casos en un switch
  */
 case_list ::= case_stmt case_list
@@ -488,24 +518,22 @@ default_stmt ::= DEFAULT COLON block;
 break_stmt ::= BREAK QUESTION;
 
 /* 
- * Sentencia return
+ * Sentencia return con recuperación de errores
  * OBJETIVO: Define la instrucción para retornar valores de funciones
  */
 return_stmt ::= RETURN exp QUESTION
               | RETURN QUESTION
+              | RETURN error QUESTION  {: System.err.println("Error en expresión RETURN. Continuando..."); :}
               ;
 
 /* 
- * Funciones de entrada/salida
+ * Funciones de entrada/salida con recuperación de errores
  * OBJETIVO: Define operaciones básicas de I/O
  */
-read_stmt ::= READ LPAREN ID RPAREN QUESTION;
+read_stmt ::= READ LPAREN ID RPAREN QUESTION
+            | READ LPAREN error RPAREN QUESTION  {: System.err.println("Error en función READ. Continuando..."); :}
+            ;
 
-write_stmt ::= WRITE LPAREN exp RPAREN QUESTION;
-
-/* 
- * Comentarios
- * OBJETIVO: Define la estructura para comentarios en el código fuente
- */
-comment ::= COMMENT_LINE;
-comment_block ::= LCOMMENT_BLOCK RCOMMENT_BLOCK;
+write_stmt ::= WRITE LPAREN exp RPAREN QUESTION
+             | WRITE LPAREN error RPAREN QUESTION  {: System.err.println("Error en función WRITE. Continuando..."); :}
+             ;

@@ -9,16 +9,15 @@ package main.java.parser;
 public class sym {
   /* terminals */
   public static final int DIVIDE = 24;
-  public static final int RCOMMENT_BLOCK = 47;
   public static final int POW = 26;
   public static final int LTE = 30;
-  public static final int LBRACKET = 48;
-  public static final int LIT_INT = 52;
+  public static final int LBRACKET = 45;
+  public static final int LIT_INT = 49;
   public static final int INCREMENT = 27;
   public static final int CHAR = 13;
-  public static final int UMINUS = 50;
-  public static final int LIT_FLOAT = 53;
-  public static final int CASE = 58;
+  public static final int UMINUS = 47;
+  public static final int LIT_FLOAT = 50;
+  public static final int CASE = 55;
   public static final int LPAREN = 38;
   public static final int INT = 10;
   public static final int FOR = 7;
@@ -36,35 +35,33 @@ public class sym {
   public static final int ASSIGN = 44;
   public static final int MAIN = 18;
   public static final int IF = 2;
-  public static final int ID = 51;
+  public static final int ID = 48;
   public static final int EOF = 0;
   public static final int RETURN = 9;
-  public static final int RBRACKET = 49;
+  public static final int RBRACKET = 46;
   public static final int TRUE = 19;
   public static final int error = 1;
-  public static final int LIT_STRING = 56;
+  public static final int LIT_STRING = 53;
   public static final int LBLOCK = 40;
-  public static final int LIT_CHAR = 55;
+  public static final int LIT_CHAR = 52;
   public static final int MOD = 25;
   public static final int NEQ = 34;
   public static final int BREAK = 8;
   public static final int VOID = 15;
   public static final int EQ = 33;
   public static final int GTE = 32;
-  public static final int SWITCH = 57;
-  public static final int LCOMMENT_BLOCK = 46;
+  public static final int SWITCH = 54;
   public static final int RBLOCK = 41;
   public static final int TIMES = 23;
-  public static final int COLON = 60;
+  public static final int COLON = 57;
   public static final int ELSE = 4;
   public static final int READ = 16;
   public static final int WHILE = 6;
-  public static final int DEFAULT = 59;
+  public static final int DEFAULT = 56;
   public static final int FLOAT = 11;
-  public static final int LIT_BOOL = 54;
+  public static final int LIT_BOOL = 51;
   public static final int QUESTION = 42;
   public static final int STRING = 14;
-  public static final int COMMENT_LINE = 45;
   public static final int FALSE = 20;
   public static final int GT = 31;
   public static final int ELIF = 3;
@@ -115,9 +112,6 @@ public class sym {
   "QUESTION",
   "COMMA",
   "ASSIGN",
-  "COMMENT_LINE",
-  "LCOMMENT_BLOCK",
-  "RCOMMENT_BLOCK",
   "LBRACKET",
   "RBRACKET",
   "UMINUS",

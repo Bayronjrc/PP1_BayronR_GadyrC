@@ -1,8 +1,3 @@
-@ Este es un programa de prueba correctamente formateado
-
-{ Este es un comentario
-  de multiples lineas }
-
 int factorial ʃ int n ʅ \
     if ʃ n == 0 ʅ \
         return 1?
@@ -15,7 +10,7 @@ int factorial ʃ int n ʅ \
 float power ʃ float base, int exp ʅ \
     float result | 1.0?
     
-    ? ʃ int i | 0? i < exp? i++ ʅ \
+    for ʃ int i | 0? i < exp? ++i ʅ \
         result | result * base?
     /
     
@@ -94,6 +89,6 @@ void main ʃ ʅ \
     do \
         write ʃ "Contador: " ʅ?
         write ʃ counter ʅ?
-        counter++?
+        ++counter?
     / while ʃ counter < 5 ʅ?
 /

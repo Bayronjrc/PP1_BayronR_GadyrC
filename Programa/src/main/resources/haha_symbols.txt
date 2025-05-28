@@ -1,18 +1,18 @@
 ===== TABLA DE VARIABLES =====
-Lexema: a, Tipo: ID, Línea: 61, Columna: 10, Valor: a, Variable: Sí
-Lexema: b, Tipo: ID, Línea: 61, Columna: 14, Valor: b, Variable: Sí
-Lexema: factorial, Tipo: ID, Línea: 29, Columna: 13, Valor: factorial, Variable: Sí
-Lexema: num, Tipo: ID, Línea: 29, Columna: 25, Valor: num, Variable: Sí
-Lexema: i, Tipo: ID, Línea: 13, Columna: 33, Valor: i, Variable: Sí
-Lexema: counter, Tipo: ID, Línea: 93, Columna: 15, Valor: counter, Variable: Sí
-Lexema: n, Tipo: ID, Línea: 6, Columna: 32, Valor: n, Variable: Sí
-Lexema: result, Tipo: ID, Línea: 17, Columna: 12, Valor: result, Variable: Sí
-Lexema: x, Tipo: ID, Línea: 85, Columna: 13, Valor: x, Variable: Sí
-Lexema: y, Tipo: ID, Línea: 85, Columna: 18, Valor: y, Variable: Sí
-Lexema: power, Tipo: ID, Línea: 37, Columna: 13, Valor: power, Variable: Sí
-Lexema: exp, Tipo: ID, Línea: 37, Columna: 27, Valor: exp, Variable: Sí
-Lexema: base, Tipo: ID, Línea: 37, Columna: 21, Valor: base, Variable: Sí
-Lexema: option, Tipo: ID, Línea: 42, Columna: 14, Valor: option, Variable: Sí
+Lexema: dif, Tipo: ID, Línea: 2, Columna: 19, Valor: dif, Variable: Sí
+Lexema: otra, Tipo: ID, Línea: 3, Columna: 7, Valor: otra, Variable: Sí
+Lexema: arr, Tipo: ID, Línea: 33, Columna: 3, Valor: arr, Variable: Sí
+Lexema: var, Tipo: ID, Línea: 14, Columna: 13, Valor: var, Variable: Sí
+Lexema: f, Tipo: ID, Línea: 41, Columna: 12, Valor: f, Variable: Sí
+Lexema: i, Tipo: ID, Línea: 33, Columna: 10, Valor: i, Variable: Sí
+Lexema: j, Tipo: ID, Línea: 5, Columna: 22, Valor: j, Variable: Sí
+Lexema: b1, Tipo: ID, Línea: 37, Columna: 11, Valor: b1, Variable: Sí
+Lexema: str, Tipo: ID, Línea: 4, Columna: 10, Valor: str, Variable: Sí
+Lexema: var3, Tipo: ID, Línea: 18, Columna: 13, Valor: var3, Variable: Sí
+Lexema: mi, Tipo: ID, Línea: 2, Columna: 9, Valor: mi, Variable: Sí
+Lexema: var2, Tipo: ID, Línea: 8, Columna: 15, Valor: var2, Variable: Sí
+Lexema: s1, Tipo: ID, Línea: 36, Columna: 10, Valor: s1, Variable: Sí
+Lexema: miOtraFun, Tipo: ID, Línea: 28, Columna: 10, Valor: miOtraFun, Variable: Sí
 
 ===== TABLA DE FUNCIONES =====
 

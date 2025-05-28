@@ -73,7 +73,7 @@ CommentBlock   = "{"[^}]*"}"
 "else"      { return symbol(sym.ELSE); }
 "do"        { return symbol(sym.DO); }
 "while"     { return symbol(sym.WHILE); }
-"for"         { return symbol(sym.FOR); }
+"for"       { return symbol(sym.FOR); }
 "break"     { return symbol(sym.BREAK); }
 "return"    { return symbol(sym.RETURN); }
 "int"       { return symbol(sym.INT); }
@@ -139,12 +139,19 @@ CommentBlock   = "{"[^}]*"}"
 ":"         { return symbol(sym.COLON); }
 
 /* 
- * Comentarios
- * OBJETIVO: Manejar comentarios de línea y bloque
+ * Comentarios - IGNORADOS por el scanner
+ * OBJETIVO: Reconocer comentarios pero no pasarlos al parser
+ * NOTA: Los comentarios se procesan aquí pero no se envían tokens al parser
  */
-{CommentLine}    { return symbol(sym.COMMENT_LINE); }
-"{"             { return symbol(sym.LCOMMENT_BLOCK); }
-"}"             { return symbol(sym.RCOMMENT_BLOCK); }
+{CommentLine}    { 
+                   System.out.println("Comentario de línea encontrado en línea " + (yyline+1) + ": " + yytext()); 
+                   /* No retorna token - se ignora */ 
+                 }
+
+{CommentBlock}   { 
+                   System.out.println("Comentario de bloque encontrado en línea " + (yyline+1) + ": " + yytext()); 
+                   /* No retorna token - se ignora */ 
+                 }
 
 /* 
  * Valores literales
@@ -172,5 +179,5 @@ CommentBlock   = "{"[^}]*"}"
  * OBJETIVO: Detectar caracteres no permitidos en el lenguaje
  */
 [^]             { 
-                  System.out.println("Error léxico: Carácter ilegal <" + yytext() + "> en línea " + (yyline+1) + ", columna " + (yycolumn+1)); 
+                  System.err.println("Error léxico: Carácter ilegal <" + yytext() + "> en línea " + (yyline+1) + ", columna " + (yycolumn+1)); 
                 }

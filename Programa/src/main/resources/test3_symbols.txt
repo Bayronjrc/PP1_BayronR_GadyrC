@@ -1,25 +1,18 @@
 ===== TABLA DE VARIABLES =====
-Lexema: lineas, Tipo: ID, Línea: 5, Columna: 17, Valor: lineas, Variable: Sí
-Lexema: de, Tipo: ID, Línea: 5, Columna: 4, Valor: de, Variable: Sí
-Lexema: a, Tipo: ID, Línea: 67, Columna: 11, Valor: a, Variable: Sí
-Lexema: b, Tipo: ID, Línea: 67, Columna: 15, Valor: b, Variable: Sí
-Lexema: factorial, Tipo: ID, Línea: 35, Columna: 14, Valor: factorial, Variable: Sí
-Lexema: num, Tipo: ID, Línea: 35, Columna: 26, Valor: num, Variable: Sí
-Lexema: i, Tipo: ID, Línea: 19, Columna: 30, Valor: i, Variable: Sí
-Lexema: counter, Tipo: ID, Línea: 99, Columna: 16, Valor: counter, Variable: Sí
-Lexema: comentario, Tipo: ID, Línea: 4, Columna: 15, Valor: comentario, Variable: Sí
-Lexema: es, Tipo: ID, Línea: 4, Columna: 9, Valor: es, Variable: Sí
-Lexema: n, Tipo: ID, Línea: 12, Columna: 33, Valor: n, Variable: Sí
-Lexema: result, Tipo: ID, Línea: 23, Columna: 13, Valor: result, Variable: Sí
-Lexema: x, Tipo: ID, Línea: 91, Columna: 14, Valor: x, Variable: Sí
-Lexema: un, Tipo: ID, Línea: 4, Columna: 12, Valor: un, Variable: Sí
-Lexema: y, Tipo: ID, Línea: 91, Columna: 19, Valor: y, Variable: Sí
-Lexema: power, Tipo: ID, Línea: 43, Columna: 14, Valor: power, Variable: Sí
-Lexema: exp, Tipo: ID, Línea: 43, Columna: 28, Valor: exp, Variable: Sí
-Lexema: Este, Tipo: ID, Línea: 4, Columna: 4, Valor: Este, Variable: Sí
-Lexema: multiples, Tipo: ID, Línea: 5, Columna: 7, Valor: multiples, Variable: Sí
-Lexema: base, Tipo: ID, Línea: 43, Columna: 22, Valor: base, Variable: Sí
-Lexema: option, Tipo: ID, Línea: 48, Columna: 15, Valor: option, Variable: Sí
+Lexema: a, Tipo: ID, Línea: 61, Columna: 10, Valor: a, Variable: Sí
+Lexema: b, Tipo: ID, Línea: 61, Columna: 14, Valor: b, Variable: Sí
+Lexema: factorial, Tipo: ID, Línea: 29, Columna: 13, Valor: factorial, Variable: Sí
+Lexema: num, Tipo: ID, Línea: 29, Columna: 25, Valor: num, Variable: Sí
+Lexema: i, Tipo: ID, Línea: 13, Columna: 33, Valor: i, Variable: Sí
+Lexema: counter, Tipo: ID, Línea: 93, Columna: 15, Valor: counter, Variable: Sí
+Lexema: n, Tipo: ID, Línea: 6, Columna: 32, Valor: n, Variable: Sí
+Lexema: result, Tipo: ID, Línea: 17, Columna: 12, Valor: result, Variable: Sí
+Lexema: x, Tipo: ID, Línea: 85, Columna: 13, Valor: x, Variable: Sí
+Lexema: y, Tipo: ID, Línea: 85, Columna: 18, Valor: y, Variable: Sí
+Lexema: power, Tipo: ID, Línea: 37, Columna: 13, Valor: power, Variable: Sí
+Lexema: exp, Tipo: ID, Línea: 37, Columna: 27, Valor: exp, Variable: Sí
+Lexema: base, Tipo: ID, Línea: 37, Columna: 21, Valor: base, Variable: Sí
+Lexema: option, Tipo: ID, Línea: 42, Columna: 14, Valor: option, Variable: Sí
 
 ===== TABLA DE FUNCIONES =====
 

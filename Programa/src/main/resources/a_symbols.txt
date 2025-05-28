@@ -1,0 +1,61 @@
+===== TABLA DE VARIABLES =====
+Lexema: func2_, Tipo: ID, Línea: 32, Columna: 8, Valor: func2_, Variable: Sí
+Lexema: hola, Tipo: ID, Línea: 55, Columna: 32, Valor: hola, Variable: Sí
+Lexema: x22_, Tipo: ID, Línea: 28, Columna: 10, Valor: x22_, Variable: Sí
+Lexema: i_, Tipo: ID, Línea: 26, Columna: 49, Valor: i_, Variable: Sí
+Lexema: str1, Tipo: ID, Línea: 48, Columna: 9, Valor: str1, Variable: Sí
+Lexema: str2, Tipo: ID, Línea: 24, Columna: 10, Valor: str2, Variable: Sí
+Lexema: miChar_, Tipo: ID, Línea: 6, Columna: 8, Valor: miChar_, Variable: Sí
+Lexema: x50_, Tipo: ID, Línea: 11, Columna: 10, Valor: x50_, Variable: Sí
+Lexema: x40_, Tipo: ID, Línea: 9, Columna: 8, Valor: x40_, Variable: Sí
+Lexema: x30_, Tipo: ID, Línea: 8, Columna: 7, Valor: x30_, Variable: Sí
+Lexema: arr, Tipo: ID, Línea: 55, Columna: 13, Valor: arr, Variable: Sí
+Lexema: func3_, Tipo: ID, Línea: 37, Columna: 9, Valor: func3_, Variable: Sí
+Lexema: var, Tipo: ID, Línea: 17, Columna: 14, Valor: var, Variable: Sí
+Lexema: bl1, Tipo: ID, Línea: 61, Columna: 11, Valor: bl1, Variable: Sí
+Lexema: bl0, Tipo: ID, Línea: 59, Columna: 2, Valor: bl0, Variable: Sí
+Lexema: miFunc, Tipo: ID, Línea: 57, Columna: 11, Valor: miFunc, Variable: Sí
+Lexema: fl1, Tipo: ID, Línea: 60, Columna: 20, Valor: fl1, Variable: Sí
+Lexema: ch33, Tipo: ID, Línea: 20, Columna: 8, Valor: ch33, Variable: Sí
+Lexema: in1, Tipo: ID, Línea: 60, Columna: 46, Valor: in1, Variable: Sí
+Lexema: fl2, Tipo: ID, Línea: 52, Columna: 8, Valor: fl2, Variable: Sí
+Lexema: b1_, Tipo: ID, Línea: 39, Columna: 10, Valor: b1_, Variable: Sí
+Lexema: print, Tipo: ID, Línea: 27, Columna: 2, Valor: print, Variable: Sí
+Lexema: miChar2, Tipo: ID, Línea: 47, Columna: 7, Valor: miChar2, Variable: Sí
+Lexema: miChar2_, Tipo: ID, Línea: 7, Columna: 8, Valor: miChar2_, Variable: Sí
+Lexema: j_, Tipo: ID, Línea: 26, Columna: 26, Valor: j_, Variable: Sí
+Lexema: miChar, Tipo: ID, Línea: 56, Columna: 12, Valor: miChar, Variable: Sí
+Lexema: i1_, Tipo: ID, Línea: 32, Columna: 34, Valor: i1_, Variable: Sí
+Lexema: func1, Tipo: ID, Línea: 55, Columna: 23, Valor: func1, Variable: Sí
+Lexema: x22, Tipo: ID, Línea: 19, Columna: 3, Valor: x22, Variable: Sí
+Lexema: y, Tipo: ID, Línea: 23, Columna: 7, Valor: y, Variable: Sí
+Lexema: func2, Tipo: ID, Línea: 60, Columna: 36, Valor: func2, Variable: Sí
+Lexema: x24, Tipo: ID, Línea: 17, Columna: 9, Valor: x24, Variable: Sí
+
+===== TABLA DE FUNCIONES =====
+
+===== TABLA DE CONSTANTES =====
+
+===== TABLA DE PALABRAS RESERVADAS =====
+Lexema: void, Tipo: VOID, Línea: 0, Columna: 0
+Lexema: read, Tipo: READ, Línea: 0, Columna: 0
+Lexema: bool, Tipo: BOOL, Línea: 0, Columna: 0
+Lexema: string, Tipo: STRING, Línea: 0, Columna: 0
+Lexema: break, Tipo: BREAK, Línea: 0, Columna: 0
+Lexema: for, Tipo: FOR, Línea: 0, Columna: 0
+Lexema: false, Tipo: FALSE, Línea: 0, Columna: 0
+Lexema: main, Tipo: MAIN, Línea: 0, Columna: 0
+Lexema: elif, Tipo: ELIF, Línea: 0, Columna: 0
+Lexema: do, Tipo: DO, Línea: 0, Columna: 0
+Lexema: while, Tipo: WHILE, Línea: 0, Columna: 0
+Lexema: float, Tipo: FLOAT, Línea: 0, Columna: 0
+Lexema: int, Tipo: INT, Línea: 0, Columna: 0
+Lexema: switch, Tipo: SWITCH, Línea: 0, Columna: 0
+Lexema: default, Tipo: DEFAULT, Línea: 0, Columna: 0
+Lexema: else, Tipo: ELSE, Línea: 0, Columna: 0
+Lexema: char, Tipo: CHAR, Línea: 0, Columna: 0
+Lexema: true, Tipo: TRUE, Línea: 0, Columna: 0
+Lexema: if, Tipo: IF, Línea: 0, Columna: 0
+Lexema: write, Tipo: WRITE, Línea: 0, Columna: 0
+Lexema: return, Tipo: RETURN, Línea: 0, Columna: 0
+Lexema: case, Tipo: CASE, Línea: 0, Columna: 0

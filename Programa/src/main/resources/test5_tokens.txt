@@ -1,134 +1,118 @@
-Token: COMMENT_LINE, Lexema: null, Línea: 2, Columna: 2
-Token: COMMENT_LINE, Lexema: null, Línea: 4, Columna: 2
-Token: INT, Lexema: null, Línea: 5, Columna: 2
-Token: ID, Lexema: badFunction, Línea: 5, Columna: 6
-Token: INT, Lexema: null, Línea: 5, Columna: 20
-Token: ID, Lexema: x, Línea: 5, Columna: 24
-Token: LBLOCK, Lexema: null, Línea: 5, Columna: 28
-Token: COMMENT_LINE, Lexema: null, Línea: 5, Columna: 31
-Token: RETURN, Lexema: null, Línea: 6, Columna: 6
-Token: ID, Lexema: x, Línea: 6, Columna: 13
-Token: TIMES, Lexema: null, Línea: 6, Columna: 15
-Token: INT_LITERAL, Lexema: 2, Línea: 6, Columna: 17
-Token: FOR, Lexema: null, Línea: 6, Columna: 18
-Token: RBLOCK, Lexema: null, Línea: 7, Columna: 2
-Token: COMMENT_LINE, Lexema: null, Línea: 9, Columna: 2
-Token: VOID, Lexema: null, Línea: 10, Columna: 2
-Token: MAIN, Lexema: null, Línea: 10, Columna: 7
-Token: LPAREN, Lexema: null, Línea: 10, Columna: 12
-Token: RPAREN, Lexema: null, Línea: 10, Columna: 14
-Token: LBLOCK, Lexema: null, Línea: 10, Columna: 16
-Token: INT, Lexema: null, Línea: 11, Columna: 6
-Token: ID, Lexema: a, Línea: 11, Columna: 10
-Token: ASSIGN, Lexema: null, Línea: 11, Columna: 12
-Token: INT_LITERAL, Lexema: 10, Línea: 11, Columna: 14
-Token: FOR, Lexema: null, Línea: 11, Columna: 16
-Token: INT, Lexema: null, Línea: 12, Columna: 6
-Token: ID, Lexema: b, Línea: 12, Columna: 10
-Token: ASSIGN, Lexema: null, Línea: 12, Columna: 12
-Token: INT_LITERAL, Lexema: 5, Línea: 12, Columna: 14
-Token: FOR, Lexema: null, Línea: 12, Columna: 15
-Token: INT, Lexema: null, Línea: 13, Columna: 6
-Token: ID, Lexema: result, Línea: 13, Columna: 10
-Token: ASSIGN, Lexema: null, Línea: 13, Columna: 17
-Token: ID, Lexema: a, Línea: 13, Columna: 19
-Token: RBLOCK, Lexema: null, Línea: 13, Columna: 21
-Token: ID, Lexema: b, Línea: 13, Columna: 23
-Token: FOR, Lexema: null, Línea: 13, Columna: 24
-Token: COMMENT_LINE, Lexema: null, Línea: 13, Columna: 27
-Token: COMMENT_LINE, Lexema: null, Línea: 15, Columna: 6
-Token: BOOL, Lexema: null, Línea: 16, Columna: 6
-Token: ID, Lexema: x, Línea: 16, Columna: 11
-Token: ASSIGN, Lexema: null, Línea: 16, Columna: 13
-Token: TRUE, Lexema: true, Línea: 16, Columna: 15
-Token: FOR, Lexema: null, Línea: 16, Columna: 19
-Token: BOOL, Lexema: null, Línea: 17, Columna: 6
-Token: ID, Lexema: y, Línea: 17, Columna: 11
-Token: ASSIGN, Lexema: null, Línea: 17, Columna: 13
-Token: FALSE, Lexema: false, Línea: 17, Columna: 15
-Token: FOR, Lexema: null, Línea: 17, Columna: 18
-Token: IF, Lexema: null, Línea: 18, Columna: 6
-Token: LPAREN, Lexema: null, Línea: 18, Columna: 9
-Token: ID, Lexema: x, Línea: 18, Columna: 11
-Token: ID, Lexema: y, Línea: 18, Columna: 16
-Token: RPAREN, Lexema: null, Línea: 18, Columna: 18
-Token: LBLOCK, Lexema: null, Línea: 18, Columna: 20
-Token: COMMENT_LINE, Lexema: null, Línea: 18, Columna: 23
-Token: WRITE, Lexema: null, Línea: 19, Columna: 10
-Token: LPAREN, Lexema: null, Línea: 19, Columna: 16
-Token: STRING_LITERAL, Lexema: Esto no debería imprimirse, Línea: 19, Columna: 18
-Token: RPAREN, Lexema: null, Línea: 19, Columna: 47
-Token: FOR, Lexema: null, Línea: 19, Columna: 48
-Token: RBLOCK, Lexema: null, Línea: 20, Columna: 6
-Token: COMMENT_LINE, Lexema: null, Línea: 22, Columna: 6
-Token: INT, Lexema: null, Línea: 23, Columna: 6
-Token: ID, Lexema: z, Línea: 23, Columna: 10
-Token: ASSIGN, Lexema: null, Línea: 23, Columna: 12
-Token: INT_LITERAL, Lexema: 42, Línea: 23, Columna: 14
-Token: COMMENT_LINE, Lexema: null, Línea: 25, Columna: 6
-Token: IF, Lexema: null, Línea: 26, Columna: 6
-Token: LPAREN, Lexema: null, Línea: 26, Columna: 9
-Token: ID, Lexema: x, Línea: 26, Columna: 11
-Token: ASSIGN, Lexema: null, Línea: 26, Columna: 13
-Token: ASSIGN, Lexema: null, Línea: 26, Columna: 14
-Token: ID, Lexema: y, Línea: 26, Columna: 16
-Token: RPAREN, Lexema: null, Línea: 26, Columna: 18
-Token: LBLOCK, Lexema: null, Línea: 26, Columna: 20
-Token: COMMENT_LINE, Lexema: null, Línea: 26, Columna: 23
-Token: WRITE, Lexema: null, Línea: 27, Columna: 10
-Token: LPAREN, Lexema: null, Línea: 27, Columna: 16
-Token: STRING_LITERAL, Lexema: Error de operador, Línea: 27, Columna: 18
-Token: RPAREN, Lexema: null, Línea: 27, Columna: 38
-Token: FOR, Lexema: null, Línea: 27, Columna: 39
-Token: RBLOCK, Lexema: null, Línea: 28, Columna: 6
-Token: COMMENT_LINE, Lexema: null, Línea: 30, Columna: 6
-Token: BOOL, Lexema: null, Línea: 31, Columna: 6
-Token: ID, Lexema: flag, Línea: 31, Columna: 11
-Token: ASSIGN, Lexema: null, Línea: 31, Columna: 16
-Token: ID, Lexema: true, Línea: 31, Columna: 18
-Token: FOR, Lexema: null, Línea: 31, Columna: 22
-Token: COMMENT_LINE, Lexema: null, Línea: 31, Columna: 25
-Token: COMMENT_LINE, Lexema: null, Línea: 33, Columna: 6
-Token: IF, Lexema: null, Línea: 34, Columna: 6
-Token: LPAREN, Lexema: null, Línea: 34, Columna: 9
-Token: ID, Lexema: x, Línea: 34, Columna: 11
-Token: EQ, Lexema: null, Línea: 34, Columna: 13
-Token: TRUE, Lexema: true, Línea: 34, Columna: 16
-Token: RPAREN, Lexema: null, Línea: 34, Columna: 21
-Token: LBLOCK, Lexema: null, Línea: 34, Columna: 23
-Token: WRITE, Lexema: null, Línea: 35, Columna: 10
-Token: LPAREN, Lexema: null, Línea: 35, Columna: 16
-Token: STRING_LITERAL, Lexema: Bloque sin cerrar, Línea: 35, Columna: 18
-Token: RPAREN, Lexema: null, Línea: 35, Columna: 38
-Token: FOR, Lexema: null, Línea: 35, Columna: 39
-Token: COMMENT_LINE, Lexema: null, Línea: 37, Columna: 6
-Token: RBLOCK, Lexema: null, Línea: 38, Columna: 6
-Token: TIMES, Lexema: null, Línea: 38, Columna: 7
-Token: ID, Lexema: Este, Línea: 38, Columna: 9
-Token: ID, Lexema: es, Línea: 38, Columna: 14
-Token: ID, Lexema: un, Línea: 38, Columna: 17
-Token: ID, Lexema: comentario, Línea: 38, Columna: 20
-Token: ID, Lexema: multilinea, Línea: 39, Columna: 9
-Token: ID, Lexema: incorrecto, Línea: 39, Columna: 20
-Token: TIMES, Lexema: null, Línea: 39, Columna: 31
-Token: RBLOCK, Lexema: null, Línea: 39, Columna: 32
-Token: COMMENT_LINE, Lexema: null, Línea: 41, Columna: 6
-Token: ID, Lexema: for, Línea: 42, Columna: 6
-Token: INT, Lexema: null, Línea: 42, Columna: 11
-Token: ID, Lexema: i, Línea: 42, Columna: 15
-Token: ASSIGN, Lexema: null, Línea: 42, Columna: 17
-Token: INT_LITERAL, Lexema: 0, Línea: 42, Columna: 19
-Token: ID, Lexema: i, Línea: 42, Columna: 22
-Token: LT, Lexema: null, Línea: 42, Columna: 24
-Token: INT_LITERAL, Lexema: 10, Línea: 42, Columna: 26
-Token: ID, Lexema: i, Línea: 42, Columna: 30
-Token: INCREMENT, Lexema: null, Línea: 42, Columna: 31
-Token: LBLOCK, Lexema: null, Línea: 42, Columna: 35
-Token: COMMENT_LINE, Lexema: null, Línea: 42, Columna: 38
-Token: WRITE, Lexema: null, Línea: 43, Columna: 10
-Token: LPAREN, Lexema: null, Línea: 43, Columna: 16
-Token: ID, Lexema: i, Línea: 43, Columna: 18
-Token: RPAREN, Lexema: null, Línea: 43, Columna: 20
-Token: FOR, Lexema: null, Línea: 43, Columna: 21
-Token: RBLOCK, Lexema: null, Línea: 44, Columna: 6
-Token: RBLOCK, Lexema: null, Línea: 45, Columna: 2
+Token: INT, Lexema: INT, Línea: 4, Columna: 1, Tabla: PALABRAS_RESERVADAS
+Token: ID, Lexema: badFunction, Línea: 4, Columna: 5, Tabla: VARIABLES
+Token: INT, Lexema: INT, Línea: 4, Columna: 19, Tabla: PALABRAS_RESERVADAS
+Token: ID, Lexema: x, Línea: 4, Columna: 23, Tabla: VARIABLES
+Token: LBLOCK, Lexema: LBLOCK, Línea: 4, Columna: 27, Tabla: N/A
+Token: RETURN, Lexema: RETURN, Línea: 5, Columna: 5, Tabla: PALABRAS_RESERVADAS
+Token: ID, Lexema: x, Línea: 5, Columna: 12, Tabla: VARIABLES
+Token: TIMES, Lexema: TIMES, Línea: 5, Columna: 14, Tabla: N/A
+Token: INT_LITERAL, Lexema: 2, Línea: 5, Columna: 16, Tabla: N/A
+Token: QUESTION, Lexema: QUESTION, Línea: 5, Columna: 17, Tabla: N/A
+Token: RBLOCK, Lexema: RBLOCK, Línea: 6, Columna: 1, Tabla: N/A
+Token: VOID, Lexema: VOID, Línea: 9, Columna: 1, Tabla: PALABRAS_RESERVADAS
+Token: MAIN, Lexema: MAIN, Línea: 9, Columna: 6, Tabla: PALABRAS_RESERVADAS
+Token: LPAREN, Lexema: LPAREN, Línea: 9, Columna: 11, Tabla: N/A
+Token: RPAREN, Lexema: RPAREN, Línea: 9, Columna: 13, Tabla: N/A
+Token: LBLOCK, Lexema: LBLOCK, Línea: 9, Columna: 15, Tabla: N/A
+Token: INT, Lexema: INT, Línea: 10, Columna: 5, Tabla: PALABRAS_RESERVADAS
+Token: ID, Lexema: a, Línea: 10, Columna: 9, Tabla: VARIABLES
+Token: ASSIGN, Lexema: ASSIGN, Línea: 10, Columna: 11, Tabla: N/A
+Token: INT_LITERAL, Lexema: 10, Línea: 10, Columna: 13, Tabla: N/A
+Token: QUESTION, Lexema: QUESTION, Línea: 10, Columna: 15, Tabla: N/A
+Token: INT, Lexema: INT, Línea: 11, Columna: 5, Tabla: PALABRAS_RESERVADAS
+Token: ID, Lexema: b, Línea: 11, Columna: 9, Tabla: VARIABLES
+Token: ASSIGN, Lexema: ASSIGN, Línea: 11, Columna: 11, Tabla: N/A
+Token: INT_LITERAL, Lexema: 5, Línea: 11, Columna: 13, Tabla: N/A
+Token: QUESTION, Lexema: QUESTION, Línea: 11, Columna: 14, Tabla: N/A
+Token: INT, Lexema: INT, Línea: 12, Columna: 5, Tabla: PALABRAS_RESERVADAS
+Token: ID, Lexema: result, Línea: 12, Columna: 9, Tabla: VARIABLES
+Token: ASSIGN, Lexema: ASSIGN, Línea: 12, Columna: 16, Tabla: N/A
+Token: ID, Lexema: a, Línea: 12, Columna: 18, Tabla: VARIABLES
+Token: RBLOCK, Lexema: RBLOCK, Línea: 12, Columna: 20, Tabla: N/A
+Token: ID, Lexema: b, Línea: 12, Columna: 22, Tabla: VARIABLES
+Token: QUESTION, Lexema: QUESTION, Línea: 12, Columna: 23, Tabla: N/A
+Token: BOOL, Lexema: BOOL, Línea: 15, Columna: 5, Tabla: PALABRAS_RESERVADAS
+Token: ID, Lexema: x, Línea: 15, Columna: 10, Tabla: VARIABLES
+Token: ASSIGN, Lexema: ASSIGN, Línea: 15, Columna: 12, Tabla: N/A
+Token: TRUE, Lexema: true, Línea: 15, Columna: 14, Tabla: PALABRAS_RESERVADAS
+Token: QUESTION, Lexema: QUESTION, Línea: 15, Columna: 18, Tabla: N/A
+Token: BOOL, Lexema: BOOL, Línea: 16, Columna: 5, Tabla: PALABRAS_RESERVADAS
+Token: ID, Lexema: y, Línea: 16, Columna: 10, Tabla: VARIABLES
+Token: ASSIGN, Lexema: ASSIGN, Línea: 16, Columna: 12, Tabla: N/A
+Token: FALSE, Lexema: false, Línea: 16, Columna: 14, Tabla: PALABRAS_RESERVADAS
+Token: QUESTION, Lexema: QUESTION, Línea: 16, Columna: 17, Tabla: N/A
+Token: IF, Lexema: IF, Línea: 17, Columna: 5, Tabla: PALABRAS_RESERVADAS
+Token: LPAREN, Lexema: LPAREN, Línea: 17, Columna: 8, Tabla: N/A
+Token: ID, Lexema: x, Línea: 17, Columna: 10, Tabla: VARIABLES
+Token: ID, Lexema: y, Línea: 17, Columna: 15, Tabla: VARIABLES
+Token: RPAREN, Lexema: RPAREN, Línea: 17, Columna: 17, Tabla: N/A
+Token: LBLOCK, Lexema: LBLOCK, Línea: 17, Columna: 19, Tabla: N/A
+Token: WRITE, Lexema: WRITE, Línea: 18, Columna: 9, Tabla: PALABRAS_RESERVADAS
+Token: LPAREN, Lexema: LPAREN, Línea: 18, Columna: 15, Tabla: N/A
+Token: STRING_LITERAL, Lexema: Esto no debería imprimirse, Línea: 18, Columna: 17, Tabla: N/A
+Token: RPAREN, Lexema: RPAREN, Línea: 18, Columna: 46, Tabla: N/A
+Token: QUESTION, Lexema: QUESTION, Línea: 18, Columna: 47, Tabla: N/A
+Token: RBLOCK, Lexema: RBLOCK, Línea: 19, Columna: 5, Tabla: N/A
+Token: INT, Lexema: INT, Línea: 22, Columna: 5, Tabla: PALABRAS_RESERVADAS
+Token: ID, Lexema: z, Línea: 22, Columna: 9, Tabla: VARIABLES
+Token: ASSIGN, Lexema: ASSIGN, Línea: 22, Columna: 11, Tabla: N/A
+Token: INT_LITERAL, Lexema: 42, Línea: 22, Columna: 13, Tabla: N/A
+Token: IF, Lexema: IF, Línea: 25, Columna: 5, Tabla: PALABRAS_RESERVADAS
+Token: LPAREN, Lexema: LPAREN, Línea: 25, Columna: 8, Tabla: N/A
+Token: ID, Lexema: x, Línea: 25, Columna: 10, Tabla: VARIABLES
+Token: ASSIGN, Lexema: ASSIGN, Línea: 25, Columna: 12, Tabla: N/A
+Token: ASSIGN, Lexema: ASSIGN, Línea: 25, Columna: 13, Tabla: N/A
+Token: ID, Lexema: y, Línea: 25, Columna: 15, Tabla: VARIABLES
+Token: RPAREN, Lexema: RPAREN, Línea: 25, Columna: 17, Tabla: N/A
+Token: LBLOCK, Lexema: LBLOCK, Línea: 25, Columna: 19, Tabla: N/A
+Token: WRITE, Lexema: WRITE, Línea: 26, Columna: 9, Tabla: PALABRAS_RESERVADAS
+Token: LPAREN, Lexema: LPAREN, Línea: 26, Columna: 15, Tabla: N/A
+Token: STRING_LITERAL, Lexema: Error de operador, Línea: 26, Columna: 17, Tabla: N/A
+Token: RPAREN, Lexema: RPAREN, Línea: 26, Columna: 37, Tabla: N/A
+Token: QUESTION, Lexema: QUESTION, Línea: 26, Columna: 38, Tabla: N/A
+Token: RBLOCK, Lexema: RBLOCK, Línea: 27, Columna: 5, Tabla: N/A
+Token: BOOL, Lexema: BOOL, Línea: 30, Columna: 5, Tabla: PALABRAS_RESERVADAS
+Token: ID, Lexema: flag, Línea: 30, Columna: 10, Tabla: VARIABLES
+Token: ASSIGN, Lexema: ASSIGN, Línea: 30, Columna: 15, Tabla: N/A
+Token: ID, Lexema: true, Línea: 30, Columna: 17, Tabla: PALABRAS_RESERVADAS
+Token: QUESTION, Lexema: QUESTION, Línea: 30, Columna: 21, Tabla: N/A
+Token: IF, Lexema: IF, Línea: 33, Columna: 5, Tabla: PALABRAS_RESERVADAS
+Token: LPAREN, Lexema: LPAREN, Línea: 33, Columna: 8, Tabla: N/A
+Token: ID, Lexema: x, Línea: 33, Columna: 10, Tabla: VARIABLES
+Token: EQ, Lexema: EQ, Línea: 33, Columna: 12, Tabla: N/A
+Token: TRUE, Lexema: true, Línea: 33, Columna: 15, Tabla: PALABRAS_RESERVADAS
+Token: RPAREN, Lexema: RPAREN, Línea: 33, Columna: 20, Tabla: N/A
+Token: LBLOCK, Lexema: LBLOCK, Línea: 33, Columna: 22, Tabla: N/A
+Token: WRITE, Lexema: WRITE, Línea: 34, Columna: 9, Tabla: PALABRAS_RESERVADAS
+Token: LPAREN, Lexema: LPAREN, Línea: 34, Columna: 15, Tabla: N/A
+Token: STRING_LITERAL, Lexema: Bloque sin cerrar, Línea: 34, Columna: 17, Tabla: N/A
+Token: RPAREN, Lexema: RPAREN, Línea: 34, Columna: 37, Tabla: N/A
+Token: QUESTION, Lexema: QUESTION, Línea: 34, Columna: 38, Tabla: N/A
+Token: RBLOCK, Lexema: RBLOCK, Línea: 37, Columna: 5, Tabla: N/A
+Token: TIMES, Lexema: TIMES, Línea: 37, Columna: 6, Tabla: N/A
+Token: ID, Lexema: Este, Línea: 37, Columna: 8, Tabla: VARIABLES
+Token: ID, Lexema: es, Línea: 37, Columna: 13, Tabla: VARIABLES
+Token: ID, Lexema: un, Línea: 37, Columna: 16, Tabla: VARIABLES
+Token: ID, Lexema: comentario, Línea: 37, Columna: 19, Tabla: VARIABLES
+Token: ID, Lexema: multilinea, Línea: 38, Columna: 8, Tabla: VARIABLES
+Token: ID, Lexema: incorrecto, Línea: 38, Columna: 19, Tabla: VARIABLES
+Token: TIMES, Lexema: TIMES, Línea: 38, Columna: 30, Tabla: N/A
+Token: RBLOCK, Lexema: RBLOCK, Línea: 38, Columna: 31, Tabla: N/A
+Token: FOR, Lexema: FOR, Línea: 41, Columna: 5, Tabla: PALABRAS_RESERVADAS
+Token: INT, Lexema: INT, Línea: 41, Columna: 10, Tabla: PALABRAS_RESERVADAS
+Token: ID, Lexema: i, Línea: 41, Columna: 14, Tabla: VARIABLES
+Token: ASSIGN, Lexema: ASSIGN, Línea: 41, Columna: 16, Tabla: N/A
+Token: INT_LITERAL, Lexema: 0, Línea: 41, Columna: 18, Tabla: N/A
+Token: ID, Lexema: i, Línea: 41, Columna: 21, Tabla: VARIABLES
+Token: LT, Lexema: LT, Línea: 41, Columna: 23, Tabla: N/A
+Token: INT_LITERAL, Lexema: 10, Línea: 41, Columna: 25, Tabla: N/A
+Token: ID, Lexema: i, Línea: 41, Columna: 29, Tabla: VARIABLES
+Token: INCREMENT, Lexema: INCREMENT, Línea: 41, Columna: 30, Tabla: N/A
+Token: LBLOCK, Lexema: LBLOCK, Línea: 41, Columna: 34, Tabla: N/A
+Token: WRITE, Lexema: WRITE, Línea: 42, Columna: 9, Tabla: PALABRAS_RESERVADAS
+Token: LPAREN, Lexema: LPAREN, Línea: 42, Columna: 15, Tabla: N/A
+Token: ID, Lexema: i, Línea: 42, Columna: 17, Tabla: VARIABLES
+Token: RPAREN, Lexema: RPAREN, Línea: 42, Columna: 19, Tabla: N/A
+Token: QUESTION, Lexema: QUESTION, Línea: 42, Columna: 20, Tabla: N/A
+Token: RBLOCK, Lexema: RBLOCK, Línea: 43, Columna: 5, Tabla: N/A
+Token: RBLOCK, Lexema: RBLOCK, Línea: 44, Columna: 1, Tabla: N/A

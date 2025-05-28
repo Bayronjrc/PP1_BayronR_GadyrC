@@ -1,18 +1,19 @@
 ===== TABLA DE VARIABLES =====
-Lexema: a, Tipo: ID, Línea: 61, Columna: 10, Valor: a, Variable: Sí
-Lexema: b, Tipo: ID, Línea: 61, Columna: 14, Valor: b, Variable: Sí
-Lexema: factorial, Tipo: ID, Línea: 29, Columna: 13, Valor: factorial, Variable: Sí
-Lexema: num, Tipo: ID, Línea: 29, Columna: 25, Valor: num, Variable: Sí
-Lexema: i, Tipo: ID, Línea: 13, Columna: 33, Valor: i, Variable: Sí
-Lexema: counter, Tipo: ID, Línea: 93, Columna: 15, Valor: counter, Variable: Sí
-Lexema: n, Tipo: ID, Línea: 6, Columna: 32, Valor: n, Variable: Sí
-Lexema: result, Tipo: ID, Línea: 17, Columna: 12, Valor: result, Variable: Sí
-Lexema: x, Tipo: ID, Línea: 85, Columna: 13, Valor: x, Variable: Sí
-Lexema: y, Tipo: ID, Línea: 85, Columna: 18, Valor: y, Variable: Sí
-Lexema: power, Tipo: ID, Línea: 37, Columna: 13, Valor: power, Variable: Sí
-Lexema: exp, Tipo: ID, Línea: 37, Columna: 27, Valor: exp, Variable: Sí
-Lexema: base, Tipo: ID, Línea: 37, Columna: 21, Valor: base, Variable: Sí
-Lexema: option, Tipo: ID, Línea: 42, Columna: 14, Valor: option, Variable: Sí
+Lexema: a, Tipo: ID, Línea: 12, Columna: 18, Valor: a, Variable: Sí
+Lexema: b, Tipo: ID, Línea: 12, Columna: 22, Valor: b, Variable: Sí
+Lexema: flag, Tipo: ID, Línea: 30, Columna: 10, Valor: flag, Variable: Sí
+Lexema: incorrecto, Tipo: ID, Línea: 38, Columna: 19, Valor: incorrecto, Variable: Sí
+Lexema: i, Tipo: ID, Línea: 42, Columna: 17, Valor: i, Variable: Sí
+Lexema: comentario, Tipo: ID, Línea: 37, Columna: 19, Valor: comentario, Variable: Sí
+Lexema: es, Tipo: ID, Línea: 37, Columna: 13, Valor: es, Variable: Sí
+Lexema: result, Tipo: ID, Línea: 12, Columna: 9, Valor: result, Variable: Sí
+Lexema: badFunction, Tipo: ID, Línea: 4, Columna: 5, Valor: badFunction, Variable: Sí
+Lexema: x, Tipo: ID, Línea: 33, Columna: 10, Valor: x, Variable: Sí
+Lexema: y, Tipo: ID, Línea: 25, Columna: 15, Valor: y, Variable: Sí
+Lexema: un, Tipo: ID, Línea: 37, Columna: 16, Valor: un, Variable: Sí
+Lexema: multilinea, Tipo: ID, Línea: 38, Columna: 8, Valor: multilinea, Variable: Sí
+Lexema: z, Tipo: ID, Línea: 22, Columna: 9, Valor: z, Variable: Sí
+Lexema: Este, Tipo: ID, Línea: 37, Columna: 8, Valor: Este, Variable: Sí
 
 ===== TABLA DE FUNCIONES =====
 

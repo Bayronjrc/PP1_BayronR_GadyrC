@@ -16,7 +16,7 @@ import java_cup.runtime.Symbol;
  * - Inicializa el analizador léxico y el analizador sintáctico
  * - Ejecuta el análisis léxico completo para generar tokens
  * - Construye las tablas de símbolos
- * - Ejecuta el análisis sintáctico
+ * - Ejecuta el análisis sintáctico con recuperación de errores
  * - Genera archivos de salida con los resultados
  * 
  * @author Compilador
@@ -58,6 +58,8 @@ public class Main {
             
             // Procesar todos los tokens del archivo
             Symbol token;
+            int tokenCount = 0;
+            
             while (true) {
                 // Obtener siguiente token
                 token = scanner.next_token();
@@ -66,6 +68,8 @@ public class Main {
                 if (token.sym == 0) {
                     break;
                 }
+                
+                tokenCount++;
                 
                 // Convertir el código numérico del token a su nombre simbólico
                 String symbolName = symbolToString(token.sym);
@@ -78,20 +82,21 @@ public class Main {
                 
                 // Escribir información del token en el archivo de salida
                 tokenWriter.println("Token: " + symbolName + 
-                                   ", Lexema: " + token.value + 
-                                   ", Línea: " + (token.left+1) + 
-                                   ", Columna: " + (token.right+1) + 
+                                   ", Lexema: " + lexema + 
+                                   ", Línea: " + token.left + 
+                                   ", Columna: " + token.right + 
                                    ", Tabla: " + (tabla.equals("NINGUNO") ? "N/A" : tabla));
                 
                 // Insertar el token en la tabla de símbolos correspondiente
                 if (!tabla.equals("NINGUNO")) {
-                    symbolTable.insertarSimbolo(lexema, symbolName, token.left+1, token.right+1, token.value);
+                    symbolTable.insertarSimbolo(lexema, symbolName, token.left, token.right, token.value);
                 }
             }
             
             // Cerrar el archivo de tokens
             tokenWriter.close();
-            System.out.println("Análisis léxico completado. Tokens escritos en: " + tokenOutputFile);
+            System.out.println("Análisis léxico completado. " + tokenCount + " tokens procesados.");
+            System.out.println("Tokens escritos en: " + tokenOutputFile);
             
             // Escribir las tablas de símbolos en el archivo correspondiente
             symbolTable.escribirTablas(symbolTableFile);
@@ -106,16 +111,27 @@ public class Main {
             parser p = new parser(scanner);
             p.setSymbolTable(symbolTable);  // Pasar la tabla de símbolos al parser
             
-            System.out.println("Analizando sintácticamente el archivo: " + sourceFile);
+            System.out.println("Iniciando análisis sintáctico del archivo: " + sourceFile);
             
-            // Iniciar el análisis sintáctico
-            p.parse();
+            // Iniciar el análisis sintáctico con manejo de errores
+            Symbol result = p.parse();
             
-            System.out.println("Análisis sintáctico completado sin errores.");
+            // Obtener el número de errores encontrados
+            int errorCount = p.getErrorCount();
+            
+            if (errorCount == 0) {
+                System.out.println("✓ Análisis sintáctico completado sin errores.");
+            } else {
+                System.err.println("✗ Análisis sintáctico completado con " + errorCount + " errores.");
+                System.err.println("Revise los mensajes de error mostrados anteriormente.");
+            }
+            
+            // Cerrar el archivo de símbolos
+            symbolWriter.close();
             
         } catch (Exception e) {
             // Manejar cualquier error durante el proceso de compilación
-            System.err.println("Error: " + e.getMessage());
+            System.err.println("Error durante la compilación: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -152,7 +168,7 @@ public class Main {
             case main.java.parser.sym.CHAR: return "CHAR";
             case main.java.parser.sym.STRING: return "STRING";
             case main.java.parser.sym.VOID: return "VOID";
-            case main.java.parser.sym.READ: return "READ";
+            case main.java.parser.sym.READ: return "read";
             case main.java.parser.sym.WRITE: return "WRITE";
             case main.java.parser.sym.MAIN: return "MAIN";
             case main.java.parser.sym.PLUS: return "PLUS";
@@ -179,9 +195,6 @@ public class Main {
             case main.java.parser.sym.QUESTION: return "QUESTION";
             case main.java.parser.sym.COMMA: return "COMMA";
             case main.java.parser.sym.ASSIGN: return "ASSIGN";
-            case main.java.parser.sym.COMMENT_LINE: return "COMMENT_LINE";
-            case main.java.parser.sym.LCOMMENT_BLOCK: return "LCOMMENT_BLOCK";
-            case main.java.parser.sym.RCOMMENT_BLOCK: return "RCOMMENT_BLOCK";
             case main.java.parser.sym.LBRACKET: return "LBRACKET";
             case main.java.parser.sym.RBRACKET: return "RBRACKET";
             case main.java.parser.sym.UMINUS: return "UMINUS";
