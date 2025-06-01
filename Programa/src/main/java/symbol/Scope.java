@@ -82,4 +82,24 @@ public class Scope {
         
         return null;
     }
+
+    
+    /**
+     * Declara un nuevo simbolo en este alcance
+     * 
+     * @param name Nombre del simbolo
+     * @param symbol Información del simbolo
+     * @return true si se declara exitosamente, false si ya existe
+     */
+    public boolean declare(String name, SymbolInfo symbol) {
+        // Verificar si ya existe en este alcance
+        if (symbols.containsKey(name)) {
+            return false; 
+        }
+        
+        // Establecer el alcance del simbolo
+        symbol.setAlcance(this.nivel);
+        symbols.put(name, symbol);
+        return true;
+    }
 }
