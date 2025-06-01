@@ -82,7 +82,6 @@ public class Scope {
         
         return null;
     }
-
     
     /**
      * Declara un nuevo simbolo en este alcance
@@ -122,7 +121,6 @@ public class Scope {
     public boolean exists(String name) {
         return lookup(name) != null;
     }
-
     
     /**
      * Obtiene todos los simbolos declarados en este alcance
@@ -164,7 +162,6 @@ public class Scope {
         }
         return noInicializadas;
     }
-
     
     /**
      * Busca especuficamente una funcion en la jerarquia de alcances
@@ -180,7 +177,6 @@ public class Scope {
         }
         return null;
     }
-
     
     // ============= GETTERS =============
     
