@@ -365,5 +365,69 @@ public class SemanticSymbolTable {
         
         return resultType;
     }
+
+    
+    /**
+     * Verifica una operacion relacional
+     * 
+     * @param leftType Tipo del operando izquierdo
+     * @param rightType Tipo del operando derecho
+     * @param operator Operador (<, >, <=, >=, ==, !=)
+     * @param line Linea de la operación
+     * @return "BOOL" si es valida, null si es invalida
+     */
+    public String checkRelationalOperation(String leftType, String rightType, String operator, int line) {
+        // Operadores de igualdad permiten booleanos
+        if (operator.equals("==") || operator.equals("!=")) {
+            if (leftType.equals("BOOL") && rightType.equals("BOOL")) {
+                return "BOOL";
+            }
+        }
+        
+        // Crear simbolos temporales
+        SymbolInfo leftSymbol = new SymbolInfo("temp_left", "ID", line, 0);
+        leftSymbol.setTipoVariable(leftType);
+        
+        SymbolInfo rightSymbol = new SymbolInfo("temp_right", "ID", line, 0);
+        rightSymbol.setTipoVariable(rightType);
+        
+        // Verificar que sean comparables
+        if (!leftSymbol.esComparable() || !rightSymbol.esComparable()) {
+            addError("Operación relacional '" + operator + "' requiere operandos comparables en línea " + line);
+            return null;
+        }
+        
+        // Verificar compatibilidad de tipos
+        if (!checkTypeCompatibility(leftType, rightType, line)) {
+            return null;
+        }
+        
+        return "BOOL";
+    }
+    
+    /**
+     * Verifica una operacion logica
+     * 
+     * @param leftType Tipo del operando izquierdo
+     * @param rightType Tipo del operando derecho (null para operaciones unarias)
+     * @param operator Operador (^, #, !)
+     * @param line Linea de la operación
+     * @return "BOOL" si es valida, null si es invalida
+     */
+    public String checkLogicalOperation(String leftType, String rightType, String operator, int line) {
+        // Verificar que el operando izquierdo sea booleano
+        if (!leftType.equals("BOOL")) {
+            addError("Operación lógica '" + operator + "' requiere operando booleano en línea " + line);
+            return null;
+        }
+        
+        // Para operaciones binarias, verificar operando derecho
+        if (rightType != null && !rightType.equals("BOOL")) {
+            addError("Operación lógica '" + operator + "' requiere ambos operandos booleanos en línea " + line);
+            return null;
+        }
+        
+        return "BOOL";
+    }
     
 }
