@@ -571,4 +571,88 @@ public class SemanticSymbolTable {
             }
         }
     }
+
+    
+    // ============= COMPATIBILIDAD Y ESCRITURA =============
+    
+    /**
+     * Obtiene la tabla original para mantener compatibilidad
+     */
+    public SymbolTable getOriginalTable() {
+        return originalTable;
+    }
+    
+    /**
+     * Escribe las tablas de simbolos con información semantica
+     */
+    public void escribirTablas(String archivo) throws IOException {
+        PrintWriter writer = new PrintWriter(new FileWriter(archivo));
+        
+        // Escribir informacion de alcances
+        writer.println("===== ANÁLISIS SEMÁNTICO =====");
+        writer.println("Alcances encontrados: " + scopeStack.size());
+        writer.println("Errores semánticos: " + errors.size());
+        writer.println("Advertencias: " + warnings.size());
+        writer.println();
+        
+        // Escribir errores si existen
+        if (!errors.isEmpty()) {
+            writer.println("===== ERRORES SEMÁNTICOS =====");
+            for (String error : errors) {
+                writer.println(error);
+            }
+            writer.println();
+        }
+        
+        // Escribir advertencias si existen
+        if (!warnings.isEmpty()) {
+            writer.println("===== ADVERTENCIAS =====");
+            for (String warning : warnings) {
+                writer.println(warning);
+            }
+            writer.println();
+        }
+        
+        // Escribir simbolos por alcance
+        for (int i = 0; i < scopeStack.size(); i++) {
+            Scope scope = scopeStack.get(i);
+            writer.println("===== ALCANCE: " + scope.toString() + " =====");
+            Map<String, SymbolInfo> symbols = scope.getAllLocalSymbols();
+            for (SymbolInfo symbol : symbols.values()) {
+                writer.println(symbol.toString());
+            }
+            writer.println();
+        }
+        
+        writer.close();
+    }
+    
+    /**
+     * Obtiene estadisticas del analisis
+     */
+    public Map<String, Integer> getStatistics() {
+        Map<String, Integer> stats = new HashMap<>();
+        stats.put("alcances", scopeStack.size());
+        stats.put("errores", errors.size());
+        stats.put("advertencias", warnings.size());
+        
+        int totalSymbols = 0;
+        int variables = 0;
+        int functions = 0;
+        
+        for (Scope scope : scopeStack) {
+            Map<String, SymbolInfo> symbols = scope.getAllLocalSymbols();
+            totalSymbols += symbols.size();
+            for (SymbolInfo symbol : symbols.values()) {
+                if (symbol.esVariable()) variables++;
+                if (symbol.esFuncion()) functions++;
+            }
+        }
+        
+        stats.put("simbolos_totales", totalSymbols);
+        stats.put("variables", variables);
+        stats.put("funciones", functions);
+        
+        return stats;
+    }
 }
