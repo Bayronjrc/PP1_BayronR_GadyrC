@@ -232,4 +232,60 @@ public class SemanticSymbolTable {
         
         return symbol;
     }
+
+    
+    /**
+     * Verifica una asignacon de variable
+     * 
+     * @param name Nombre de la variable
+     * @param valueType Tipo del valor a asignar
+     * @param line Linea de la asignacion
+     * @return true si la asignacion es valida
+     */
+    public boolean checkAssignment(String name, String valueType, int line) {
+        SymbolInfo variable = checkVariableUsage(name, line);
+        if (variable == null) {
+            return false;
+        }
+        
+        if (!variable.esCompatibleCon(valueType)) {
+            addError("Tipos incompatibles en asignacion: '" + variable.getTipoVariable() + 
+                    "' no puede recibir '" + valueType + "' en linea " + line);
+            return false;
+        }
+        
+        // Marcar como inicializada
+        variable.setInicializada(true);
+        return true;
+    }
+    
+    /**
+     * Verifica compatibilidad de tipos
+     * 
+     * @param expected Tipo esperado
+     * @param actual Tipo actual
+     * @param line Linea donde ocurre
+     * @return true si son compatibles
+     */
+    public boolean checkTypeCompatibility(String expected, String actual, int line) {
+        if (expected == null || actual == null) {
+            addError("Tipo nulo en verificacion de compatibilidad en linea " + line);
+            return false;
+        }
+        
+        if (expected.equals(actual)) {
+            return true;
+        }
+        
+        // Crear un simbolo temporal para usar el metodo de compatibilidad
+        SymbolInfo tempSymbol = new SymbolInfo("temp", "ID", line, 0);
+        tempSymbol.setTipoVariable(expected);
+        
+        if (!tempSymbol.esCompatibleCon(actual)) {
+            addError("Tipos incompatibles: esperado '" + expected + "', encontrado '" + actual + "' en linea " + line);
+            return false;
+        }
+        
+        return true;
+    }
 }
