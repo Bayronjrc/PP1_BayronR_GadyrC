@@ -288,4 +288,82 @@ public class SemanticSymbolTable {
         
         return true;
     }
+
+    
+    /**
+     * Verifica una llamada a funcion
+     * 
+     * @param name Nombre de la funcion
+     * @param argTypes Lista de tipos de argumentos
+     * @param line inea de la llamada
+     * @return Tipo de retorno de la función o null si hay error
+     */
+    public String checkFunctionCall(String name, List<String> argTypes, int line) {
+        Scope currentScope = getCurrentScope();
+        if (currentScope == null) {
+            addError("Error interno: no hay alcance activo para llamar funcion '" + name + "' en linea " + line);
+            return null;
+        }
+        
+        SymbolInfo function = currentScope.lookupFunction(name);
+        if (function == null) {
+            addError("Funcion '" + name + "' no declarada en linea " + line);
+            return null;
+        }
+        
+        // Verificar número de argumentos
+        List<String> expectedParams = function.getParametros();
+        if (expectedParams.size() != argTypes.size()) {
+            addError("Funcion '" + name + "' espera " + expectedParams.size() + 
+                    " argumentos, pero se proporcionaron " + argTypes.size() + " en linea " + line);
+            return null;
+        }
+        
+        // Verificar tipos de argumentos
+        for (int i = 0; i < expectedParams.size(); i++) {
+            if (!checkTypeCompatibility(expectedParams.get(i), argTypes.get(i), line)) {
+                addError("Argumento " + (i+1) + " de funcion '" + name + 
+                        "' tiene tipo incorrecto en lonea " + line);
+                return null;
+            }
+        }
+        
+        // Marcar funcion como utilizada
+        function.setUtilizada(true);
+        
+        return function.getTipoVariable(); 
+    }
+    
+    /**
+     * Verifica una operacion aritmetica entre dos tipos
+     * 
+     * @param leftType Tipo del operando izquierdo
+     * @param rightType Tipo del operando derecho
+     * @param operator Operador (+, -, *, /, etc.)
+     * @param line Linea de la operacion
+     * @return Tipo resultante de la operación o null si es invalida
+     */
+    public String checkArithmeticOperation(String leftType, String rightType, String operator, int line) {
+        // Crear simbolos temporales para verificacion
+        SymbolInfo leftSymbol = new SymbolInfo("temp_left", "ID", line, 0);
+        leftSymbol.setTipoVariable(leftType);
+        
+        SymbolInfo rightSymbol = new SymbolInfo("temp_right", "ID", line, 0);
+        rightSymbol.setTipoVariable(rightType);
+        
+        // Verificar que ambos sean numericos
+        if (!leftSymbol.esNumerico() || !rightSymbol.esNumerico()) {
+            addError("Operacion aritmetica '" + operator + "' requiere operandos numericos en linea " + line);
+            return null;
+        }
+        
+        // Obtener tipo resultante
+        String resultType = leftSymbol.tipoResultanteConOperacion(rightType);
+        if (resultType == null) {
+            addError("Operacion aritmetica invalida entre '" + leftType + "' y '" + rightType + "' en linea " + line);
+        }
+        
+        return resultType;
+    }
+    
 }
