@@ -47,4 +47,53 @@ public class SemanticSymbolTable {
         // Crear alcance global
         enterScope("GLOBAL", "global");
     }
+
+    // ============= MANEJO DE ALCANCES =============
+    
+    /**
+     * Entra a un nuevo alcance
+     * 
+     * @param tipoAlcance Tipo del alcance ("GLOBAL", "FUNCTION", "BLOCK")
+     * @param nombreAlcance Nombre identificativo del alcance
+     */
+    public void enterScope(String tipoAlcance, String nombreAlcance) {
+        Scope parent = scopeStack.isEmpty() ? null : scopeStack.peek();
+        Scope newScope = new Scope(currentLevel++, parent, tipoAlcance, nombreAlcance);
+        scopeStack.push(newScope);
+    }
+    
+    /**
+     * Entra a un nuevo alcance de bloque con nombre automatico
+     */
+    public void enterScope() {
+        enterScope("BLOCK", "block_" + (++scopeCounter));
+    }
+    
+    /**
+     * Sale del alcance actual y genera advertencias sobre variables no usadas
+     */
+    public void exitScope() {
+        if (!scopeStack.isEmpty()) {
+            Scope currentScope = scopeStack.pop();
+            
+            // Generar advertencias para variables no utilizadas
+            for (SymbolInfo symbol : currentScope.getVariablesNoUtilizadas()) {
+                addWarning("Variable '" + symbol.getLexema() + "' declarada pero no utilizada en línea " + symbol.getLinea());
+            }
+        }
+    }
+    
+    /**
+     * Obtiene el alcance actual
+     */
+    public Scope getCurrentScope() {
+        return scopeStack.isEmpty() ? null : scopeStack.peek();
+    }
+    
+    /**
+     * Obtiene el alcance global (primer elemento de la pila)
+     */
+    public Scope getGlobalScope() {
+        return scopeStack.isEmpty() ? null : scopeStack.firstElement();
+    }
 }
