@@ -187,4 +187,49 @@ public class SemanticSymbolTable {
         
         return true;
     }
+
+    
+    /**
+     * Declara un array bidimensional
+     */
+    public boolean declareArray(String name, String type, int dim1, int dim2, int line, int column) {
+        boolean result = declareVariable(name, type, line, column, true);
+        if (result) {
+            SymbolInfo symbol = getCurrentScope().getLocal(name);
+            symbol.addDimension(dim1);
+            symbol.addDimension(dim2);
+        }
+        return result;
+    }
+    
+    
+    // ============= VERIFICACIONES SEMANTICAS =============
+    
+    /**
+     * Verifica el uso de una variable
+     * 
+     * @param name Nombre de la variable
+     * @param line Linea donde se usa
+     * @return SymbolInfo de la variable o null si hay error
+     */
+    public SymbolInfo checkVariableUsage(String name, int line) {
+        Scope currentScope = getCurrentScope();
+        if (currentScope == null) {
+            addError("Error interno: no hay alcance activo para usar variable '" + name + "' en linea " + line);
+            return null;
+        }
+        
+        SymbolInfo symbol = currentScope.lookup(name);
+        if (symbol == null) {
+            addError("Variable '" + name + "' no declarada en linea " + line);
+            return null;
+        }
+        
+        if (symbol.esVariable() && !symbol.estaInicializada()) {
+            addError("Variable '" + name + "' usada sin inicializar en linea " + line);
+            return null;
+        }
+        
+        return symbol;
+    }
 }
