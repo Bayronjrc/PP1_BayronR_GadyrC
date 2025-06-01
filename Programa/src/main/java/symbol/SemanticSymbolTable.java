@@ -429,5 +429,52 @@ public class SemanticSymbolTable {
         
         return "BOOL";
     }
+
+    
+    /**
+     * Verifica acceso a array
+     * 
+     * @param arrayName Nombre del array
+     * @param index1 Tipo del primer índice
+     * @param index2 Tipo del segundo índice (null para array unidimensional)
+     * @param line Linea del acceso
+     * @return Tipo del elemento del array o null si hay error
+     */
+    public String checkArrayAccess(String arrayName, String index1, String index2, int line) {
+        SymbolInfo array = checkVariableUsage(arrayName, line);
+        if (array == null) {
+            return null;
+        }
+        
+        if (!array.esArray()) {
+            addError("'" + arrayName + "' no es un array en linea " + line);
+            return null;
+        }
+        
+        // Verificar que los índices sean enteros
+        if (!index1.equals("INT")) {
+            addError("Indice de array debe ser entero en linea " + line);
+            return null;
+        }
+        
+        if (index2 != null && !index2.equals("INT")) {
+            addError("Segundo indice de array debe ser entero en linea " + line);
+            return null;
+        }
+        
+        // Verificar dimensiones
+        List<Integer> dimensions = array.getDimensiones();
+        if (index2 != null && dimensions.size() < 2) {
+            addError("Array '" + arrayName + "' no es bidimensional en linea " + line);
+            return null;
+        }
+        
+        if (index2 == null && dimensions.size() != 1) {
+            addError("Array '" + arrayName + "' requiere dos indices en linea " + line);
+            return null;
+        }
+        
+        return array.getTipoVariable();
+    }
     
 }
