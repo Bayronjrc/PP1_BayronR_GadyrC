@@ -164,4 +164,20 @@ public class Scope {
         }
         return noInicializadas;
     }
+
+    
+    /**
+     * Busca especuficamente una funcion en la jerarquia de alcances
+     * Las funciones se declaran en el alcance global
+     * 
+     * @param name Nombre de la funcion
+     * @return SymbolInfo de la funcion o null si no se encuentra
+     */
+    public SymbolInfo lookupFunction(String name) {
+        SymbolInfo symbol = lookup(name);
+        if (symbol != null && symbol.esFuncion()) {
+            return symbol;
+        }
+        return null;
+    }
 }
