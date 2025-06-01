@@ -2,7 +2,6 @@ package main.java.symbol;
 
 import java.util.*;
 import java.io.*;
-import java.lang.foreign.MemorySegment.Scope;
 
 /**
  * Tabla de simbolos para analisis semantico.
@@ -47,7 +46,7 @@ public class SemanticSymbolTable {
         // Crear alcance global
         enterScope("GLOBAL", "global");
     }
-
+    
     // ============= MANEJO DE ALCANCES =============
     
     /**
@@ -96,7 +95,6 @@ public class SemanticSymbolTable {
     public Scope getGlobalScope() {
         return scopeStack.isEmpty() ? null : scopeStack.firstElement();
     }
-
     
     // ============= DECLARACIONES =============
     
@@ -187,7 +185,6 @@ public class SemanticSymbolTable {
         
         return true;
     }
-
     
     /**
      * Declara un array bidimensional
@@ -201,7 +198,6 @@ public class SemanticSymbolTable {
         }
         return result;
     }
-    
     
     // ============= VERIFICACIONES SEMANTICAS =============
     
@@ -232,7 +228,6 @@ public class SemanticSymbolTable {
         
         return symbol;
     }
-
     
     /**
      * Verifica una asignacon de variable
@@ -288,7 +283,6 @@ public class SemanticSymbolTable {
         
         return true;
     }
-
     
     /**
      * Verifica una llamada a funcion
@@ -365,7 +359,6 @@ public class SemanticSymbolTable {
         
         return resultType;
     }
-
     
     /**
      * Verifica una operacion relacional
@@ -429,7 +422,6 @@ public class SemanticSymbolTable {
         
         return "BOOL";
     }
-
     
     /**
      * Verifica acceso a array
@@ -476,7 +468,6 @@ public class SemanticSymbolTable {
         
         return array.getTipoVariable();
     }
-
     
     // ============= VERIFICACIONES ESPECIALES =============
     
@@ -529,7 +520,6 @@ public class SemanticSymbolTable {
         }
     }
     
-    
     // ============= MANEJO DE ERRORES Y ADVERTENCIAS =============
     
     private void addError(String error) {
@@ -571,7 +561,6 @@ public class SemanticSymbolTable {
             }
         }
     }
-
     
     // ============= COMPATIBILIDAD Y ESCRITURA =============
     
