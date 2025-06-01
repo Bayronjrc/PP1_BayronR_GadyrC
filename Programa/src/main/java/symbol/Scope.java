@@ -60,4 +60,26 @@ public class Scope {
     public SymbolInfo getLocal(String name) {
         return symbols.get(name);
     }
+    
+    /**
+     * Busca un simbolo en este alcance y en los alcances padre (busqueda jerarquica)
+     * 
+     * @param name Nombre del simbolo a buscar
+     * @return SymbolInfo del simbolo o null si no se encuentra en ningun alcance
+     */
+    public SymbolInfo lookup(String name) {
+        // Buscar primero en este alcance
+        SymbolInfo symbol = symbols.get(name);
+        if (symbol != null) {
+            symbol.setUtilizada(true); // Marcar como utilizada
+            return symbol;
+        }
+        
+        // Si no se encuentra y hay alcance padre, buscar 
+        if (parent != null) {
+            return parent.lookup(name);
+        }
+        
+        return null;
+    }
 }
