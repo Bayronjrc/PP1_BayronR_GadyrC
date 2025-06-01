@@ -476,5 +476,58 @@ public class SemanticSymbolTable {
         
         return array.getTipoVariable();
     }
+
+    
+    // ============= VERIFICACIONES ESPECIALES =============
+    
+    /**
+     * Verifica que exista la función main
+     */
+    public boolean checkMainFunction() {
+        Scope globalScope = getGlobalScope();
+        if (globalScope == null) {
+            addError("No hay alcance global definido");
+            return false;
+        }
+        
+        SymbolInfo main = globalScope.getLocal("main");
+        if (main == null || !main.esFuncion()) {
+            addError("Función 'main' no encontrada");
+            return false;
+        }
+        
+        if (!main.getTipoVariable().equals("VOID")) {
+            addError("Función 'main' debe ser de tipo 'void'");
+            return false;
+        }
+        
+        if (!main.getParametros().isEmpty()) {
+            addError("Funcion 'main' no debe tener parametros");
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Verifica que una funcion tenga return si es necesario
+     * 
+     * @param functionName Nombre de la función
+     * @param hasReturn Si la función tiene return
+     * @param line Línea donde termina la función
+     */
+    public void checkFunctionReturn(String functionName, boolean hasReturn, int line) {
+        Scope globalScope = getGlobalScope();
+        if (globalScope != null) {
+            SymbolInfo function = globalScope.getLocal(functionName);
+            if (function != null && function.esFuncion()) {
+                String returnType = function.getTipoVariable();
+                if (!returnType.equals("VOID") && !hasReturn) {
+                    addError("Funcion '" + functionName + "' debe retornar un valor de tipo '" + returnType + "' en lonea " + line);
+                }
+            }
+        }
+    }
+    
     
 }
