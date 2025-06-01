@@ -2,219 +2,246 @@ package main.java.symbol;
 
 import java.util.*;
 
-/**
- * Estructura para almacenar información detallada de cada símbolo en el compilador.
- * 
- * Esta clase encapsula todos los atributos asociados a un símbolo: su lexema,
- * tipo de token, tipo de variable, posición en el código fuente, valor (si corresponde),
- * clasificación (variable, función o constante) y parámetros (en caso de funciones).
- * 
- * @author Compilador
- * @version 1.0
- */
 public class SymbolInfo {
-    /** Texto original del símbolo en el código fuente */
     private String lexema;
-    
-    /** Tipo de token según el analizador léxico (ID, INT_LITERAL, etc.) */
     private String tipo;
-    
-    /** 
-     * Tipo de datos para variables y funciones (INT, FLOAT, BOOL, etc.)
-     * Solo aplica a variables y funciones, no a otros tipos de tokens
-     */
     private String tipoVariable;
-    
-    /** Número de línea donde se encontró el símbolo en el código fuente */
     private int linea;
-    
-    /** Número de columna donde se encontró el símbolo en el código fuente */
     private int columna;
-    
-    /** 
-     * Valor asociado al símbolo.
-     * - Para constantes: valor literal (entero, flotante, booleano, etc.)
-     * - Para variables inicializadas: valor asignado
-     */
     private Object valor;
-    
-    /** Indica si el símbolo es una variable */
     private boolean esVariable;
-    
-    /** Indica si el símbolo es una función */
     private boolean esFuncion;
-    
-    /** Indica si el símbolo es una constante o literal */
     private boolean esConstante;
-    
-    /** 
-     * Lista de parámetros para funciones.
-     * Almacena los tipos de datos de los parámetros en orden de declaración
-     */
     private List<String> parametros;
+    private int alcance;
+    private String scopeName;
+    private String scopeType;
+    private String scopePath;
+    private boolean inicializada;
+    private boolean utilizada;
+    private List<Integer> dimensiones;
     
-    /**
-     * Constructor que inicializa un objeto SymbolInfo con la información básica del símbolo.
-     * Por defecto, los valores booleanos (esVariable, esFuncion, esConstante) se inicializan en falso
-     * y la lista de parámetros se inicializa vacía.
-     * 
-     * @param lexema Texto del símbolo (identificador, literal, etc.)
-     * @param tipo Tipo de token según el analizador léxico
-     * @param linea Número de línea donde se encontró el símbolo
-     * @param columna Número de columna donde se encontró el símbolo
-     */
-    public SymbolInfo(String lexema, String tipo, int linea, int columna) {
+    public SymbolInfo(String lexema, String tipo, int linea, int columna, int alcance, String scopeName, String scopeType) {
         this.lexema = lexema;
         this.tipo = tipo;
         this.linea = linea;
         this.columna = columna;
+        this.alcance = alcance;
+        this.scopeName = scopeName;
+        this.scopeType = scopeType;
+        this.scopePath = buildScopePath();
         this.esVariable = false;
         this.esFuncion = false;
         this.esConstante = false;
         this.parametros = new ArrayList<>();
+        this.inicializada = false;
+        this.utilizada = false;
+        this.dimensiones = new ArrayList<>();
     }
     
-    /**
-     * Obtiene el texto original del símbolo.
-     * 
-     * @return Lexema del símbolo
-     */
+    public SymbolInfo(String lexema, String tipo, int linea, int columna) {
+        this(lexema, tipo, linea, columna, 0, "global", "GLOBAL");
+    }
+    
+    public SymbolInfo(String lexema, String tipo, int linea, int columna, int alcance) {
+        this(lexema, tipo, linea, columna, alcance, "scope_" + alcance, "BLOCK");
+    }
+    
     public String getLexema() { return lexema; }
-    
-    /**
-     * Obtiene el tipo de token según el analizador léxico.
-     * 
-     * @return Tipo del token (ID, INT_LITERAL, etc.)
-     */
     public String getTipo() { return tipo; }
-    
-    /**
-     * Obtiene el tipo de datos de la variable o función.
-     * 
-     * @return Tipo de datos (INT, FLOAT, BOOL, etc.) o null si no es aplicable
-     */
     public String getTipoVariable() { return tipoVariable; }
-    
-    /**
-     * Establece el tipo de datos de la variable o función.
-     * 
-     * @param tipoVariable Tipo de datos a asignar
-     */
     public void setTipoVariable(String tipoVariable) { this.tipoVariable = tipoVariable; }
-    
-    /**
-     * Obtiene el número de línea donde se encontró el símbolo.
-     * 
-     * @return Número de línea en el código fuente
-     */
     public int getLinea() { return linea; }
-    
-    /**
-     * Obtiene el número de columna donde se encontró el símbolo.
-     * 
-     * @return Número de columna en el código fuente
-     */
     public int getColumna() { return columna; }
-    
-    /**
-     * Obtiene el valor asociado al símbolo.
-     * 
-     * @return Valor del símbolo o null si no tiene valor asociado
-     */
     public Object getValor() { return valor; }
-    
-    /**
-     * Establece el valor asociado al símbolo.
-     * 
-     * @param valor Valor a asignar
-     */
     public void setValor(Object valor) { this.valor = valor; }
-    
-    /**
-     * Verifica si el símbolo es una variable.
-     * 
-     * @return true si es una variable, false en caso contrario
-     */
     public boolean esVariable() { return esVariable; }
-    
-    /**
-     * Establece si el símbolo es una variable.
-     * 
-     * @param esVariable Valor booleano a asignar
-     */
     public void setEsVariable(boolean esVariable) { this.esVariable = esVariable; }
-    
-    /**
-     * Verifica si el símbolo es una función.
-     * 
-     * @return true si es una función, false en caso contrario
-     */
     public boolean esFuncion() { return esFuncion; }
-    
-    /**
-     * Establece si el símbolo es una función.
-     * 
-     * @param esFuncion Valor booleano a asignar
-     */
     public void setEsFuncion(boolean esFuncion) { this.esFuncion = esFuncion; }
-    
-    /**
-     * Verifica si el símbolo es una constante o literal.
-     * 
-     * @return true si es una constante, false en caso contrario
-     */
     public boolean esConstante() { return esConstante; }
-    
-    /**
-     * Establece si el símbolo es una constante o literal.
-     * 
-     * @param esConstante Valor booleano a asignar
-     */
     public void setEsConstante(boolean esConstante) { this.esConstante = esConstante; }
-    
-    /**
-     * Obtiene la lista de parámetros para funciones.
-     * 
-     * @return Lista de tipos de datos de los parámetros o lista vacía si no es una función
-     */
     public List<String> getParametros() { return parametros; }
-    
-    /**
-     * Agrega un parámetro a la lista de parámetros de una función.
-     * 
-     * @param param Tipo de datos del parámetro a agregar
-     */
     public void addParametro(String param) { this.parametros.add(param); }
     
-    /**
-     * Genera una representación textual del símbolo con todos sus atributos.
-     * Esta representación se usa al escribir las tablas de símbolos en archivos.
-     * 
-     * @return Cadena con la información completa del símbolo
-     */
+    public int getAlcance() { return alcance; }
+    public void setAlcance(int alcance) { 
+        this.alcance = alcance;
+        this.scopePath = buildScopePath();
+    }
+    
+    public String getScopeName() { return scopeName; }
+    public void setScopeName(String scopeName) { 
+        this.scopeName = scopeName;
+        this.scopePath = buildScopePath();
+    }
+    
+    public String getScopeType() { return scopeType; }
+    public void setScopeType(String scopeType) { 
+        this.scopeType = scopeType;
+        this.scopePath = buildScopePath();
+    }
+    
+    public String getScopePath() { return scopePath; }
+    public void setScopePath(String scopePath) { this.scopePath = scopePath; }
+    
+    public boolean estaInicializada() { return inicializada; }
+    public void setInicializada(boolean inicializada) { this.inicializada = inicializada; }
+    
+    public boolean estaUtilizada() { return utilizada; }
+    public void setUtilizada(boolean utilizada) { this.utilizada = utilizada; }
+    
+    public List<Integer> getDimensiones() { return dimensiones; }
+    public void addDimension(int dimension) { this.dimensiones.add(dimension); }
+    public boolean esArray() { return !dimensiones.isEmpty(); }
+    
+    private String buildScopePath() {
+        if (scopeType == null || scopeName == null) {
+            return "unknown(" + alcance + ")";
+        }
+        return scopeType + ":" + scopeName + "(" + alcance + ")";
+    }
+    
+    public void updateScope(int alcance, String scopeName, String scopeType) {
+        this.alcance = alcance;
+        this.scopeName = scopeName;
+        this.scopeType = scopeType;
+        this.scopePath = buildScopePath();
+    }
+    
+    public boolean esCompatibleCon(String otroTipo) {
+        if (this.tipoVariable == null || otroTipo == null) {
+            return false;
+        }
+        
+        if (this.tipoVariable.equals(otroTipo)) {
+            return true;
+        }
+        
+        switch (this.tipoVariable) {
+            case "FLOAT":
+                return otroTipo.equals("INT") || otroTipo.equals("CHAR");
+            case "INT":
+                return otroTipo.equals("CHAR");
+            case "STRING":
+                return otroTipo.equals("CHAR");
+            default:
+                return false;
+        }
+    }
+    
+    public boolean esNumerico() {
+        return tipoVariable != null && 
+               (tipoVariable.equals("INT") || tipoVariable.equals("FLOAT"));
+    }
+    
+    public boolean esComparable() {
+        return tipoVariable != null && 
+               (tipoVariable.equals("INT") || tipoVariable.equals("FLOAT") || 
+                tipoVariable.equals("CHAR"));
+    }
+    
+    public String tipoResultanteConOperacion(String otroTipo) {
+        if (!this.esNumerico() || !(otroTipo.equals("INT") || otroTipo.equals("FLOAT"))) {
+            return null;
+        }
+        
+        if (this.tipoVariable.equals("FLOAT") || otroTipo.equals("FLOAT")) {
+            return "FLOAT";
+        }
+        
+        return "INT";
+    }
+    
+    public SymbolInfo clonar() {
+        SymbolInfo copia = new SymbolInfo(this.lexema, this.tipo, this.linea, this.columna, 
+                                          this.alcance, this.scopeName, this.scopeType);
+        copia.setTipoVariable(this.tipoVariable);
+        copia.setValor(this.valor);
+        copia.setEsVariable(this.esVariable);
+        copia.setEsFuncion(this.esFuncion);
+        copia.setEsConstante(this.esConstante);
+        copia.setInicializada(this.inicializada);
+        copia.setUtilizada(this.utilizada);
+        
+        for (String param : this.parametros) {
+            copia.addParametro(param);
+        }
+        for (Integer dim : this.dimensiones) {
+            copia.addDimension(dim);
+        }
+        
+        return copia;
+    }
+    
+    public boolean estEnMismoScope(SymbolInfo otro) {
+        return this.alcance == otro.alcance && 
+               this.scopeName.equals(otro.scopeName);
+    }
+    
+    public boolean estEnScopeHijo(SymbolInfo padre) {
+        return this.alcance > padre.alcance;
+    }
+    
+    public String getScopeInfo() {
+        return String.format("Scope[%s:%s(%d)]", scopeType, scopeName, alcance);
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Lexema: ").append(lexema);
         sb.append(", Tipo: ").append(tipo);
+        
         if (tipoVariable != null) {
             sb.append(", Tipo Variable: ").append(tipoVariable);
         }
-        sb.append(", Línea: ").append(linea);
+        
+        sb.append(", Linea: ").append(linea);
         sb.append(", Columna: ").append(columna);
+        sb.append(", Alcance: ").append(alcance);
+        
+        if (scopeName != null) {
+            sb.append(", Scope: ").append(scopeName);
+        }
+        if (scopeType != null) {
+            sb.append(", Tipo_Scope: ").append(scopeType);
+        }
+        if (scopePath != null) {
+            sb.append(", Ruta_Scope: ").append(scopePath);
+        }
+        
         if (valor != null) {
             sb.append(", Valor: ").append(valor);
         }
+        
         if (esFuncion) {
-            sb.append(", Función: Sí");
-            sb.append(", Parámetros: ").append(parametros);
+            sb.append(", Funcion: Si");
+            if (!parametros.isEmpty()) {
+                sb.append(", Parametros: ").append(parametros);
+            }
+            sb.append(", Utilizada: ").append(utilizada ? "Si" : "No");
         }
+        
         if (esVariable) {
-            sb.append(", Variable: Sí");
+            sb.append(", Variable: Si");
+            sb.append(", Inicializada: ").append(inicializada ? "Si" : "No");
+            sb.append(", Utilizada: ").append(utilizada ? "Si" : "No");
+            if (esArray()) {
+                sb.append(", Array: ").append(dimensiones);
+            }
         }
+        
         if (esConstante) {
-            sb.append(", Constante: Sí");
+            sb.append(", Constante: Si");
         }
+        
         return sb.toString();
+    }
+    
+    public String toShortString() {
+        return String.format("%s(%s) en %s", lexema, 
+                           tipoVariable != null ? tipoVariable : tipo, 
+                           getScopeInfo());
     }
 }

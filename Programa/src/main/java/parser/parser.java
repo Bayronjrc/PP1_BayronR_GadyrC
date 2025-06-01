@@ -8,6 +8,7 @@ package main.java.parser;
 import java_cup.runtime.*;
 import java.util.*;
 import main.java.symbol.SymbolTable;
+import main.java.symbol.SemanticSymbolTable;
 import java_cup.runtime.XMLElement;
 
 /** CUP v0.11b 20160615 (GIT 4ac7450) generated parser.
@@ -957,7 +958,13 @@ public class parser extends java_cup.runtime.lr_parser {
 
 
     /* 
-     * Tabla de símbolos utilizada para el análisis semántico
+     * NUEVO: Tabla de símbolos semántica 
+     * OBJETIVO: Preparar infraestructura para análisis semántico futuro
+     */
+    private SemanticSymbolTable semanticTable;
+    
+    /* 
+     * Tabla de símbolos utilizada para el análisis léxico (MANTENER)
      * OBJETIVO: Almacenar y acceder a la información de variables y funciones
      */
     private SymbolTable symbolTable;
@@ -966,11 +973,33 @@ public class parser extends java_cup.runtime.lr_parser {
     private int errorCount = 0;
     
     /* 
+     * NUEVO: Inicializar ambas tablas de símbolos
+     */
+    public void initTables() {
+        semanticTable = new SemanticSymbolTable();
+        symbolTable = semanticTable.getOriginalTable(); // Usar la tabla compatible
+    }
+    
+    /* 
      * OBJETIVO: Establecer la tabla de símbolos para este análisis
      * ENTRADA: Objeto SymbolTable inicializado
      */
     public void setSymbolTable(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
+        // Si no se ha inicializado la tabla semántica, hacerlo ahora
+        if (semanticTable == null) {
+            initTables();
+        }
+    }
+    
+    /* 
+     * NUEVO: Obtener la tabla semántica (para uso futuro)
+     */
+    public SemanticSymbolTable getSemanticTable() {
+        if (semanticTable == null) {
+            initTables();
+        }
+        return semanticTable;
     }
     
     /* 
