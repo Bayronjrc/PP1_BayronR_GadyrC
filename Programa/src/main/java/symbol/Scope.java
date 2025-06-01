@@ -122,4 +122,46 @@ public class Scope {
     public boolean exists(String name) {
         return lookup(name) != null;
     }
+
+    
+    /**
+     * Obtiene todos los simbolos declarados en este alcance
+     * 
+     * @return Mapa de todos los simbolos locales
+     */
+    public Map<String, SymbolInfo> getAllLocalSymbols() {
+        return new HashMap<>(symbols);
+    }
+    
+    /**
+     * Obtiene todas las variables no utilizadas en este alcance
+     * (util para advertencias del compilador)
+     * 
+     * @return Lista de variables no utilizadas
+     */
+    public List<SymbolInfo> getVariablesNoUtilizadas() {
+        List<SymbolInfo> noUtilizadas = new ArrayList<>();
+        for (SymbolInfo symbol : symbols.values()) {
+            if (symbol.esVariable() && !symbol.estaUtilizada()) {
+                noUtilizadas.add(symbol);
+            }
+        }
+        return noUtilizadas;
+    }
+    
+    /**
+     * Obtiene todas las variables no inicializadas en este alcance
+     * (util para detectar errores semánticos)
+     * 
+     * @return Lista de variables no inicializadas
+     */
+    public List<SymbolInfo> getVariablesNoInicializadas() {
+        List<SymbolInfo> noInicializadas = new ArrayList<>();
+        for (SymbolInfo symbol : symbols.values()) {
+            if (symbol.esVariable() && !symbol.estaInicializada()) {
+                noInicializadas.add(symbol);
+            }
+        }
+        return noInicializadas;
+    }
 }
