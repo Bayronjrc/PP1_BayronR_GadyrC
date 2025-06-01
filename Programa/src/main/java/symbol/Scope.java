@@ -102,4 +102,24 @@ public class Scope {
         symbols.put(name, symbol);
         return true;
     }
+    
+    /**
+     * Verifica si un simbolo existe en este alcance especifico
+     * 
+     * @param name Nombre del simbolo
+     * @return true si existe en este alcance, false en caso contrario
+     */
+    public boolean existsLocal(String name) {
+        return symbols.containsKey(name);
+    }
+    
+    /**
+     * Verifica si un simbolo existe en este alcance o en los alcances padre
+     * 
+     * @param name Nombre del simbolo
+     * @return true si existe en cualquier alcance accesible
+     */
+    public boolean exists(String name) {
+        return lookup(name) != null;
+    }
 }
