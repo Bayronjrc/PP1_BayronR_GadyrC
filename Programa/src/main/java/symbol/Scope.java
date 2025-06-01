@@ -180,4 +180,37 @@ public class Scope {
         }
         return null;
     }
+
+    
+    // ============= GETTERS =============
+    
+    public int getNivel() { return nivel; }
+    public Scope getParent() { return parent; }
+    public String getTipoAlcance() { return tipoAlcance; }
+    public String getNombreAlcance() { return nombreAlcance; }
+    public int getCantidadSimbolos() { return symbols.size(); }
+    
+    /**
+     * Representacion textual del alcance para debugging
+     */
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Scope[").append(nombreAlcance)
+          .append(", nivel=").append(nivel)
+          .append(", tipo=").append(tipoAlcance)
+          .append(", simbolos=").append(symbols.size())
+          .append("]");
+        return sb.toString();
+    }
+    
+    /**
+     * Imprime todos los simbolos de este alcance s(para debugging)
+     */
+    public void printSymbols() {
+        System.out.println("=== Simbolos en " + toString() + " ===");
+        for (Map.Entry<String, SymbolInfo> entry : symbols.entrySet()) {
+            System.out.println("  " + entry.getKey() + ": " + entry.getValue());
+        }
+    }
 }
