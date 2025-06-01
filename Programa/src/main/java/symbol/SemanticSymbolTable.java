@@ -530,4 +530,45 @@ public class SemanticSymbolTable {
     }
     
     
+    // ============= MANEJO DE ERRORES Y ADVERTENCIAS =============
+    
+    private void addError(String error) {
+        errors.add(error);
+        System.err.println("Error semantico: " + error);
+    }
+    
+    private void addWarning(String warning) {
+        warnings.add(warning);
+        System.out.println("Advertencia: " + warning);
+    }
+    
+    public List<String> getErrors() { return new ArrayList<>(errors); }
+    public List<String> getWarnings() { return new ArrayList<>(warnings); }
+    public boolean hasErrors() { return !errors.isEmpty(); }
+    public boolean hasWarnings() { return !warnings.isEmpty(); }
+    public int getErrorCount() { return errors.size(); }
+    public int getWarningCount() { return warnings.size(); }
+    
+    /**
+     * Imprime un resumen de errores y advertencias
+     */
+    public void printSummary() {
+        System.out.println("\n=== RESUMEN DEL ANALISIS SEMANTICO ===");
+        System.out.println("Errores encontrados: " + errors.size());
+        System.out.println("Advertencias encontradas: " + warnings.size());
+        
+        if (!errors.isEmpty()) {
+            System.out.println("\nERRORES:");
+            for (int i = 0; i < errors.size(); i++) {
+                System.out.println((i+1) + ". " + errors.get(i));
+            }
+        }
+        
+        if (!warnings.isEmpty()) {
+            System.out.println("\nADVERTENCIAS:");
+            for (int i = 0; i < warnings.size(); i++) {
+                System.out.println((i+1) + ". " + warnings.get(i));
+            }
+        }
+    }
 }
