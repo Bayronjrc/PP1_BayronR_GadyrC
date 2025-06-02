@@ -5,7 +5,6 @@
 
 package main.java.parser;
 
-
 /** CUP generated class containing symbol constants. */
 public class sym {
   /* terminals */
