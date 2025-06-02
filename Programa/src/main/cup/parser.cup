@@ -29,43 +29,34 @@ import main.java.symbol.SemanticSymbolTable;
 /* Código de usuario */
 parser code {:
     /* 
-     * NUEVO: Tabla de símbolos semántica 
-     * OBJETIVO: Preparar infraestructura para análisis semántico futuro
+     * NUEVO: Tabla de símbolos semántica
      */
     private SemanticSymbolTable semanticTable;
     
     /* 
-     * Tabla de símbolos utilizada para el análisis léxico (MANTENER)
-     * OBJETIVO: Almacenar y acceder a la información de variables y funciones
+     * Tabla de símbolos original (para compatibilidad)
      */
     private SymbolTable symbolTable;
     
-    /* Contador de errores para implementar recuperación en modo pánico */
+    /* Contador de errores */
     private int errorCount = 0;
     
     /* 
-     * NUEVO: Inicializar ambas tablas de símbolos
+     * NUEVO: Inicializar tablas semánticas
      */
     public void initTables() {
         semanticTable = new SemanticSymbolTable();
-        symbolTable = semanticTable.getOriginalTable(); // Usar la tabla compatible
+        symbolTable = semanticTable.getOriginalTable();
+        System.out.println("Iniciando analisis semantico...");
     }
     
-    /* 
-     * OBJETIVO: Establecer la tabla de símbolos para este análisis
-     * ENTRADA: Objeto SymbolTable inicializado
-     */
     public void setSymbolTable(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
-        // Si no se ha inicializado la tabla semántica, hacerlo ahora
         if (semanticTable == null) {
             initTables();
         }
     }
     
-    /* 
-     * NUEVO: Obtener la tabla semántica (para uso futuro)
-     */
     public SemanticSymbolTable getSemanticTable() {
         if (semanticTable == null) {
             initTables();
@@ -74,60 +65,69 @@ parser code {:
     }
     
     /* 
-     * Métodos para manejo de errores con recuperación en modo pánico
-     * OBJETIVO: Continuar el análisis después de encontrar errores
+     * NUEVO: Método para finalizar análisis semántico
      */
+    public void finalizeSemantic() {
+        if (semanticTable != null) {
+            // Verificar función main
+            boolean hasMain = semanticTable.checkMainFunction();
+            if (!hasMain) {
+                errorCount++;
+            }
+            
+            // Imprimir resumen
+            semanticTable.printSummary();
+            
+            // Escribir archivo de resultados semánticos
+            try {
+                semanticTable.escribirTablas("semantic_analysis.txt");
+                System.out.println("Analisis semantico completado. Ver: semantic_analysis.txt");
+            } catch (Exception e) {
+                System.err.println("Error escribiendo archivo semantico: " + e.getMessage());
+            }
+        }
+    }
+    
+    /* Métodos de manejo de errores existentes */
     public void syntax_error(Symbol s) {
         errorCount++;
-        System.err.println("Error sintáctico #" + errorCount + " en línea " + (s.left + 1) + 
+        System.err.println("Error sintactico #" + errorCount + " en linea " + (s.left + 1) + 
                           ", columna " + (s.right + 1) + ": Token inesperado '" + s.value + "'");
-        
-        // No lanzar excepción, continuar con el análisis
     }
 
     public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception {
         errorCount++;
-        System.err.println("Error sintáctico fatal #" + errorCount + " en línea " + (s.left + 1) + 
+        System.err.println("Error sintactico fatal #" + errorCount + " en linea " + (s.left + 1) + 
                           ", columna " + (s.right + 1) + ": No se pudo recuperar del error");
         
-        // Reportar el total de errores encontrados antes de terminar
         System.err.println("Total de errores encontrados: " + errorCount);
         
-        // Continuar hasta el final del análisis en lugar de terminar inmediatamente
-        // done_parsing();
+        // NUEVO: Finalizar análisis semántico
+        finalizeSemantic();
     }
     
-    /* Método para reportar errores de recuperación */
     public void report_error(String message, Object info) {
         errorCount++;
         if (info instanceof Symbol) {
             Symbol s = (Symbol) info;
-            System.err.println("Error de recuperación #" + errorCount + " en línea " + (s.left + 1) + 
+            System.err.println("Error de recuperacion #" + errorCount + " en linea " + (s.left + 1) + 
                               ", columna " + (s.right + 1) + ": " + message);
         } else {
-            System.err.println("Error de recuperación #" + errorCount + ": " + message);
+            System.err.println("Error de recuperacion #" + errorCount + ": " + message);
         }
     }
     
-    /* Método para obtener el número total de errores */
     public int getErrorCount() {
-        return errorCount;
+        return errorCount + (semanticTable != null ? semanticTable.getErrorCount() : 0);
     }
     
-    /* 
-     * OBJETIVO: Actualizar el tipo de una variable en la tabla de símbolos
-     * ENTRADAS: ID de la variable y su tipo declarado
-     */
+    /* Métodos de compatibilidad existentes */
     public void updateVariableType(String id, String type) {
         if (symbolTable != null) {
             symbolTable.actualizarTipoVariable(id, type);
         }
     }
     
-    /* 
-     * OBJETIVO: Marcar un identificador como función en la tabla de símbolos
-     * ENTRADAS: ID de la función y su tipo de retorno
-     */
     public void markAsFunction(String id, String returnType) {
         if (symbolTable != null) {
             symbolTable.marcarComoFuncion(id, returnType);
@@ -136,9 +136,31 @@ parser code {:
 :}
 
 /* 
- * Símbolos terminales
- * OBJETIVO: Declarar todos los tokens que pueden aparecer en el programa
+ * Simbolos no terminales con tipos para análisis semántico
+ * Los que retornan tipos se marcan con String
  */
+non terminal program;
+non terminal block;
+non terminal decl_var, decl_fun, decl_arr;
+non terminal stmt;
+non terminal assign;
+non terminal String exp;              
+non terminal String exp_arit, term_arit, factor_arit, power_arit, atom_arit;
+non terminal String exp_rel;          
+non terminal String exp_log, term_log, factor_log;
+non terminal String unary_exp;        
+non terminal ctrl, if_stmt, do_while, for_stmt;
+non terminal break_stmt, return_stmt;
+non terminal read_stmt, write_stmt;
+non terminal String tipo, tipo_r;     
+non terminal String arr_access;      
+non terminal exp_list, exp_matrix, matrix_row;
+non terminal param, param_list, arg_list;
+non terminal String literal;         
+non terminal String llamada_fun;     
+non terminal switch_stmt, case_list, case_stmt, default_stmt;
+
+
 terminal IF, ELIF, ELSE, DO, WHILE, FOR, BREAK, RETURN;
 terminal INT, FLOAT, BOOL, CHAR, STRING, VOID;
 terminal READ, WRITE, MAIN, TRUE, FALSE;
@@ -149,40 +171,10 @@ terminal AND, OR, NOT;
 terminal LPAREN, RPAREN, LBLOCK, RBLOCK;
 terminal QUESTION, COMMA, ASSIGN;
 terminal LBRACKET, RBRACKET;
-terminal UMINUS;  // Para operador unario
+terminal UMINUS;
 terminal ID, LIT_INT, LIT_FLOAT, LIT_BOOL, LIT_CHAR, LIT_STRING;
 terminal SWITCH, CASE, DEFAULT, COLON;
 
-/* 
- * Símbolos no terminales
- * OBJETIVO: Declarar las categorías gramaticales del lenguaje
- */
-non terminal program;
-non terminal block;
-non terminal decl_var, decl_fun, decl_arr;
-non terminal stmt;
-non terminal assign;
-non terminal exp;
-non terminal exp_arit, term_arit, factor_arit, power_arit, atom_arit;
-non terminal exp_rel;
-non terminal exp_log, term_log, factor_log;
-non terminal unary_exp;
-non terminal ctrl, if_stmt, do_while, for_stmt;
-non terminal break_stmt, return_stmt;
-non terminal read_stmt, write_stmt;
-non terminal tipo, tipo_r;
-non terminal arr_access;
-non terminal exp_list, exp_matrix, matrix_row;
-non terminal param, param_list, arg_list;
-non terminal literal;
-non terminal llamada_fun;
-non terminal switch_stmt, case_list, case_stmt, default_stmt;
-
-/* 
- * Precedencias - ordenadas de menor a mayor
- * OBJETIVO: Resolver ambigüedades en expresiones complejas
- * RESTRICCIÓN: Definir adecuadamente para evitar conflictos shift/reduce
- */
 precedence left OR;
 precedence left AND;
 precedence right NOT;
