@@ -10,10 +10,8 @@ import main.java.intermedio.IntermediateCodeGenerator;
 import java_cup.runtime.Symbol;
 
 /**
- * Main MODIFICADO - Preserva análisis semántico + código intermedio opcional
+ * Main - Preserva análisis semántico + código intermedio opcional
  * 
- * ESTRATEGIA: Tu CUP funciona perfectamente. Solo añadimos la capacidad
- * de generar código intermedio DESPUÉS del análisis, sin modificar nada.
  * 
  * @author Bayron Rodríguez & Gadir Calderón
  * @version 2.0 - No invasiva
@@ -43,7 +41,6 @@ public class Main {
                 return;
             }
             
-            // Ejecutar según el modo
             switch (mode) {
                 case "semantic":
                     runSemanticOnly(sourceFile);
@@ -80,14 +77,13 @@ public class Main {
     }
     
     /**
-     * MODO 1: Solo análisis semántico (tu implementación original)
+     * MODO 1: Solo análisis semántico
      */
     private static void runSemanticOnly(String sourceFile) throws Exception {
         System.out.println("=== MODO: SOLO ANÁLISIS SEMÁNTICO ===");
         System.out.println("Usando tu implementación original que ya funciona");
         System.out.println();
         
-        // Ejecutar exactamente como lo tienes funcionando
         runOriginalAnalysis(sourceFile);
         
         System.out.println();
@@ -105,21 +101,18 @@ public class Main {
         System.out.println("=== MODO: SOLO CÓDIGO INTERMEDIO ===");
         System.out.println();
         
-        // Crear generador de código
         String outputFile = getIntermediateFile(sourceFile);
         IntermediateCodeGenerator codeGen = new IntermediateCodeGenerator(outputFile);
         
-        // Parsear solo para extraer estructura (sin análisis semántico)
         generateBasicIntermediateCode(sourceFile, codeGen);
         
-        // Finalizar
         codeGen.printCode();
         codeGen.printStatistics();
         codeGen.writeToFile();
         
         System.out.println();
-        System.out.println("✓ Código intermedio generado");
-        System.out.println("📁 Archivo generado:");
+        System.out.println(" Código intermedio generado");
+        System.out.println(" Archivo generado:");
         System.out.println("  - " + outputFile + " (código intermedio)");
     }
     
@@ -130,37 +123,30 @@ public class Main {
         System.out.println("=== MODO: PASADAS SEPARADAS ===");
         System.out.println();
         
-        // Pasada 1: Análisis semántico (tu versión original)
         System.out.println("--- PASADA 1: ANÁLISIS SEMÁNTICO ---");
         runSemanticOnly(sourceFile);
         
         System.out.println();
         
-        // Pasada 2: Generación de código
         System.out.println("--- PASADA 2: GENERACIÓN DE CÓDIGO ---");
         runCodeGenerationPass(sourceFile);
         
         System.out.println();
-        System.out.println("✓ Ambas pasadas completadas");
+        System.out.println("Ambas pasadas completadas");
     }
     
     /**
-     * MODO 4: Análisis completo (experimental)
-     */
-    /**
-     * NUEVO MÉTODO: Análisis híbrido (semántico + código intermedio)
+     * MODO 4: Análisis completo 
      */
     private static void runFullAnalysis(String sourceFile) throws Exception {
         System.out.println("=== MODO: ANÁLISIS COMPLETO ===");
         System.out.println("Análisis semántico + Generación de código intermedio");
         System.out.println();
         
-        // Archivos de salida
         String tokenOutputFile = getTokenFile(sourceFile);
         String symbolTableFile = getSymbolFile(sourceFile);
         String intermediateFile = getIntermediateFile(sourceFile);
         
-        // === FASE 1: ANÁLISIS LÉXICO (IGUAL QUE ANTES) ===
         PrintWriter tokenWriter = new PrintWriter(new FileWriter(tokenOutputFile));
         SymbolTable symbolTable = new SymbolTable();
         Scanner scanner = new Scanner(new FileReader(sourceFile));
@@ -194,12 +180,10 @@ public class Main {
         symbolTable.escribirTablas(symbolTableFile);
         System.out.println("✓ Análisis léxico completado. " + tokenCount + " tokens procesados.");
         
-        // === FASE 2: ANÁLISIS SINTÁCTICO + SEMÁNTICO + CÓDIGO INTERMEDIO ===
         scanner = new Scanner(new FileReader(sourceFile));
         parser p = new parser(scanner);
         p.setSymbolTable(symbolTable);
         
-        // *** AQUÍ ESTÁ LA MAGIA: HABILITAR GENERACIÓN DE CÓDIGO ***
         p.enableCodeGeneration(intermediateFile);
         
         System.out.println("Ejecutando análisis híbrido...");
@@ -211,26 +195,23 @@ public class Main {
         if (errorCount == 0) {
             System.out.println("✓ Análisis completado sin errores.");
             
-            // Escribir código intermedio
             p.getCodeGenerator().printCode();
             p.getCodeGenerator().printStatistics();
             p.getCodeGenerator().writeToFile();
             
-            System.out.println("📁 Archivos generados:");
+            System.out.println("Archivos generados:");
             System.out.println("  - " + tokenOutputFile + " (tokens)");
             System.out.println("  - " + symbolTableFile + " (símbolos)");
             System.out.println("  - semantic_analysis.txt (análisis semántico)");
             System.out.println("  - " + intermediateFile + " (código intermedio)");
             
         } else {
-            System.out.println("⚠ Análisis completado con " + errorCount + " errores.");
+            System.out.println("Análisis completado con " + errorCount + " errores.");
             System.out.println("No se generó código intermedio debido a errores semánticos.");
         }
     }
     
-    /**
-     * Tu análisis original - SIN MODIFICACIONES
-     */
+
     private static void runOriginalAnalysis(String sourceFile) throws Exception {
         // === ANÁLISIS LÉXICO ===
         String tokenOutputFile = getTokenFile(sourceFile);
@@ -274,11 +255,9 @@ public class Main {
         tokenWriter.close();
         System.out.println("✓ Análisis léxico completado. " + tokenCount + " tokens procesados.");
         
-        // Escribir tablas de símbolos
         symbolTable.escribirTablas(symbolTableFile);
         System.out.println("✓ Tablas de símbolos generadas.");
         
-        // === ANÁLISIS SINTÁCTICO Y SEMÁNTICO (TU VERSIÓN) ===
         scanner = new Scanner(new FileReader(sourceFile));
         parser p = new parser(scanner);
         p.setSymbolTable(symbolTable);
@@ -302,17 +281,12 @@ public class Main {
      * Generación básica de código intermedio
      */
     private static void generateBasicIntermediateCode(String sourceFile, IntermediateCodeGenerator codeGen) throws Exception {
-        // Esta es una implementación básica que extrae estructura
-        // sin interferir con el análisis semántico
         
         codeGen.addComment("Generación básica de código intermedio");
         codeGen.addComment("Archivo fuente: " + sourceFile);
         codeGen.addComment("");
         
-        // Aquí podrías añadir lógica para generar código básico
-        // basado en la estructura del archivo
         
-        // Por simplicidad, generar algunos ejemplos
         codeGen.startFunction("main", "VOID");
         codeGen.addComment("Función principal detectada");
         codeGen.generateReturn(null);
@@ -336,7 +310,7 @@ public class Main {
     }
     
     /**
-     * Tu método original para convertir símbolos
+     * método original para convertir símbolos
      */
     public static String symbolToString(int sym) {
         switch(sym) {

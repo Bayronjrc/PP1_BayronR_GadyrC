@@ -998,35 +998,21 @@ public class parser extends java_cup.runtime.lr_parser {
 
 
 
-    /* 
-     * NUEVO: Tabla de símbolos semántica
-     */
+
     private SemanticSymbolTable semanticTable;
     
-    /* 
-     * Tabla de símbolos original (para compatibilidad)
-     */
     private SymbolTable symbolTable;
     
-    /* Contador de errores */
     private int errorCount = 0;
-    
-    /* 
-     * NUEVO: Stack para contexto de scopes (evita acciones intermedias)
-     */
+
     private Stack<String> scopeContext = new Stack<>();
     
-    /* 
-     * NUEVO: Nombre de función actual para verificar returns
-     */
     private String currentFunctionName = null;
     
 
-    // === NUEVO: GENERADOR DE CÓDIGO INTERMEDIO (OPCIONAL) ===
     private IntermediateCodeGenerator codeGenerator;
     private boolean codeGenerationEnabled = false;
     
-    // Método para habilitar generación de código
     public void enableCodeGeneration(String outputFile) {
         this.codeGenerator = new IntermediateCodeGenerator(outputFile);
         this.codeGenerationEnabled = true;
@@ -1042,15 +1028,11 @@ public class parser extends java_cup.runtime.lr_parser {
         return codeGenerator;
     }
 
-    /* 
-     * NUEVO: Inicializar tablas semánticas
-     */
     public void initTables() {
         semanticTable = new SemanticSymbolTable();
         symbolTable = semanticTable.getOriginalTable();
         System.out.println("Iniciando analisis semantico...");
         
-        // Inicializar contexto global
         scopeContext.push("GLOBAL");
     }
     
@@ -1067,10 +1049,7 @@ public class parser extends java_cup.runtime.lr_parser {
         }
         return semanticTable;
     }
-    
-    /* 
-     * NUEVO: Métodos para manejar función actual
-     */
+
     public String getCurrentFunctionName() {
         return currentFunctionName;
     }
@@ -1079,14 +1058,11 @@ public class parser extends java_cup.runtime.lr_parser {
         this.currentFunctionName = functionName;
     }
     
-    /* 
-     * NUEVO: Métodos para manejo de scopes sin acciones intermedias
-     */
     public void enterFunctionScope(String functionName, String returnType, List<String> params, int line, int column) {
         if (semanticTable != null) {
             semanticTable.enterScope("FUNCTION", functionName);
             scopeContext.push("FUNCTION:" + functionName);
-            setCurrentFunctionName(functionName); // Establecer función actual
+            setCurrentFunctionName(functionName); 
             System.out.println("Entrando a función: " + functionName);
         }
     }
@@ -1095,7 +1071,7 @@ public class parser extends java_cup.runtime.lr_parser {
         if (semanticTable != null && !scopeContext.isEmpty()) {
             String context = scopeContext.pop();
             semanticTable.exitScope();
-            setCurrentFunctionName(null); // Limpiar función actual
+            setCurrentFunctionName(null);
             System.out.println("Saliendo de scope: " + context);
         }
     }
@@ -1132,21 +1108,15 @@ public class parser extends java_cup.runtime.lr_parser {
         }
     }
     
-    /* 
-     * NUEVO: Método para finalizar análisis semántico
-     */
     public void finalizeSemantic() {
         if (semanticTable != null) {
-            // Verificar función main
             boolean hasMain = semanticTable.checkMainFunction();
             if (!hasMain) {
                 errorCount++;
             }
             
-            // Imprimir resumen
             semanticTable.printSummary();
             
-            // Escribir archivo de resultados semánticos
             try {
                 semanticTable.escribirTablas("semantic_analysis.txt");
                 System.out.println("Analisis semantico completado. Ver: semantic_analysis.txt");
@@ -1155,7 +1125,6 @@ public class parser extends java_cup.runtime.lr_parser {
             }
         }
         
-        // NUEVO: Finalizar código intermedio si está habilitado
         if (codeGenerationEnabled && codeGenerator != null) {
             codeGenerator.printCode();
             codeGenerator.printStatistics();
@@ -1177,7 +1146,6 @@ public class parser extends java_cup.runtime.lr_parser {
         
         System.err.println("Total de errores encontrados: " + errorCount);
         
-        // NUEVO: Finalizar análisis semántico
         finalizeSemantic();
     }
     
@@ -1256,16 +1224,13 @@ class CUP$parser$actions {
 		int mright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).right;
 		Object m = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
  
-             // Declarar función main en alcance global
              List<String> noParams = new ArrayList<String>();
              parser.getSemanticTable().declareFunction("main", "VOID", noParams, mleft, mright);
              
-             // Entrar al scope de main ANTES de procesar el bloque
              parser.getSemanticTable().enterScope("FUNCTION", "main");
              parser.setCurrentFunctionName("main");
              System.out.println("Entrando a función main");
              
-             // NUEVO: Código intermedio para función main
              if (parser.codeGenerationEnabled) {
                  parser.getCodeGenerator().startFunction("main", "VOID");
              }
@@ -1284,17 +1249,14 @@ class CUP$parser$actions {
 		int mright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-6)).right;
 		Object m = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-6)).value;
 		 
-             // Salir del scope de main DESPUÉS de procesar el bloque
              parser.getSemanticTable().exitScope();
              parser.setCurrentFunctionName(null);
              System.out.println("Saliendo de función main");
              
-             // NUEVO: Finalizar función main en código intermedio
              if (parser.codeGenerationEnabled) {
                  parser.getCodeGenerator().endFunction("main");
              }
              
-             // Finalizar análisis
              parser.finalizeSemantic();
           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("program",0, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-7)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -1309,7 +1271,6 @@ class CUP$parser$actions {
 		int fright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		Object f = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-             // La función ya fue procesada semánticamente en decl_fun
              if (f != null) {
                  System.out.println("Función declarada: " + f.toString());
              }
@@ -1349,16 +1310,13 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-4)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-4)).value;
  
-              // PRIMERO: Declarar función en alcance global
-              List<String> params = new ArrayList<String>(); // TODO: extraer de param_list
+              List<String> params = new ArrayList<String>(); 
               parser.getSemanticTable().declareFunction(id.toString(), t.toString(), params, idleft, idright);
               
-              // SEGUNDO: Entrar al scope de función ANTES de procesar el bloque
               parser.getSemanticTable().enterScope("FUNCTION", id.toString());
               parser.setCurrentFunctionName(id.toString());
               System.out.println("Entrando a función: " + id.toString() + " tipo: " + t.toString());
               
-              // NUEVO: Código intermedio para función
               if (parser.codeGenerationEnabled) {
                   parser.getCodeGenerator().startFunction(id.toString(), t.toString());
               }
@@ -1382,17 +1340,14 @@ class CUP$parser$actions {
 		 
               RESULT = id; 
               
-              // TERCERO: Salir del scope de función DESPUÉS de procesar el bloque
               parser.getSemanticTable().exitScope();
               parser.setCurrentFunctionName(null);
               System.out.println("Saliendo de función: " + id.toString());
               
-              // NUEVO: Finalizar función en código intermedio
               if (parser.codeGenerationEnabled) {
                   parser.getCodeGenerator().endFunction(id.toString());
               }
               
-              // Compatibilidad con Proyecto 1
               parser.markAsFunction(id.toString(), t.toString());
            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("decl_fun",3, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-8)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -1410,7 +1365,6 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
  
-              // Función sin parámetros
               List<String> noParams = new ArrayList<String>();
               parser.getSemanticTable().declareFunction(id.toString(), t.toString(), noParams, idleft, idright);
               
@@ -1418,7 +1372,6 @@ class CUP$parser$actions {
               parser.setCurrentFunctionName(id.toString());
               System.out.println("Entrando a función sin parámetros: " + id.toString() + " tipo: " + t.toString());
               
-              // NUEVO: Código intermedio para función sin parámetros
               if (parser.codeGenerationEnabled) {
                   parser.getCodeGenerator().startFunction(id.toString(), t.toString());
               }
@@ -1446,7 +1399,6 @@ class CUP$parser$actions {
               parser.setCurrentFunctionName(null);
               System.out.println("Saliendo de función: " + id.toString());
               
-              // NUEVO: Finalizar función en código intermedio
               if (parser.codeGenerationEnabled) {
                   parser.getCodeGenerator().endFunction(id.toString());
               }
@@ -1531,17 +1483,14 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-           // Análisis semántico: declarar parámetro en scope actual
            if (parser.getSemanticTable() != null) {
                parser.getSemanticTable().declareVariable(id.toString(), t.toString(), idleft, idright);
            }
            
-           // NUEVO: Código intermedio para parámetro
            if (parser.codeGenerationEnabled) {
                parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
            }
            
-           // Compatibilidad con Proyecto 1
            parser.updateVariableType(id.toString(), t.toString());
         
               CUP$parser$result = parser.getSymbolFactory().newSymbol("param",32, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -1639,18 +1588,14 @@ class CUP$parser$actions {
 		 
               String arrayType = t.toString() + "[][]";
               
-              // Análisis semántico: verificar que e1 y e2 sean enteros
               if (parser.getSemanticTable() != null) {
                   parser.getSemanticTable().declareVariable(id.toString(), arrayType, idleft, idright);
-                  // TODO: verificar que e1 y e2 sean expresiones enteras válidas
               }
               
-              // NUEVO: Código intermedio para declaración de array
               if (parser.codeGenerationEnabled) {
                   parser.getCodeGenerator().declareVariable(id.toString(), arrayType);
               }
               
-              // Compatibilidad con Proyecto 1
               parser.updateVariableType(id.toString(), arrayType);
            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("decl_arr",4, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-8)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -1676,19 +1621,15 @@ class CUP$parser$actions {
 		 
               String arrayType = t.toString() + "[][]";
               
-              // Análisis semántico: declarar e inicializar
               if (parser.getSemanticTable() != null) {
                   parser.getSemanticTable().declareVariable(id.toString(), arrayType, idleft, idright);
-                  // TODO: verificar compatibilidad de tipos con exp_matrix
               }
               
-              // NUEVO: Código intermedio para array con inicialización
               if (parser.codeGenerationEnabled) {
                   parser.getCodeGenerator().declareVariable(id.toString(), arrayType);
                   parser.getCodeGenerator().addComment("Array inicializado con matriz");
               }
               
-              // Compatibilidad con Proyecto 1
               parser.updateVariableType(id.toString(), arrayType);
            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("decl_arr",4, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-10)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -1754,17 +1695,13 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-                // Análisis semántico: verificar que id sea un arreglo y e1,e2 sean enteros
                 if (parser.getSemanticTable() != null) {
-                    // TODO: verificar que id existe y es un arreglo
-                    // TODO: verificar que e1 y e2 son expresiones enteras
                 }
                 
-                // NUEVO: Código intermedio para acceso a array
                 if (parser.codeGenerationEnabled) {
                     RESULT = parser.getCodeGenerator().generateArrayAccess(id.toString(), e1, e2);
                 } else {
-                    RESULT = "ARRAY_ACCESS"; // Tipo resultante depende del tipo del arreglo
+                    RESULT = "ARRAY_ACCESS"; 
                 }
              
               CUP$parser$result = parser.getSymbolFactory().newSymbol("arr_access",28, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-6)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -1779,9 +1716,7 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-          // Análisis semántico: evaluar expresión
           if (parser.getSemanticTable() != null && e != null) {
-              // TODO: verificar que la expresión es válida en este contexto
           }
        
               CUP$parser$result = parser.getSymbolFactory().newSymbol("stmt",5, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -1865,7 +1800,6 @@ class CUP$parser$actions {
             {
               Object RESULT =null;
 		 
-          // Análisis semántico: manejar scope de bloque
           parser.enterBlockScope();
           parser.exitBlockScope();
        
@@ -1893,7 +1827,6 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		
-            // === TU ANÁLISIS SEMÁNTICO EXISTENTE (NO TOCAR) ===
             boolean valid = parser.getSemanticTable().checkAssignment(id.toString(), e, idleft);
             
             if (valid) {
@@ -1902,7 +1835,6 @@ class CUP$parser$actions {
                 System.err.println("Error en asignacion a variable: " + id);
             }
             
-            // === NUEVO: GENERACIÓN DE CÓDIGO (SOLO SI ES VÁLIDO) ===
             if (parser.codeGenerationEnabled && valid) {
                 parser.getCodeGenerator().generateAssignment(id.toString(), e);
             }
@@ -1922,15 +1854,11 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-            // NUEVO: Verificar asignación a array
             if (parser.getSemanticTable() != null) {
-                // El arr_access ya verificó si el array existe
                 System.out.println("Asignacion a array: " + arr + " = " + e);
                 
-                // NUEVO: Código intermedio para asignación a array
                 if (parser.codeGenerationEnabled) {
                     parser.getCodeGenerator().addComment("Asignación a elemento de array");
-                    // Nota: arr ya contiene el acceso completo generado
                 }
             }
          
@@ -1961,12 +1889,9 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-              // === TU VERIFICACIÓN SEMÁNTICA EXISTENTE (NO TOCAR) ===
-              // 1. Declarar variable con inicialización
               boolean declared = parser.getSemanticTable().declareVariable(id.toString(), t, idleft, idright, true);
               
               if (declared) {
-                  // 2. Verificar compatibilidad de tipos
                   if (e != null) {
                       boolean compatible = parser.getSemanticTable().checkTypeCompatibility(t, e, idleft);
                       if (compatible) {
@@ -1977,10 +1902,8 @@ class CUP$parser$actions {
                   }
               }
               
-              // Compatibilidad con tabla original
               parser.updateVariableType(id.toString(), t.toString());
               
-              // === NUEVO: GENERACIÓN DE CÓDIGO (SOLO SI ES VÁLIDO) ===
               if (parser.codeGenerationEnabled && declared) {
                   parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
                   if (e != null) {
@@ -2003,8 +1926,6 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-              // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
-              // Variable sin inicialización
               boolean declared = parser.getSemanticTable().declareVariable(id.toString(), t, idleft, idright, false);
               
               if (declared) {
@@ -2013,7 +1934,6 @@ class CUP$parser$actions {
               
               parser.updateVariableType(id.toString(), t.toString());
               
-              // === NUEVO: CÓDIGO INTERMEDIO ===
               if (parser.codeGenerationEnabled && declared) {
                   parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
               }
@@ -2033,9 +1953,8 @@ class CUP$parser$actions {
              RESULT = "INT"; 
              System.out.println("Literal entero detectado");
              
-             // NUEVO: En código intermedio, los literales se usan directamente
              if (parser.codeGenerationEnabled) {
-                 RESULT = val.toString(); // Usar el valor literal directamente
+                 RESULT = val.toString(); 
              }
           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("literal",35, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -2158,13 +2077,10 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
 		 
-                 // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                  if (parser.getSemanticTable() != null) {
-                     // TODO: verificar función y argumentos
-                     RESULT = "FUNCTION_CALL"; // El tipo real debe venir de la tabla de símbolos
+                     RESULT = "FUNCTION_CALL"; 
                  }
                  
-                 // === NUEVO: CÓDIGO INTERMEDIO ===
                  if (parser.codeGenerationEnabled) {
                      List<String> args = new ArrayList<String>(); // TODO: extraer argumentos reales
                      RESULT = parser.getCodeGenerator().generateFunctionCall(id.toString(), args);
@@ -2182,13 +2098,10 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
 		 
-                 // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                  if (parser.getSemanticTable() != null) {
-                     // TODO: verificar función sin argumentos
                      RESULT = "FUNCTION_CALL";
                  }
                  
-                 // === NUEVO: CÓDIGO INTERMEDIO ===
                  if (parser.codeGenerationEnabled) {
                      List<String> noArgs = new ArrayList<String>();
                      RESULT = parser.getCodeGenerator().generateFunctionCall(id.toString(), noArgs);
@@ -2221,13 +2134,10 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-             // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
              if (parser.getSemanticTable() != null) {
-                 // TODO: verificar tipos booleanos
              }
              RESULT = "BOOL"; 
              
-             // === NUEVO: CÓDIGO INTERMEDIO ===
              if (parser.codeGenerationEnabled) {
                  RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "||", e2);
              }
@@ -2259,13 +2169,10 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-              // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
               if (parser.getSemanticTable() != null) {
-                  // TODO: verificar tipos booleanos
               }
               RESULT = "BOOL"; 
               
-              // === NUEVO: CÓDIGO INTERMEDIO ===
               if (parser.codeGenerationEnabled) {
                   RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "&&", e2);
               }
@@ -2294,13 +2201,10 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-                // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                 if (parser.getSemanticTable() != null) {
-                    // TODO: verificar tipo booleano
                 }
                 RESULT = "BOOL"; 
                 
-                // === NUEVO: CÓDIGO INTERMEDIO ===
                 if (parser.codeGenerationEnabled) {
                     RESULT = parser.getCodeGenerator().generateUnaryOp("!", e);
                 }
@@ -2346,7 +2250,6 @@ class CUP$parser$actions {
 		 
              RESULT = "BOOL"; 
              
-             // === NUEVO: CÓDIGO INTERMEDIO ===
              if (parser.codeGenerationEnabled) {
                  RESULT = parser.getCodeGenerator().generateComparison(e1, "<", e2);
              }
@@ -2483,11 +2386,7 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-              // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
-              // TODO: determinar tipo resultante (INT + INT = INT, FLOAT + cualquiera = FLOAT)
               RESULT = "NUMERIC"; 
-              
-              // === NUEVO: CÓDIGO INTERMEDIO ===
               if (parser.codeGenerationEnabled) {
                   RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "+", e2);
               }
@@ -2696,15 +2595,12 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-               // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                if (parser.getSemanticTable() != null) {
                    parser.getSemanticTable().useVariable(id.toString(), idleft, idright);
-                   // TODO: obtener tipo real de la tabla de símbolos
                }
                
-               // === NUEVO: CÓDIGO INTERMEDIO ===
                if (parser.codeGenerationEnabled) {
-                   RESULT = id.toString(); // Las variables se usan directamente por su nombre
+                   RESULT = id.toString(); 
                } else {
                    RESULT = "VARIABLE"; 
                }
@@ -2823,11 +2719,9 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-4)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-4)).value;
 		 
-             // === TU ANÁLISIS SEMÁNTICO EXISTENTE (MOVIDO AL FINAL) ===
              parser.enterControlScope("IF");
              parser.exitControlScope();
              
-             // === NUEVO: CÓDIGO INTERMEDIO SIMPLIFICADO ===
              if (parser.codeGenerationEnabled) {
                  parser.getCodeGenerator().addComment("Estructura IF procesada");
                  parser.getCodeGenerator().addComment("Condicion: " + e);
@@ -2902,11 +2796,9 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
 		 
-              // === TU ANÁLISIS SEMÁNTICO EXISTENTE (MOVIDO AL FINAL) ===
               parser.enterControlScope("WHILE");
               parser.exitControlScope();
               
-              // === NUEVO: CÓDIGO INTERMEDIO SIMPLIFICADO ===
               if (parser.codeGenerationEnabled) {
                   parser.getCodeGenerator().addComment("Estructura DO-WHILE procesada");
                   parser.getCodeGenerator().addComment("Condicion: " + e);
@@ -2930,11 +2822,9 @@ class CUP$parser$actions {
             {
               Object RESULT =null;
 		 
-              // === TU ANÁLISIS SEMÁNTICO EXISTENTE (MOVIDO AL FINAL) ===
               parser.enterControlScope("FOR");
               parser.exitControlScope();
               
-              // === NUEVO: CÓDIGO INTERMEDIO SIMPLIFICADO ===
               if (parser.codeGenerationEnabled) {
                   parser.getCodeGenerator().addComment("Estructura FOR procesada con declaracion");
               }
@@ -3056,7 +2946,6 @@ class CUP$parser$actions {
             {
               Object RESULT =null;
 		 
-                // === NUEVO: CÓDIGO INTERMEDIO PARA BREAK ===
                 if (parser.codeGenerationEnabled) {
                     parser.getCodeGenerator().generateBreak();
                 }
@@ -3073,7 +2962,6 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-                 // === TU ANÁLISIS SEMÁNTICO EXISTENTE (NO TOCAR) ===
                  System.out.println("DEBUG: Return con expresión, función actual: " + parser.getCurrentFunctionName());
                  
                  if (parser.getSemanticTable() != null && parser.getCurrentFunctionName() != null) {
@@ -3082,7 +2970,6 @@ class CUP$parser$actions {
                      System.err.println("ERROR: No se puede verificar return - función actual: " + parser.getCurrentFunctionName());
                  }
                  
-                 // === NUEVO: CÓDIGO INTERMEDIO PARA RETURN ===
                  if (parser.codeGenerationEnabled) {
                      parser.getCodeGenerator().generateReturn(e);
                  }
@@ -3099,7 +2986,6 @@ class CUP$parser$actions {
 		int rright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		Object r = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-                 // === TU ANÁLISIS SEMÁNTICO EXISTENTE (NO TOCAR) ===
                  System.out.println("DEBUG: Return sin expresión, función actual: " + parser.getCurrentFunctionName());
                  
                  if (parser.getSemanticTable() != null && parser.getCurrentFunctionName() != null) {
@@ -3108,7 +2994,6 @@ class CUP$parser$actions {
                      System.err.println("ERROR: No se puede verificar return - función actual: " + parser.getCurrentFunctionName());
                  }
                  
-                 // === NUEVO: CÓDIGO INTERMEDIO PARA RETURN VOID ===
                  if (parser.codeGenerationEnabled) {
                      parser.getCodeGenerator().generateReturn(null);
                  }
@@ -3134,12 +3019,10 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
 		 
-               // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                if (parser.getSemanticTable() != null) {
                    parser.getSemanticTable().useVariable(id.toString(), idleft, idright);
                }
                
-               // === NUEVO: CÓDIGO INTERMEDIO PARA READ ===
                if (parser.codeGenerationEnabled) {
                    parser.getCodeGenerator().generateRead(id.toString());
                }
@@ -3165,10 +3048,7 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
 		 
-                // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
-                // Cualquier tipo es válido para write
                 
-                // === NUEVO: CÓDIGO INTERMEDIO PARA WRITE ===
                 if (parser.codeGenerationEnabled) {
                     parser.getCodeGenerator().generateWrite(e);
                 }
