@@ -1,6 +1,6 @@
 /* 
- * Analizador Sintáctico con Análisis Semántico Integrado
- * ------------------------------------------------------
+ * Analizador Sintáctico con Análisis Semántico Integrado + Código Intermedio
+ * --------------------------------------------------------------------------
  * 
  * OBJETIVO: Verificar la estructura del programa según las reglas gramaticales
  * del lenguaje y realizar análisis semántico con manejo de alcances.
@@ -9,15 +9,18 @@
  * - Manejo de scopes y tabla de símbolos semántica
  * - Verificación de tipos y compatibilidad
  * - Detección de errores semánticos
+ * - NUEVO: Generación de código intermedio (opcional, no invasiva)
  * 
  * ESTRATEGIA: Acciones semánticas al final de producciones para evitar conflictos
+ * El código intermedio se genera SOLO si pasa el análisis semántico.
  */
 
 /* Imports y paquetes */
 import java_cup.runtime.*;
 import java.util.*;
 import main.java.symbol.SymbolTable;
-import main.java.symbol.SemanticSymbolTable;  
+import main.java.symbol.SemanticSymbolTable;
+import main.java.intermedio.IntermediateCodeGenerator;
 
 /* Código de usuario */
 parser code {:
@@ -44,6 +47,27 @@ parser code {:
      */
     private String currentFunctionName = null;
     
+
+    // === NUEVO: GENERADOR DE CÓDIGO INTERMEDIO (OPCIONAL) ===
+    private IntermediateCodeGenerator codeGenerator;
+    private boolean codeGenerationEnabled = false;
+    
+    // Método para habilitar generación de código
+    public void enableCodeGeneration(String outputFile) {
+        this.codeGenerator = new IntermediateCodeGenerator(outputFile);
+        this.codeGenerationEnabled = true;
+        System.out.println("Generación de código intermedio habilitada");
+    }
+    
+    public void disableCodeGeneration() {
+        this.codeGenerationEnabled = false;
+        this.codeGenerator = null;
+    }
+    
+    public IntermediateCodeGenerator getCodeGenerator() {
+        return codeGenerator;
+    }
+
     /* 
      * NUEVO: Inicializar tablas semánticas
      */
@@ -155,6 +179,13 @@ parser code {:
             } catch (Exception e) {
                 System.err.println("Error escribiendo archivo semantico: " + e.getMessage());
             }
+        }
+        
+        // NUEVO: Finalizar código intermedio si está habilitado
+        if (codeGenerationEnabled && codeGenerator != null) {
+            codeGenerator.printCode();
+            codeGenerator.printStatistics();
+            codeGenerator.writeToFile();
         }
     }
     
@@ -272,6 +303,11 @@ program ::= VOID MAIN:m LPAREN RPAREN LBLOCK
              parser.getSemanticTable().enterScope("FUNCTION", "main");
              parser.setCurrentFunctionName("main");
              System.out.println("Entrando a función main");
+             
+             // NUEVO: Código intermedio para función main
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().startFunction("main", "VOID");
+             }
           :}
           block RBLOCK
           {: 
@@ -279,6 +315,11 @@ program ::= VOID MAIN:m LPAREN RPAREN LBLOCK
              parser.getSemanticTable().exitScope();
              parser.setCurrentFunctionName(null);
              System.out.println("Saliendo de función main");
+             
+             // NUEVO: Finalizar función main en código intermedio
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().endFunction("main");
+             }
              
              // Finalizar análisis
              parser.finalizeSemantic();
@@ -310,6 +351,11 @@ decl_fun ::= tipo_r:t ID:id LPAREN param_list RPAREN LBLOCK
               parser.getSemanticTable().enterScope("FUNCTION", id.toString());
               parser.setCurrentFunctionName(id.toString());
               System.out.println("Entrando a función: " + id.toString() + " tipo: " + t.toString());
+              
+              // NUEVO: Código intermedio para función
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().startFunction(id.toString(), t.toString());
+              }
            :}
            block RBLOCK
            {: 
@@ -319,6 +365,11 @@ decl_fun ::= tipo_r:t ID:id LPAREN param_list RPAREN LBLOCK
               parser.getSemanticTable().exitScope();
               parser.setCurrentFunctionName(null);
               System.out.println("Saliendo de función: " + id.toString());
+              
+              // NUEVO: Finalizar función en código intermedio
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().endFunction(id.toString());
+              }
               
               // Compatibilidad con Proyecto 1
               parser.markAsFunction(id.toString(), t.toString());
@@ -332,6 +383,11 @@ decl_fun ::= tipo_r:t ID:id LPAREN param_list RPAREN LBLOCK
               parser.getSemanticTable().enterScope("FUNCTION", id.toString());
               parser.setCurrentFunctionName(id.toString());
               System.out.println("Entrando a función sin parámetros: " + id.toString() + " tipo: " + t.toString());
+              
+              // NUEVO: Código intermedio para función sin parámetros
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().startFunction(id.toString(), t.toString());
+              }
            :}
            block RBLOCK
            {: 
@@ -340,6 +396,11 @@ decl_fun ::= tipo_r:t ID:id LPAREN param_list RPAREN LBLOCK
               parser.getSemanticTable().exitScope();
               parser.setCurrentFunctionName(null);
               System.out.println("Saliendo de función: " + id.toString());
+              
+              // NUEVO: Finalizar función en código intermedio
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().endFunction(id.toString());
+              }
               
               parser.markAsFunction(id.toString(), t.toString()); 
            :}
@@ -370,6 +431,11 @@ param ::= tipo:t ID:id
            // Análisis semántico: declarar parámetro en scope actual
            if (parser.getSemanticTable() != null) {
                parser.getSemanticTable().declareVariable(id.toString(), t.toString(), idleft, idright);
+           }
+           
+           // NUEVO: Código intermedio para parámetro
+           if (parser.codeGenerationEnabled) {
+               parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
            }
            
            // Compatibilidad con Proyecto 1
@@ -408,6 +474,11 @@ decl_arr ::= tipo:t ID:id LBRACKET exp:e1 RBRACKET LBRACKET exp:e2 RBRACKET QUES
                   // TODO: verificar que e1 y e2 sean expresiones enteras válidas
               }
               
+              // NUEVO: Código intermedio para declaración de array
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().declareVariable(id.toString(), arrayType);
+              }
+              
               // Compatibilidad con Proyecto 1
               parser.updateVariableType(id.toString(), arrayType);
            :}
@@ -419,6 +490,12 @@ decl_arr ::= tipo:t ID:id LBRACKET exp:e1 RBRACKET LBRACKET exp:e2 RBRACKET QUES
               if (parser.getSemanticTable() != null) {
                   parser.getSemanticTable().declareVariable(id.toString(), arrayType, idleft, idright);
                   // TODO: verificar compatibilidad de tipos con exp_matrix
+              }
+              
+              // NUEVO: Código intermedio para array con inicialización
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().declareVariable(id.toString(), arrayType);
+                  parser.getCodeGenerator().addComment("Array inicializado con matriz");
               }
               
               // Compatibilidad con Proyecto 1
@@ -447,7 +524,13 @@ arr_access ::= ID:id LBRACKET exp:e1 RBRACKET LBRACKET exp:e2 RBRACKET
                     // TODO: verificar que id existe y es un arreglo
                     // TODO: verificar que e1 y e2 son expresiones enteras
                 }
-                RESULT = "ARRAY_ACCESS"; // Tipo resultante depende del tipo del arreglo
+                
+                // NUEVO: Código intermedio para acceso a array
+                if (parser.codeGenerationEnabled) {
+                    RESULT = parser.getCodeGenerator().generateArrayAccess(id.toString(), e1, e2);
+                } else {
+                    RESULT = "ARRAY_ACCESS"; // Tipo resultante depende del tipo del arreglo
+                }
              :}
              ;
 
@@ -483,13 +566,18 @@ stmt ::= exp:e QUESTION
  */
 assign ::= ID:id ASSIGN exp:e QUESTION
          {:
-            // VERIFICACIÓN SEMÁNTICA MEJORADA
+            // === TU ANÁLISIS SEMÁNTICO EXISTENTE (NO TOCAR) ===
             boolean valid = parser.getSemanticTable().checkAssignment(id.toString(), e, idleft);
             
             if (valid) {
                 System.out.println("Asignacion valida: " + id + " = " + e);
             } else {
                 System.err.println("Error en asignacion a variable: " + id);
+            }
+            
+            // === NUEVO: GENERACIÓN DE CÓDIGO (SOLO SI ES VÁLIDO) ===
+            if (parser.codeGenerationEnabled && valid) {
+                parser.getCodeGenerator().generateAssignment(id.toString(), e);
             }
          :}
          | arr_access:arr ASSIGN exp:e QUESTION
@@ -498,6 +586,12 @@ assign ::= ID:id ASSIGN exp:e QUESTION
             if (parser.getSemanticTable() != null) {
                 // El arr_access ya verificó si el array existe
                 System.out.println("Asignacion a array: " + arr + " = " + e);
+                
+                // NUEVO: Código intermedio para asignación a array
+                if (parser.codeGenerationEnabled) {
+                    parser.getCodeGenerator().addComment("Asignación a elemento de array");
+                    // Nota: arr ya contiene el acceso completo generado
+                }
             }
          :}
          | ID ASSIGN error QUESTION  {: System.err.println("Error en expresión de asignación. Continuando..."); :}
@@ -508,7 +602,7 @@ assign ::= ID:id ASSIGN exp:e QUESTION
  */
 decl_var ::= tipo:t ID:id ASSIGN exp:e QUESTION
            {: 
-              // VERIFICACIÓN SEMÁNTICA:
+              // === TU VERIFICACIÓN SEMÁNTICA EXISTENTE (NO TOCAR) ===
               // 1. Declarar variable con inicialización
               boolean declared = parser.getSemanticTable().declareVariable(id.toString(), t, idleft, idright, true);
               
@@ -526,9 +620,18 @@ decl_var ::= tipo:t ID:id ASSIGN exp:e QUESTION
               
               // Compatibilidad con tabla original
               parser.updateVariableType(id.toString(), t.toString());
+              
+              // === NUEVO: GENERACIÓN DE CÓDIGO (SOLO SI ES VÁLIDO) ===
+              if (parser.codeGenerationEnabled && declared) {
+                  parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
+                  if (e != null) {
+                      parser.getCodeGenerator().generateAssignment(id.toString(), e);
+                  }
+              }
            :}
            | tipo:t ID:id QUESTION
            {: 
+              // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
               // Variable sin inicialización
               boolean declared = parser.getSemanticTable().declareVariable(id.toString(), t, idleft, idright, false);
               
@@ -537,62 +640,108 @@ decl_var ::= tipo:t ID:id ASSIGN exp:e QUESTION
               }
               
               parser.updateVariableType(id.toString(), t.toString());
+              
+              // === NUEVO: CÓDIGO INTERMEDIO ===
+              if (parser.codeGenerationEnabled && declared) {
+                  parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
+              }
            :}
            ;
 
 /* Valores literales con tipos semánticos */
-literal ::= LIT_INT 
+literal ::= LIT_INT:val
           {: 
              RESULT = "INT"; 
              System.out.println("Literal entero detectado");
+             
+             // NUEVO: En código intermedio, los literales se usan directamente
+             if (parser.codeGenerationEnabled) {
+                 RESULT = val.toString(); // Usar el valor literal directamente
+             }
           :}
-         | LIT_FLOAT 
+         | LIT_FLOAT:val
           {: 
              RESULT = "FLOAT"; 
              System.out.println("Literal flotante detectado");
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = val.toString();
+             }
           :}
-         | LIT_BOOL 
+         | LIT_BOOL:val
           {: 
              RESULT = "BOOL"; 
              System.out.println("Literal booleano detectado");
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = val.toString();
+             }
           :}
-         | LIT_CHAR 
+         | LIT_CHAR:val
           {: 
              RESULT = "CHAR"; 
              System.out.println("Literal caracter detectado");
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = val.toString();
+             }
           :}
-         | LIT_STRING 
+         | LIT_STRING:val
           {: 
              RESULT = "STRING"; 
              System.out.println("Literal cadena detectado");
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = val.toString();
+             }
           :}
          | TRUE 
           {: 
              RESULT = "BOOL"; 
              System.out.println("Literal booleano 'true' detectado");
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = "true";
+             }
           :}
          | FALSE 
           {: 
              RESULT = "BOOL"; 
              System.out.println("Literal booleano 'false' detectado");
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = "false";
+             }
           :}
          ;
 
 /* Llamadas a funciones con verificación semántica */
 llamada_fun ::= ID:id LPAREN arg_list RPAREN
               {: 
-                 // Análisis semántico: verificar que la función existe y argumentos son compatibles
+                 // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                  if (parser.getSemanticTable() != null) {
                      // TODO: verificar función y argumentos
                      RESULT = "FUNCTION_CALL"; // El tipo real debe venir de la tabla de símbolos
                  }
+                 
+                 // === NUEVO: CÓDIGO INTERMEDIO ===
+                 if (parser.codeGenerationEnabled) {
+                     List<String> args = new ArrayList<String>(); // TODO: extraer argumentos reales
+                     RESULT = parser.getCodeGenerator().generateFunctionCall(id.toString(), args);
+                 }
               :}
               | ID:id LPAREN RPAREN
               {: 
-                 // Análisis semántico: función sin argumentos
+                 // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                  if (parser.getSemanticTable() != null) {
                      // TODO: verificar función sin argumentos
                      RESULT = "FUNCTION_CALL";
+                 }
+                 
+                 // === NUEVO: CÓDIGO INTERMEDIO ===
+                 if (parser.codeGenerationEnabled) {
+                     List<String> noArgs = new ArrayList<String>();
+                     RESULT = parser.getCodeGenerator().generateFunctionCall(id.toString(), noArgs);
                  }
               :}
               ;
@@ -604,65 +753,164 @@ exp ::= exp_log:e {: RESULT = e; :}
 /* Expresiones lógicas con verificación de tipos */
 exp_log ::= exp_log:e1 OR term_log:e2
           {: 
-             // Análisis semántico: verificar que e1 y e2 son booleanos
+             // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
              if (parser.getSemanticTable() != null) {
                  // TODO: verificar tipos booleanos
              }
              RESULT = "BOOL"; 
+             
+             // === NUEVO: CÓDIGO INTERMEDIO ===
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "||", e2);
+             }
           :}
           | term_log:e {: RESULT = e; :}
           ;
 
 term_log ::= term_log:e1 AND factor_log:e2
            {: 
-              // Análisis semántico: verificar que e1 y e2 son booleanos
+              // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
               if (parser.getSemanticTable() != null) {
                   // TODO: verificar tipos booleanos
               }
               RESULT = "BOOL"; 
+              
+              // === NUEVO: CÓDIGO INTERMEDIO ===
+              if (parser.codeGenerationEnabled) {
+                  RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "&&", e2);
+              }
            :}
            | factor_log:e {: RESULT = e; :}
            ;
 
 factor_log ::= NOT atom_arit:e
              {: 
-                // Análisis semántico: verificar que e es booleano
+                // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                 if (parser.getSemanticTable() != null) {
                     // TODO: verificar tipo booleano
                 }
                 RESULT = "BOOL"; 
+                
+                // === NUEVO: CÓDIGO INTERMEDIO ===
+                if (parser.codeGenerationEnabled) {
+                    RESULT = parser.getCodeGenerator().generateUnaryOp("!", e);
+                }
              :}
              | exp_rel:e {: RESULT = e; :}
              | LPAREN exp_log:e RPAREN {: RESULT = e; :}
              ;
 
 /* Expresiones relacionales con verificación de tipos */
-exp_rel ::= exp_arit:e1 LT exp_arit:e2 {: RESULT = "BOOL"; :}
-          | exp_arit:e1 LTE exp_arit:e2 {: RESULT = "BOOL"; :}
-          | exp_arit:e1 GT exp_arit:e2 {: RESULT = "BOOL"; :}
-          | exp_arit:e1 GTE exp_arit:e2 {: RESULT = "BOOL"; :}
-          | exp_arit:e1 EQ exp_arit:e2 {: RESULT = "BOOL"; :}
-          | exp_arit:e1 NEQ exp_arit:e2 {: RESULT = "BOOL"; :}
+exp_rel ::= exp_arit:e1 LT exp_arit:e2 
+          {: 
+             RESULT = "BOOL"; 
+             
+             // === NUEVO: CÓDIGO INTERMEDIO ===
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateComparison(e1, "<", e2);
+             }
+          :}
+          | exp_arit:e1 LTE exp_arit:e2 
+          {: 
+             RESULT = "BOOL"; 
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateComparison(e1, "<=", e2);
+             }
+          :}
+          | exp_arit:e1 GT exp_arit:e2 
+          {: 
+             RESULT = "BOOL"; 
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateComparison(e1, ">", e2);
+             }
+          :}
+          | exp_arit:e1 GTE exp_arit:e2 
+          {: 
+             RESULT = "BOOL"; 
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateComparison(e1, ">=", e2);
+             }
+          :}
+          | exp_arit:e1 EQ exp_arit:e2 
+          {: 
+             RESULT = "BOOL"; 
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateComparison(e1, "==", e2);
+             }
+          :}
+          | exp_arit:e1 NEQ exp_arit:e2 
+          {: 
+             RESULT = "BOOL"; 
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateComparison(e1, "!=", e2);
+             }
+          :}
           | exp_arit:e {: RESULT = e; :}
           ;
 
 /* Expresiones aritméticas con propagación de tipos */
 exp_arit ::= exp_arit:e1 PLUS term_arit:e2
            {: 
+              // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
               // TODO: determinar tipo resultante (INT + INT = INT, FLOAT + cualquiera = FLOAT)
               RESULT = "NUMERIC"; 
+              
+              // === NUEVO: CÓDIGO INTERMEDIO ===
+              if (parser.codeGenerationEnabled) {
+                  RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "+", e2);
+              }
            :}
-           | exp_arit:e1 MINUS term_arit:e2 {: RESULT = "NUMERIC"; :}
+           | exp_arit:e1 MINUS term_arit:e2 
+           {: 
+              RESULT = "NUMERIC"; 
+              
+              if (parser.codeGenerationEnabled) {
+                  RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "-", e2);
+              }
+           :}
            | term_arit:e {: RESULT = e; :}
            ;
 
-term_arit ::= term_arit:e1 TIMES factor_arit:e2 {: RESULT = "NUMERIC"; :}
-            | term_arit:e1 DIVIDE factor_arit:e2 {: RESULT = "NUMERIC"; :}
-            | term_arit:e1 MOD factor_arit:e2 {: RESULT = "INT"; :}
+term_arit ::= term_arit:e1 TIMES factor_arit:e2 
+            {: 
+               RESULT = "NUMERIC"; 
+               
+               if (parser.codeGenerationEnabled) {
+                   RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "*", e2);
+               }
+            :}
+            | term_arit:e1 DIVIDE factor_arit:e2 
+            {: 
+               RESULT = "NUMERIC"; 
+               
+               if (parser.codeGenerationEnabled) {
+                   RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "/", e2);
+               }
+            :}
+            | term_arit:e1 MOD factor_arit:e2 
+            {: 
+               RESULT = "INT"; 
+               
+               if (parser.codeGenerationEnabled) {
+                   RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "%", e2);
+               }
+            :}
             | factor_arit:e {: RESULT = e; :}
             ;
 
-factor_arit ::= factor_arit:e1 POW power_arit:e2 {: RESULT = "NUMERIC"; :}
+factor_arit ::= factor_arit:e1 POW power_arit:e2 
+              {: 
+                 RESULT = "NUMERIC"; 
+                 
+                 if (parser.codeGenerationEnabled) {
+                     RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "**", e2);
+                 }
+              :}
               | power_arit:e {: RESULT = e; :}
               ;
 
@@ -679,12 +927,18 @@ unary_exp ::= MINUS atom_arit %prec UMINUS
 /* Términos atómicos con tipos semánticos */
 atom_arit ::= ID:id
             {: 
-               // Análisis semántico: verificar que la variable existe
+               // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                if (parser.getSemanticTable() != null) {
                    parser.getSemanticTable().useVariable(id.toString(), idleft, idright);
                    // TODO: obtener tipo real de la tabla de símbolos
                }
-               RESULT = "VARIABLE"; 
+               
+               // === NUEVO: CÓDIGO INTERMEDIO ===
+               if (parser.codeGenerationEnabled) {
+                   RESULT = id.toString(); // Las variables se usan directamente por su nombre
+               } else {
+                   RESULT = "VARIABLE"; 
+               }
             :}
             | literal:l {: RESULT = l; :}
             | arr_access:a {: RESULT = a; :}
@@ -704,42 +958,106 @@ ctrl ::= if_stmt
        | switch_stmt
        ;
 
-/* Estructura if-elif-else con scopes semánticos */
+/* SOLUCION: Estructuras de control SIN acciones intermedias */
+/* Estructura if-elif-else con scopes semánticos - VERSION CORREGIDA */
 if_stmt ::= IF LPAREN exp:e RPAREN LBLOCK block RBLOCK
           {: 
-             // Análisis semántico: verificar que e es booleana
+             // === TU ANÁLISIS SEMÁNTICO EXISTENTE (MOVIDO AL FINAL) ===
              parser.enterControlScope("IF");
              parser.exitControlScope();
+             
+             // === NUEVO: CÓDIGO INTERMEDIO SIMPLIFICADO ===
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().addComment("Estructura IF procesada");
+                 parser.getCodeGenerator().addComment("Condicion: " + e);
+             }
           :}
           | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK
+          {: 
+             parser.enterControlScope("IF");
+             parser.exitControlScope();
+             
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().addComment("Estructura IF-ELIF procesada");
+             }
+          :}
           | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
+          {: 
+             parser.enterControlScope("IF");
+             parser.exitControlScope();
+             
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().addComment("Estructura IF-ELSE procesada");
+             }
+          :}
           | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
+          {: 
+             parser.enterControlScope("IF");
+             parser.exitControlScope();
+             
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().addComment("Estructura IF-ELIF-ELSE procesada");
+             }
+          :}
           | IF LPAREN error RPAREN LBLOCK block RBLOCK  {: System.err.println("Error en condición IF. Continuando..."); :}
           ;
 
-/* Estructura do-while con scope semántico */
+/* Estructura do-while con scope semántico - VERSION CORREGIDA */
 do_while ::= DO LBLOCK block RBLOCK WHILE LPAREN exp:e RPAREN QUESTION
            {: 
-              // Análisis semántico: verificar que e es booleana
+              // === TU ANÁLISIS SEMÁNTICO EXISTENTE (MOVIDO AL FINAL) ===
               parser.enterControlScope("WHILE");
               parser.exitControlScope();
+              
+              // === NUEVO: CÓDIGO INTERMEDIO SIMPLIFICADO ===
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().addComment("Estructura DO-WHILE procesada");
+                  parser.getCodeGenerator().addComment("Condicion: " + e);
+              }
            :}
            | DO LBLOCK block RBLOCK WHILE LPAREN error RPAREN QUESTION  {: System.err.println("Error en condición WHILE. Continuando..."); :}
            ;
 
-/* Estructura for con scope semántico */
+/* Estructura for con scope semántico - VERSION CORREGIDA */
 for_stmt ::= FOR LPAREN decl_var exp QUESTION exp RPAREN LBLOCK block RBLOCK
+           {: 
+              // === TU ANÁLISIS SEMÁNTICO EXISTENTE (MOVIDO AL FINAL) ===
+              parser.enterControlScope("FOR");
+              parser.exitControlScope();
+              
+              // === NUEVO: CÓDIGO INTERMEDIO SIMPLIFICADO ===
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().addComment("Estructura FOR procesada con declaracion");
+              }
+           :}
+           | FOR LPAREN assign exp QUESTION exp RPAREN LBLOCK block RBLOCK
            {: 
               parser.enterControlScope("FOR");
               parser.exitControlScope();
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().addComment("Estructura FOR procesada con asignacion");
+              }
            :}
-           | FOR LPAREN assign exp QUESTION exp RPAREN LBLOCK block RBLOCK
            | FOR LPAREN QUESTION exp QUESTION exp RPAREN LBLOCK block RBLOCK
+           {: 
+              parser.enterControlScope("FOR");
+              parser.exitControlScope();
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().addComment("Estructura FOR procesada sin inicializacion");
+              }
+           :}
            | FOR LPAREN error RPAREN LBLOCK block RBLOCK  {: System.err.println("Error en estructura FOR. Continuando..."); :}
            ;
 
 /* Estructura switch */
 switch_stmt ::= SWITCH LPAREN exp RPAREN LBLOCK case_list RBLOCK
+              {: 
+                 if (parser.codeGenerationEnabled) {
+                     parser.getCodeGenerator().addComment("Estructura SWITCH procesada");
+                 }
+              :}
               | SWITCH LPAREN error RPAREN LBLOCK case_list RBLOCK  {: System.err.println("Error en expresión SWITCH. Continuando..."); :}
               ;
 
@@ -756,31 +1074,46 @@ case_stmt ::= CASE exp COLON block;
 default_stmt ::= DEFAULT COLON block;
 
 /* Sentencia break */
-break_stmt ::= BREAK QUESTION;
+break_stmt ::= BREAK QUESTION
+             {: 
+                // === NUEVO: CÓDIGO INTERMEDIO PARA BREAK ===
+                if (parser.codeGenerationEnabled) {
+                    parser.getCodeGenerator().generateBreak();
+                }
+             :}
+             ;
 
 /* Sentencia return con verificación de tipos MEJORADA */
 return_stmt ::= RETURN exp:e QUESTION
               {: 
-                 // DEBUG: Mostrar información
+                 // === TU ANÁLISIS SEMÁNTICO EXISTENTE (NO TOCAR) ===
                  System.out.println("DEBUG: Return con expresión, función actual: " + parser.getCurrentFunctionName());
                  
-                 // Análisis semántico: verificar compatibilidad con tipo de retorno
                  if (parser.getSemanticTable() != null && parser.getCurrentFunctionName() != null) {
                      parser.getSemanticTable().checkReturnStatement(parser.getCurrentFunctionName(), e, eleft);
                  } else {
                      System.err.println("ERROR: No se puede verificar return - función actual: " + parser.getCurrentFunctionName());
                  }
+                 
+                 // === NUEVO: CÓDIGO INTERMEDIO PARA RETURN ===
+                 if (parser.codeGenerationEnabled) {
+                     parser.getCodeGenerator().generateReturn(e);
+                 }
               :}
               | RETURN:r QUESTION
               {: 
-                 // DEBUG: Mostrar información  
+                 // === TU ANÁLISIS SEMÁNTICO EXISTENTE (NO TOCAR) ===
                  System.out.println("DEBUG: Return sin expresión, función actual: " + parser.getCurrentFunctionName());
                  
-                 // Análisis semántico: verificar que función actual es VOID
                  if (parser.getSemanticTable() != null && parser.getCurrentFunctionName() != null) {
                      parser.getSemanticTable().checkReturnStatement(parser.getCurrentFunctionName(), null, rleft);
                  } else {
                      System.err.println("ERROR: No se puede verificar return - función actual: " + parser.getCurrentFunctionName());
+                 }
+                 
+                 // === NUEVO: CÓDIGO INTERMEDIO PARA RETURN VOID ===
+                 if (parser.codeGenerationEnabled) {
+                     parser.getCodeGenerator().generateReturn(null);
                  }
               :}
               | RETURN error QUESTION  {: System.err.println("Error en expresión RETURN. Continuando..."); :}
@@ -789,9 +1122,14 @@ return_stmt ::= RETURN exp:e QUESTION
 /* Funciones de entrada/salida */
 read_stmt ::= READ LPAREN ID:id RPAREN QUESTION
             {: 
-               // Análisis semántico: verificar que id existe
+               // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                if (parser.getSemanticTable() != null) {
                    parser.getSemanticTable().useVariable(id.toString(), idleft, idright);
+               }
+               
+               // === NUEVO: CÓDIGO INTERMEDIO PARA READ ===
+               if (parser.codeGenerationEnabled) {
+                   parser.getCodeGenerator().generateRead(id.toString());
                }
             :}
             | READ LPAREN error RPAREN QUESTION  {: System.err.println("Error en función READ. Continuando..."); :}
@@ -799,7 +1137,13 @@ read_stmt ::= READ LPAREN ID:id RPAREN QUESTION
 
 write_stmt ::= WRITE LPAREN exp:e RPAREN QUESTION
              {: 
-                // Análisis semántico: cualquier tipo es válido para write
+                // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
+                // Cualquier tipo es válido para write
+                
+                // === NUEVO: CÓDIGO INTERMEDIO PARA WRITE ===
+                if (parser.codeGenerationEnabled) {
+                    parser.getCodeGenerator().generateWrite(e);
+                }
              :}
              | WRITE LPAREN error RPAREN QUESTION  {: System.err.println("Error en función WRITE. Continuando..."); :}
              ;

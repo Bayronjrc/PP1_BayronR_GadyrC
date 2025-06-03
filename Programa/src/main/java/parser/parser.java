@@ -9,6 +9,7 @@ import java_cup.runtime.*;
 import java.util.*;
 import main.java.symbol.SymbolTable;
 import main.java.symbol.SemanticSymbolTable;
+import main.java.intermedio.IntermediateCodeGenerator;
 import java_cup.runtime.XMLElement;
 
 /** CUP v0.11b 20160615 (GIT 4ac7450) generated parser.
@@ -1020,6 +1021,27 @@ public class parser extends java_cup.runtime.lr_parser {
      */
     private String currentFunctionName = null;
     
+
+    // === NUEVO: GENERADOR DE CÓDIGO INTERMEDIO (OPCIONAL) ===
+    private IntermediateCodeGenerator codeGenerator;
+    private boolean codeGenerationEnabled = false;
+    
+    // Método para habilitar generación de código
+    public void enableCodeGeneration(String outputFile) {
+        this.codeGenerator = new IntermediateCodeGenerator(outputFile);
+        this.codeGenerationEnabled = true;
+        System.out.println("Generación de código intermedio habilitada");
+    }
+    
+    public void disableCodeGeneration() {
+        this.codeGenerationEnabled = false;
+        this.codeGenerator = null;
+    }
+    
+    public IntermediateCodeGenerator getCodeGenerator() {
+        return codeGenerator;
+    }
+
     /* 
      * NUEVO: Inicializar tablas semánticas
      */
@@ -1132,6 +1154,13 @@ public class parser extends java_cup.runtime.lr_parser {
                 System.err.println("Error escribiendo archivo semantico: " + e.getMessage());
             }
         }
+        
+        // NUEVO: Finalizar código intermedio si está habilitado
+        if (codeGenerationEnabled && codeGenerator != null) {
+            codeGenerator.printCode();
+            codeGenerator.printStatistics();
+            codeGenerator.writeToFile();
+        }
     }
     
     /* Métodos de manejo de errores existentes */
@@ -1235,6 +1264,11 @@ class CUP$parser$actions {
              parser.getSemanticTable().enterScope("FUNCTION", "main");
              parser.setCurrentFunctionName("main");
              System.out.println("Entrando a función main");
+             
+             // NUEVO: Código intermedio para función main
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().startFunction("main", "VOID");
+             }
           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("NT$0",41, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1254,6 +1288,11 @@ class CUP$parser$actions {
              parser.getSemanticTable().exitScope();
              parser.setCurrentFunctionName(null);
              System.out.println("Saliendo de función main");
+             
+             // NUEVO: Finalizar función main en código intermedio
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().endFunction("main");
+             }
              
              // Finalizar análisis
              parser.finalizeSemantic();
@@ -1318,6 +1357,11 @@ class CUP$parser$actions {
               parser.getSemanticTable().enterScope("FUNCTION", id.toString());
               parser.setCurrentFunctionName(id.toString());
               System.out.println("Entrando a función: " + id.toString() + " tipo: " + t.toString());
+              
+              // NUEVO: Código intermedio para función
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().startFunction(id.toString(), t.toString());
+              }
            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("NT$1",42, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1342,6 +1386,11 @@ class CUP$parser$actions {
               parser.getSemanticTable().exitScope();
               parser.setCurrentFunctionName(null);
               System.out.println("Saliendo de función: " + id.toString());
+              
+              // NUEVO: Finalizar función en código intermedio
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().endFunction(id.toString());
+              }
               
               // Compatibilidad con Proyecto 1
               parser.markAsFunction(id.toString(), t.toString());
@@ -1368,6 +1417,11 @@ class CUP$parser$actions {
               parser.getSemanticTable().enterScope("FUNCTION", id.toString());
               parser.setCurrentFunctionName(id.toString());
               System.out.println("Entrando a función sin parámetros: " + id.toString() + " tipo: " + t.toString());
+              
+              // NUEVO: Código intermedio para función sin parámetros
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().startFunction(id.toString(), t.toString());
+              }
            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("NT$2",43, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1391,6 +1445,11 @@ class CUP$parser$actions {
               parser.getSemanticTable().exitScope();
               parser.setCurrentFunctionName(null);
               System.out.println("Saliendo de función: " + id.toString());
+              
+              // NUEVO: Finalizar función en código intermedio
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().endFunction(id.toString());
+              }
               
               parser.markAsFunction(id.toString(), t.toString()); 
            
@@ -1475,6 +1534,11 @@ class CUP$parser$actions {
            // Análisis semántico: declarar parámetro en scope actual
            if (parser.getSemanticTable() != null) {
                parser.getSemanticTable().declareVariable(id.toString(), t.toString(), idleft, idright);
+           }
+           
+           // NUEVO: Código intermedio para parámetro
+           if (parser.codeGenerationEnabled) {
+               parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
            }
            
            // Compatibilidad con Proyecto 1
@@ -1581,6 +1645,11 @@ class CUP$parser$actions {
                   // TODO: verificar que e1 y e2 sean expresiones enteras válidas
               }
               
+              // NUEVO: Código intermedio para declaración de array
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().declareVariable(id.toString(), arrayType);
+              }
+              
               // Compatibilidad con Proyecto 1
               parser.updateVariableType(id.toString(), arrayType);
            
@@ -1611,6 +1680,12 @@ class CUP$parser$actions {
               if (parser.getSemanticTable() != null) {
                   parser.getSemanticTable().declareVariable(id.toString(), arrayType, idleft, idright);
                   // TODO: verificar compatibilidad de tipos con exp_matrix
+              }
+              
+              // NUEVO: Código intermedio para array con inicialización
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().declareVariable(id.toString(), arrayType);
+                  parser.getCodeGenerator().addComment("Array inicializado con matriz");
               }
               
               // Compatibilidad con Proyecto 1
@@ -1684,7 +1759,13 @@ class CUP$parser$actions {
                     // TODO: verificar que id existe y es un arreglo
                     // TODO: verificar que e1 y e2 son expresiones enteras
                 }
-                RESULT = "ARRAY_ACCESS"; // Tipo resultante depende del tipo del arreglo
+                
+                // NUEVO: Código intermedio para acceso a array
+                if (parser.codeGenerationEnabled) {
+                    RESULT = parser.getCodeGenerator().generateArrayAccess(id.toString(), e1, e2);
+                } else {
+                    RESULT = "ARRAY_ACCESS"; // Tipo resultante depende del tipo del arreglo
+                }
              
               CUP$parser$result = parser.getSymbolFactory().newSymbol("arr_access",28, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-6)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1812,13 +1893,18 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		
-            // VERIFICACIÓN SEMÁNTICA MEJORADA
+            // === TU ANÁLISIS SEMÁNTICO EXISTENTE (NO TOCAR) ===
             boolean valid = parser.getSemanticTable().checkAssignment(id.toString(), e, idleft);
             
             if (valid) {
                 System.out.println("Asignacion valida: " + id + " = " + e);
             } else {
                 System.err.println("Error en asignacion a variable: " + id);
+            }
+            
+            // === NUEVO: GENERACIÓN DE CÓDIGO (SOLO SI ES VÁLIDO) ===
+            if (parser.codeGenerationEnabled && valid) {
+                parser.getCodeGenerator().generateAssignment(id.toString(), e);
             }
          
               CUP$parser$result = parser.getSymbolFactory().newSymbol("assign",6, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -1840,6 +1926,12 @@ class CUP$parser$actions {
             if (parser.getSemanticTable() != null) {
                 // El arr_access ya verificó si el array existe
                 System.out.println("Asignacion a array: " + arr + " = " + e);
+                
+                // NUEVO: Código intermedio para asignación a array
+                if (parser.codeGenerationEnabled) {
+                    parser.getCodeGenerator().addComment("Asignación a elemento de array");
+                    // Nota: arr ya contiene el acceso completo generado
+                }
             }
          
               CUP$parser$result = parser.getSymbolFactory().newSymbol("assign",6, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -1869,7 +1961,7 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-              // VERIFICACIÓN SEMÁNTICA:
+              // === TU VERIFICACIÓN SEMÁNTICA EXISTENTE (NO TOCAR) ===
               // 1. Declarar variable con inicialización
               boolean declared = parser.getSemanticTable().declareVariable(id.toString(), t, idleft, idright, true);
               
@@ -1887,6 +1979,14 @@ class CUP$parser$actions {
               
               // Compatibilidad con tabla original
               parser.updateVariableType(id.toString(), t.toString());
+              
+              // === NUEVO: GENERACIÓN DE CÓDIGO (SOLO SI ES VÁLIDO) ===
+              if (parser.codeGenerationEnabled && declared) {
+                  parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
+                  if (e != null) {
+                      parser.getCodeGenerator().generateAssignment(id.toString(), e);
+                  }
+              }
            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("decl_var",2, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-4)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1903,6 +2003,7 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
+              // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
               // Variable sin inicialización
               boolean declared = parser.getSemanticTable().declareVariable(id.toString(), t, idleft, idright, false);
               
@@ -1911,6 +2012,11 @@ class CUP$parser$actions {
               }
               
               parser.updateVariableType(id.toString(), t.toString());
+              
+              // === NUEVO: CÓDIGO INTERMEDIO ===
+              if (parser.codeGenerationEnabled && declared) {
+                  parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
+              }
            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("decl_var",2, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1920,9 +2026,17 @@ class CUP$parser$actions {
           case 50: // literal ::= LIT_INT 
             {
               String RESULT =null;
+		int valleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
+		int valright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
+		Object val = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
              RESULT = "INT"; 
              System.out.println("Literal entero detectado");
+             
+             // NUEVO: En código intermedio, los literales se usan directamente
+             if (parser.codeGenerationEnabled) {
+                 RESULT = val.toString(); // Usar el valor literal directamente
+             }
           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("literal",35, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1932,9 +2046,16 @@ class CUP$parser$actions {
           case 51: // literal ::= LIT_FLOAT 
             {
               String RESULT =null;
+		int valleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
+		int valright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
+		Object val = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
              RESULT = "FLOAT"; 
              System.out.println("Literal flotante detectado");
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = val.toString();
+             }
           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("literal",35, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1944,9 +2065,16 @@ class CUP$parser$actions {
           case 52: // literal ::= LIT_BOOL 
             {
               String RESULT =null;
+		int valleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
+		int valright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
+		Object val = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
              RESULT = "BOOL"; 
              System.out.println("Literal booleano detectado");
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = val.toString();
+             }
           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("literal",35, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1956,9 +2084,16 @@ class CUP$parser$actions {
           case 53: // literal ::= LIT_CHAR 
             {
               String RESULT =null;
+		int valleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
+		int valright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
+		Object val = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
              RESULT = "CHAR"; 
              System.out.println("Literal caracter detectado");
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = val.toString();
+             }
           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("literal",35, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1968,9 +2103,16 @@ class CUP$parser$actions {
           case 54: // literal ::= LIT_STRING 
             {
               String RESULT =null;
+		int valleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
+		int valright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
+		Object val = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
              RESULT = "STRING"; 
              System.out.println("Literal cadena detectado");
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = val.toString();
+             }
           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("literal",35, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1983,6 +2125,10 @@ class CUP$parser$actions {
 		 
              RESULT = "BOOL"; 
              System.out.println("Literal booleano 'true' detectado");
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = "true";
+             }
           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("literal",35, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1995,6 +2141,10 @@ class CUP$parser$actions {
 		 
              RESULT = "BOOL"; 
              System.out.println("Literal booleano 'false' detectado");
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = "false";
+             }
           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("literal",35, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -2008,10 +2158,16 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
 		 
-                 // Análisis semántico: verificar que la función existe y argumentos son compatibles
+                 // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                  if (parser.getSemanticTable() != null) {
                      // TODO: verificar función y argumentos
                      RESULT = "FUNCTION_CALL"; // El tipo real debe venir de la tabla de símbolos
+                 }
+                 
+                 // === NUEVO: CÓDIGO INTERMEDIO ===
+                 if (parser.codeGenerationEnabled) {
+                     List<String> args = new ArrayList<String>(); // TODO: extraer argumentos reales
+                     RESULT = parser.getCodeGenerator().generateFunctionCall(id.toString(), args);
                  }
               
               CUP$parser$result = parser.getSymbolFactory().newSymbol("llamada_fun",36, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -2026,10 +2182,16 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
 		 
-                 // Análisis semántico: función sin argumentos
+                 // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                  if (parser.getSemanticTable() != null) {
                      // TODO: verificar función sin argumentos
                      RESULT = "FUNCTION_CALL";
+                 }
+                 
+                 // === NUEVO: CÓDIGO INTERMEDIO ===
+                 if (parser.codeGenerationEnabled) {
+                     List<String> noArgs = new ArrayList<String>();
+                     RESULT = parser.getCodeGenerator().generateFunctionCall(id.toString(), noArgs);
                  }
               
               CUP$parser$result = parser.getSymbolFactory().newSymbol("llamada_fun",36, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -2059,11 +2221,16 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-             // Análisis semántico: verificar que e1 y e2 son booleanos
+             // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
              if (parser.getSemanticTable() != null) {
                  // TODO: verificar tipos booleanos
              }
              RESULT = "BOOL"; 
+             
+             // === NUEVO: CÓDIGO INTERMEDIO ===
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "||", e2);
+             }
           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("exp_log",14, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -2092,11 +2259,16 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-              // Análisis semántico: verificar que e1 y e2 son booleanos
+              // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
               if (parser.getSemanticTable() != null) {
                   // TODO: verificar tipos booleanos
               }
               RESULT = "BOOL"; 
+              
+              // === NUEVO: CÓDIGO INTERMEDIO ===
+              if (parser.codeGenerationEnabled) {
+                  RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "&&", e2);
+              }
            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("term_log",15, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -2122,11 +2294,16 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-                // Análisis semántico: verificar que e es booleano
+                // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                 if (parser.getSemanticTable() != null) {
                     // TODO: verificar tipo booleano
                 }
                 RESULT = "BOOL"; 
+                
+                // === NUEVO: CÓDIGO INTERMEDIO ===
+                if (parser.codeGenerationEnabled) {
+                    RESULT = parser.getCodeGenerator().generateUnaryOp("!", e);
+                }
              
               CUP$parser$result = parser.getSymbolFactory().newSymbol("factor_log",16, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -2166,7 +2343,14 @@ class CUP$parser$actions {
 		int e2left = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = "BOOL"; 
+		 
+             RESULT = "BOOL"; 
+             
+             // === NUEVO: CÓDIGO INTERMEDIO ===
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateComparison(e1, "<", e2);
+             }
+          
               CUP$parser$result = parser.getSymbolFactory().newSymbol("exp_rel",13, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2181,7 +2365,13 @@ class CUP$parser$actions {
 		int e2left = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = "BOOL"; 
+		 
+             RESULT = "BOOL"; 
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateComparison(e1, "<=", e2);
+             }
+          
               CUP$parser$result = parser.getSymbolFactory().newSymbol("exp_rel",13, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2196,7 +2386,13 @@ class CUP$parser$actions {
 		int e2left = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = "BOOL"; 
+		 
+             RESULT = "BOOL"; 
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateComparison(e1, ">", e2);
+             }
+          
               CUP$parser$result = parser.getSymbolFactory().newSymbol("exp_rel",13, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2211,7 +2407,13 @@ class CUP$parser$actions {
 		int e2left = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = "BOOL"; 
+		 
+             RESULT = "BOOL"; 
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateComparison(e1, ">=", e2);
+             }
+          
               CUP$parser$result = parser.getSymbolFactory().newSymbol("exp_rel",13, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2226,7 +2428,13 @@ class CUP$parser$actions {
 		int e2left = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = "BOOL"; 
+		 
+             RESULT = "BOOL"; 
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateComparison(e1, "==", e2);
+             }
+          
               CUP$parser$result = parser.getSymbolFactory().newSymbol("exp_rel",13, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2241,7 +2449,13 @@ class CUP$parser$actions {
 		int e2left = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = "BOOL"; 
+		 
+             RESULT = "BOOL"; 
+             
+             if (parser.codeGenerationEnabled) {
+                 RESULT = parser.getCodeGenerator().generateComparison(e1, "!=", e2);
+             }
+          
               CUP$parser$result = parser.getSymbolFactory().newSymbol("exp_rel",13, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2269,8 +2483,14 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
+              // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
               // TODO: determinar tipo resultante (INT + INT = INT, FLOAT + cualquiera = FLOAT)
               RESULT = "NUMERIC"; 
+              
+              // === NUEVO: CÓDIGO INTERMEDIO ===
+              if (parser.codeGenerationEnabled) {
+                  RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "+", e2);
+              }
            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("exp_arit",8, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -2286,7 +2506,13 @@ class CUP$parser$actions {
 		int e2left = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = "NUMERIC"; 
+		 
+              RESULT = "NUMERIC"; 
+              
+              if (parser.codeGenerationEnabled) {
+                  RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "-", e2);
+              }
+           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("exp_arit",8, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2313,7 +2539,13 @@ class CUP$parser$actions {
 		int e2left = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = "NUMERIC"; 
+		 
+               RESULT = "NUMERIC"; 
+               
+               if (parser.codeGenerationEnabled) {
+                   RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "*", e2);
+               }
+            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("term_arit",9, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2328,7 +2560,13 @@ class CUP$parser$actions {
 		int e2left = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = "NUMERIC"; 
+		 
+               RESULT = "NUMERIC"; 
+               
+               if (parser.codeGenerationEnabled) {
+                   RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "/", e2);
+               }
+            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("term_arit",9, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2343,7 +2581,13 @@ class CUP$parser$actions {
 		int e2left = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = "INT"; 
+		 
+               RESULT = "INT"; 
+               
+               if (parser.codeGenerationEnabled) {
+                   RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "%", e2);
+               }
+            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("term_arit",9, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2370,7 +2614,13 @@ class CUP$parser$actions {
 		int e2left = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = "NUMERIC"; 
+		 
+                 RESULT = "NUMERIC"; 
+                 
+                 if (parser.codeGenerationEnabled) {
+                     RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "**", e2);
+                 }
+              
               CUP$parser$result = parser.getSymbolFactory().newSymbol("factor_arit",10, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2446,12 +2696,18 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-               // Análisis semántico: verificar que la variable existe
+               // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                if (parser.getSemanticTable() != null) {
                    parser.getSemanticTable().useVariable(id.toString(), idleft, idright);
                    // TODO: obtener tipo real de la tabla de símbolos
                }
-               RESULT = "VARIABLE"; 
+               
+               // === NUEVO: CÓDIGO INTERMEDIO ===
+               if (parser.codeGenerationEnabled) {
+                   RESULT = id.toString(); // Las variables se usan directamente por su nombre
+               } else {
+                   RESULT = "VARIABLE"; 
+               }
             
               CUP$parser$result = parser.getSymbolFactory().newSymbol("atom_arit",12, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -2567,9 +2823,15 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-4)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-4)).value;
 		 
-             // Análisis semántico: verificar que e es booleana
+             // === TU ANÁLISIS SEMÁNTICO EXISTENTE (MOVIDO AL FINAL) ===
              parser.enterControlScope("IF");
              parser.exitControlScope();
+             
+             // === NUEVO: CÓDIGO INTERMEDIO SIMPLIFICADO ===
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().addComment("Estructura IF procesada");
+                 parser.getCodeGenerator().addComment("Condicion: " + e);
+             }
           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("if_stmt",19, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-6)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -2579,7 +2841,14 @@ class CUP$parser$actions {
           case 100: // if_stmt ::= IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK 
             {
               Object RESULT =null;
-
+		 
+             parser.enterControlScope("IF");
+             parser.exitControlScope();
+             
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().addComment("Estructura IF-ELIF procesada");
+             }
+          
               CUP$parser$result = parser.getSymbolFactory().newSymbol("if_stmt",19, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-13)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2588,7 +2857,14 @@ class CUP$parser$actions {
           case 101: // if_stmt ::= IF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK 
             {
               Object RESULT =null;
-
+		 
+             parser.enterControlScope("IF");
+             parser.exitControlScope();
+             
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().addComment("Estructura IF-ELSE procesada");
+             }
+          
               CUP$parser$result = parser.getSymbolFactory().newSymbol("if_stmt",19, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-10)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2597,7 +2873,14 @@ class CUP$parser$actions {
           case 102: // if_stmt ::= IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK 
             {
               Object RESULT =null;
-
+		 
+             parser.enterControlScope("IF");
+             parser.exitControlScope();
+             
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().addComment("Estructura IF-ELIF-ELSE procesada");
+             }
+          
               CUP$parser$result = parser.getSymbolFactory().newSymbol("if_stmt",19, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-17)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2619,9 +2902,15 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
 		 
-              // Análisis semántico: verificar que e es booleana
+              // === TU ANÁLISIS SEMÁNTICO EXISTENTE (MOVIDO AL FINAL) ===
               parser.enterControlScope("WHILE");
               parser.exitControlScope();
+              
+              // === NUEVO: CÓDIGO INTERMEDIO SIMPLIFICADO ===
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().addComment("Estructura DO-WHILE procesada");
+                  parser.getCodeGenerator().addComment("Condicion: " + e);
+              }
            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("do_while",20, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-8)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -2641,8 +2930,14 @@ class CUP$parser$actions {
             {
               Object RESULT =null;
 		 
+              // === TU ANÁLISIS SEMÁNTICO EXISTENTE (MOVIDO AL FINAL) ===
               parser.enterControlScope("FOR");
               parser.exitControlScope();
+              
+              // === NUEVO: CÓDIGO INTERMEDIO SIMPLIFICADO ===
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().addComment("Estructura FOR procesada con declaracion");
+              }
            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("for_stmt",21, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-9)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -2652,7 +2947,14 @@ class CUP$parser$actions {
           case 107: // for_stmt ::= FOR LPAREN assign exp QUESTION exp RPAREN LBLOCK block RBLOCK 
             {
               Object RESULT =null;
-
+		 
+              parser.enterControlScope("FOR");
+              parser.exitControlScope();
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().addComment("Estructura FOR procesada con asignacion");
+              }
+           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("for_stmt",21, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-9)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2661,7 +2963,14 @@ class CUP$parser$actions {
           case 108: // for_stmt ::= FOR LPAREN QUESTION exp QUESTION exp RPAREN LBLOCK block RBLOCK 
             {
               Object RESULT =null;
-
+		 
+              parser.enterControlScope("FOR");
+              parser.exitControlScope();
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().addComment("Estructura FOR procesada sin inicializacion");
+              }
+           
               CUP$parser$result = parser.getSymbolFactory().newSymbol("for_stmt",21, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-9)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2679,7 +2988,11 @@ class CUP$parser$actions {
           case 110: // switch_stmt ::= SWITCH LPAREN exp RPAREN LBLOCK case_list RBLOCK 
             {
               Object RESULT =null;
-
+		 
+                 if (parser.codeGenerationEnabled) {
+                     parser.getCodeGenerator().addComment("Estructura SWITCH procesada");
+                 }
+              
               CUP$parser$result = parser.getSymbolFactory().newSymbol("switch_stmt",37, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-6)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2742,7 +3055,12 @@ class CUP$parser$actions {
           case 117: // break_stmt ::= BREAK QUESTION 
             {
               Object RESULT =null;
-
+		 
+                // === NUEVO: CÓDIGO INTERMEDIO PARA BREAK ===
+                if (parser.codeGenerationEnabled) {
+                    parser.getCodeGenerator().generateBreak();
+                }
+             
               CUP$parser$result = parser.getSymbolFactory().newSymbol("break_stmt",22, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -2755,14 +3073,18 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-                 // DEBUG: Mostrar información
+                 // === TU ANÁLISIS SEMÁNTICO EXISTENTE (NO TOCAR) ===
                  System.out.println("DEBUG: Return con expresión, función actual: " + parser.getCurrentFunctionName());
                  
-                 // Análisis semántico: verificar compatibilidad con tipo de retorno
                  if (parser.getSemanticTable() != null && parser.getCurrentFunctionName() != null) {
                      parser.getSemanticTable().checkReturnStatement(parser.getCurrentFunctionName(), e, eleft);
                  } else {
                      System.err.println("ERROR: No se puede verificar return - función actual: " + parser.getCurrentFunctionName());
+                 }
+                 
+                 // === NUEVO: CÓDIGO INTERMEDIO PARA RETURN ===
+                 if (parser.codeGenerationEnabled) {
+                     parser.getCodeGenerator().generateReturn(e);
                  }
               
               CUP$parser$result = parser.getSymbolFactory().newSymbol("return_stmt",23, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -2777,14 +3099,18 @@ class CUP$parser$actions {
 		int rright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		Object r = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-                 // DEBUG: Mostrar información  
+                 // === TU ANÁLISIS SEMÁNTICO EXISTENTE (NO TOCAR) ===
                  System.out.println("DEBUG: Return sin expresión, función actual: " + parser.getCurrentFunctionName());
                  
-                 // Análisis semántico: verificar que función actual es VOID
                  if (parser.getSemanticTable() != null && parser.getCurrentFunctionName() != null) {
                      parser.getSemanticTable().checkReturnStatement(parser.getCurrentFunctionName(), null, rleft);
                  } else {
                      System.err.println("ERROR: No se puede verificar return - función actual: " + parser.getCurrentFunctionName());
+                 }
+                 
+                 // === NUEVO: CÓDIGO INTERMEDIO PARA RETURN VOID ===
+                 if (parser.codeGenerationEnabled) {
+                     parser.getCodeGenerator().generateReturn(null);
                  }
               
               CUP$parser$result = parser.getSymbolFactory().newSymbol("return_stmt",23, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -2808,9 +3134,14 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
 		 
-               // Análisis semántico: verificar que id existe
+               // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
                if (parser.getSemanticTable() != null) {
                    parser.getSemanticTable().useVariable(id.toString(), idleft, idright);
+               }
+               
+               // === NUEVO: CÓDIGO INTERMEDIO PARA READ ===
+               if (parser.codeGenerationEnabled) {
+                   parser.getCodeGenerator().generateRead(id.toString());
                }
             
               CUP$parser$result = parser.getSymbolFactory().newSymbol("read_stmt",24, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-4)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -2834,7 +3165,13 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
 		 
-                // Análisis semántico: cualquier tipo es válido para write
+                // === TU ANÁLISIS SEMÁNTICO EXISTENTE ===
+                // Cualquier tipo es válido para write
+                
+                // === NUEVO: CÓDIGO INTERMEDIO PARA WRITE ===
+                if (parser.codeGenerationEnabled) {
+                    parser.getCodeGenerator().generateWrite(e);
+                }
              
               CUP$parser$result = parser.getSymbolFactory().newSymbol("write_stmt",25, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-4)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
