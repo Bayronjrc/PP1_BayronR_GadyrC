@@ -14,22 +14,16 @@ import java.io.*;
  * @version 1.0
  */
 public class SemanticSymbolTable {
-    /** Pila de alcances activos */
     private Stack<Scope> scopeStack;
     
-    /** Contador para niveles de alcance */
     private int currentLevel;
     
-    /** Lista de errores semanticos encontrados */
     private List<String> errors;
     
-    /** Lista de advertencias (variables no usadas, etc.) */
     private List<String> warnings;
     
-    /** Tabla original para mantener compatibilidad (opcional) */
     private SymbolTable originalTable;
     
-    /** Contador para generar nombres unicos de alcances */
     private int scopeCounter;
     
     /**
@@ -43,11 +37,9 @@ public class SemanticSymbolTable {
         originalTable = new SymbolTable(); 
         scopeCounter = 0;
         
-        // Crear alcance global
         enterScope("GLOBAL", "global");
     }
     
-    // ============= MANEJO DE ALCANCES =============
     
     /**
      * Entra a un nuevo alcance
@@ -62,43 +54,29 @@ public class SemanticSymbolTable {
         System.out.println("DEBUG: Entrando a scope " + tipoAlcance + ":" + nombreAlcance + " (nivel " + (currentLevel-1) + ")");
     }
     
-    /**
-     * Entra a un nuevo alcance de bloque con nombre automatico
-     */
     public void enterScope() {
         enterScope("BLOCK", "block_" + (++scopeCounter));
     }
     
-    /**
-     * Sale del alcance actual y genera advertencias sobre variables no usadas
-     */
     public void exitScope() {
         if (!scopeStack.isEmpty()) {
             Scope currentScope = scopeStack.pop();
             System.out.println("DEBUG: Saliendo de scope " + currentScope.getTipoAlcance() + ":" + currentScope.getNombreAlcance());
             
-            // Generar advertencias para variables no utilizadas
             for (SymbolInfo symbol : currentScope.getVariablesNoUtilizadas()) {
                 addWarning("Variable '" + symbol.getLexema() + "' declarada pero no utilizada en línea " + symbol.getLinea());
             }
         }
     }
     
-    /**
-     * Obtiene el alcance actual
-     */
     public Scope getCurrentScope() {
         return scopeStack.isEmpty() ? null : scopeStack.peek();
     }
     
-    /**
-     * Obtiene el alcance global (primer elemento de la pila)
-     */
     public Scope getGlobalScope() {
         return scopeStack.isEmpty() ? null : scopeStack.firstElement();
     }
     
-    // ============= MÉTODO PARA COMPATIBILIDAD CON PARSER =============
 
     /**
      * Obtiene la tabla de símbolos original para mantener compatibilidad
@@ -112,9 +90,7 @@ public class SemanticSymbolTable {
         }
         return originalTable;
     }
-    /**
-     * NUEVO: Método para mostrar alcances durante ejecución
-     */
+
     public void printCurrentScopes() {
         System.out.println("=== ALCANCES ACTUALES ===");
         for (int i = 0; i < scopeStack.size(); i++) {
@@ -144,22 +120,18 @@ public class SemanticSymbolTable {
             return false;
         }
         
-        // Verificar si ya existe en el alcance actual
         if (currentScope.existsLocal(name)) {
             addError("Variable '" + name + "' ya declarada en este alcance en linea " + line);
             return false;
         }
         
-        // Crear el simbolo
         SymbolInfo symbol = new SymbolInfo(name, "ID", line, column, currentScope.getNivel());
         symbol.setTipoVariable(type);
         symbol.setEsVariable(true);
         symbol.setInicializada(inicializada);
         
-        // Declarar en el alcance
         currentScope.declare(name, symbol);
         
-        // Mantener compatibilidad con tabla original
         originalTable.insertarSimbolo(name, "ID", line, column, name);
         originalTable.actualizarTipoVariable(name, type);
         
@@ -191,13 +163,11 @@ public class SemanticSymbolTable {
             return false;
         }
         
-        // Verificar si ya existe
         if (globalScope.existsLocal(name)) {
             addError("Funcion '" + name + "' ya declarada en linea " + line);
             return false;
         }
         
-        // Crear el simbolo de funcion
         SymbolInfo symbol = new SymbolInfo(name, "ID", line, column, 0);
         symbol.setTipoVariable(returnType);
         symbol.setEsFuncion(true);
@@ -207,10 +177,8 @@ public class SemanticSymbolTable {
             }
         }
         
-        // Declarar en alcance global
         globalScope.declare(name, symbol);
         
-        // Mantener compatibilidad
         originalTable.marcarComoFuncion(name, returnType);
         
         System.out.println("DEBUG: Función '" + name + "' declarada como " + returnType + " con " + 
@@ -231,7 +199,6 @@ public class SemanticSymbolTable {
         return result;
     }
     
-    // ============= VERIFICACIONES SEMANTICAS =============
     
     /**
      * Verifica el uso de una variable
@@ -281,7 +248,6 @@ public class SemanticSymbolTable {
             return false;
         }
         
-        // Marcar como inicializada
         variable.setInicializada(true);
         return true;
     }
@@ -304,7 +270,6 @@ public class SemanticSymbolTable {
             return true;
         }
         
-        // Crear un simbolo temporal para usar el metodo de compatibilidad
         SymbolInfo tempSymbol = new SymbolInfo("temp", "ID", line, 0);
         tempSymbol.setTipoVariable(expected);
         
@@ -337,7 +302,6 @@ public class SemanticSymbolTable {
             return null;
         }
         
-        // Verificar número de argumentos
         List<String> expectedParams = function.getParametros();
         if (expectedParams.size() != argTypes.size()) {
             addError("Funcion '" + name + "' espera " + expectedParams.size() + 
@@ -345,7 +309,6 @@ public class SemanticSymbolTable {
             return null;
         }
         
-        // Verificar tipos de argumentos
         for (int i = 0; i < expectedParams.size(); i++) {
             if (!checkTypeCompatibility(expectedParams.get(i), argTypes.get(i), line)) {
                 addError("Argumento " + (i+1) + " de funcion '" + name + 
@@ -354,7 +317,6 @@ public class SemanticSymbolTable {
             }
         }
         
-        // Marcar funcion como utilizada
         function.setUtilizada(true);
         
         return function.getTipoVariable(); 
@@ -370,20 +332,17 @@ public class SemanticSymbolTable {
      * @return Tipo resultante de la operación o null si es invalida
      */
     public String checkArithmeticOperation(String leftType, String rightType, String operator, int line) {
-        // Crear simbolos temporales para verificacion
         SymbolInfo leftSymbol = new SymbolInfo("temp_left", "ID", line, 0);
         leftSymbol.setTipoVariable(leftType);
         
         SymbolInfo rightSymbol = new SymbolInfo("temp_right", "ID", line, 0);
         rightSymbol.setTipoVariable(rightType);
         
-        // Verificar que ambos sean numericos
         if (!leftSymbol.esNumerico() || !rightSymbol.esNumerico()) {
             addError("Operacion aritmetica '" + operator + "' requiere operandos numericos en linea " + line);
             return null;
         }
         
-        // Obtener tipo resultante
         String resultType = leftSymbol.tipoResultanteConOperacion(rightType);
         if (resultType == null) {
             addError("Operacion aritmetica invalida entre '" + leftType + "' y '" + rightType + "' en linea " + line);
@@ -402,27 +361,23 @@ public class SemanticSymbolTable {
      * @return "BOOL" si es valida, null si es invalida
      */
     public String checkRelationalOperation(String leftType, String rightType, String operator, int line) {
-        // Operadores de igualdad permiten booleanos
         if (operator.equals("==") || operator.equals("!=")) {
             if (leftType.equals("BOOL") && rightType.equals("BOOL")) {
                 return "BOOL";
             }
         }
         
-        // Crear simbolos temporales
         SymbolInfo leftSymbol = new SymbolInfo("temp_left", "ID", line, 0);
         leftSymbol.setTipoVariable(leftType);
         
         SymbolInfo rightSymbol = new SymbolInfo("temp_right", "ID", line, 0);
         rightSymbol.setTipoVariable(rightType);
         
-        // Verificar que sean comparables
         if (!leftSymbol.esComparable() || !rightSymbol.esComparable()) {
             addError("Operación relacional '" + operator + "' requiere operandos comparables en línea " + line);
             return null;
         }
         
-        // Verificar compatibilidad de tipos
         if (!checkTypeCompatibility(leftType, rightType, line)) {
             return null;
         }
@@ -440,13 +395,11 @@ public class SemanticSymbolTable {
      * @return "BOOL" si es valida, null si es invalida
      */
     public String checkLogicalOperation(String leftType, String rightType, String operator, int line) {
-        // Verificar que el operando izquierdo sea booleano
         if (!leftType.equals("BOOL")) {
             addError("Operación lógica '" + operator + "' requiere operando booleano en línea " + line);
             return null;
         }
         
-        // Para operaciones binarias, verificar operando derecho
         if (rightType != null && !rightType.equals("BOOL")) {
             addError("Operación lógica '" + operator + "' requiere ambos operandos booleanos en línea " + line);
             return null;
@@ -475,7 +428,6 @@ public class SemanticSymbolTable {
             return null;
         }
         
-        // Verificar que los índices sean enteros
         if (!index1.equals("INT")) {
             addError("Indice de array debe ser entero en linea " + line);
             return null;
@@ -486,7 +438,6 @@ public class SemanticSymbolTable {
             return null;
         }
         
-        // Verificar dimensiones
         List<Integer> dimensions = array.getDimensiones();
         if (index2 != null && dimensions.size() < 2) {
             addError("Array '" + arrayName + "' no es bidimensional en linea " + line);
@@ -501,7 +452,6 @@ public class SemanticSymbolTable {
         return array.getTipoVariable();
     }
     
-    // ============= VERIFICACIONES ESPECIALES =============
     
     /**
      * Verifica que exista la función main
@@ -552,24 +502,18 @@ public class SemanticSymbolTable {
         }
     }
     
-    /**
-     * NUEVO: Verificación mejorada de tipos en expresiones
-     */
     public String getExpressionType(String expr) {
         if (expr == null) return null;
         
-        // Detectar literales directos
         if (expr.equals("INT") || expr.equals("FLOAT") || expr.equals("BOOL") || 
             expr.equals("CHAR") || expr.equals("STRING")) {
             return expr;
         }
         
-        // Detectar operaciones numéricas
         if (expr.equals("NUMERIC")) {
             return "FLOAT"; // Por defecto, las operaciones numéricas son FLOAT
         }
         
-        // NUEVO: Si expr es un nombre de variable, buscar su tipo
         if (expr.matches("[a-zA-Z][a-zA-Z0-9]*")) { // Es un identificador válido
             SymbolInfo symbol = getCurrentScope().lookup(expr);
             if (symbol != null) {
@@ -583,23 +527,18 @@ public class SemanticSymbolTable {
             }
         }
         
-        // Si es una llamada a función o error
         if (expr.equals("FUNCTION_CALL") || expr.equals("ERROR")) {
             return expr;
         }
         
-        // Para expresiones complejas, intentar inferir tipo
         if (expr.contains("VARIABLE")) {
-            return "VARIABLE"; // Se procesará más tarde
+            return "VARIABLE"; 
         }
         
         System.out.println("DEBUG: Expresión '" + expr + "' no reconocida, retornando UNKNOWN");
         return "UNKNOWN";
     }
 
-    /**
-     * NUEVO: Verificar compatibilidad de return MEJORADA
-     */
     public void checkReturnStatement(String functionName, String returnType, int line) {
         Scope globalScope = getGlobalScope();
         if (globalScope == null) {
@@ -615,7 +554,6 @@ public class SemanticSymbolTable {
         
         String expectedReturnType = function.getTipoVariable();
         
-        // Procesar tipo de expresión retornada
         String actualReturnType = getExpressionType(returnType);
         
         System.out.println("DEBUG Return: función=" + functionName + 
@@ -623,7 +561,6 @@ public class SemanticSymbolTable {
                           ", actual=" + returnType + 
                           ", procesado=" + actualReturnType);
         
-        // Verificar compatibilidad
         if (expectedReturnType.equals("VOID")) {
             if (actualReturnType != null && !actualReturnType.equals("UNKNOWN")) {
                 addError("Función '" + functionName + "' de tipo VOID no puede retornar un valor en línea " + line);
@@ -632,7 +569,6 @@ public class SemanticSymbolTable {
             if (actualReturnType == null || actualReturnType.equals("UNKNOWN")) {
                 addError("Función '" + functionName + "' de tipo '" + expectedReturnType + "' debe retornar un valor en línea " + line);
             } else {
-                // Verificar compatibilidad de tipos específicos
                 if (expectedReturnType.equals("BOOL")) {
                     if (!actualReturnType.equals("BOOL")) {
                         addError("Función '" + functionName + "' de tipo BOOL no puede retornar " + actualReturnType + " en línea " + line);
@@ -654,9 +590,7 @@ public class SemanticSymbolTable {
             }
         }
     }
-    
-    // ============= MÉTODOS WRAPPER PARA COMPATIBILIDAD CON PARSER =============
-    
+
     /**
      * Wrapper para compatibilidad con el parser actualizado
      * Acepta Object en lugar de String para el tipo
@@ -710,9 +644,7 @@ public class SemanticSymbolTable {
         String returnTypeStr = (returnType != null) ? returnType.toString() : null;
         checkReturnStatement(functionName, returnTypeStr, line);
     }
-    
-    // ============= MANEJO DE ERRORES Y ADVERTENCIAS =============
-    
+        
     private void addError(String error) {
         errors.add(error);
         System.err.println("Error semantico: " + error);
@@ -755,15 +687,10 @@ public class SemanticSymbolTable {
         }
     }
     
-    // ============= COMPATIBILIDAD Y ESCRITURA MEJORADA =============
     
-    /**
-     * MEJORADO: Escribe las tablas con información detallada de alcances
-     */
     public void escribirTablas(String archivo) throws IOException {
         PrintWriter writer = new PrintWriter(new FileWriter(archivo));
         
-        // Escribir información de alcances
         writer.println("===== ANÁLISIS SEMÁNTICO =====");
         writer.println("Alcances procesados total: " + currentLevel); // Total creados
         writer.println("Alcances activos: " + scopeStack.size()); // Solo los activos
@@ -771,7 +698,6 @@ public class SemanticSymbolTable {
         writer.println("Advertencias: " + warnings.size());
         writer.println();
         
-        // Escribir errores si existen
         if (!errors.isEmpty()) {
             writer.println("===== ERRORES SEMÁNTICOS =====");
             for (String error : errors) {
@@ -780,7 +706,6 @@ public class SemanticSymbolTable {
             writer.println();
         }
         
-        // Escribir advertencias si existen
         if (!warnings.isEmpty()) {
             writer.println("===== ADVERTENCIAS =====");
             for (String warning : warnings) {
@@ -789,7 +714,6 @@ public class SemanticSymbolTable {
             writer.println();
         }
         
-        // Escribir información de scopes activos
         writer.println("===== INFORMACIÓN DE ALCANCES =====");
         for (int i = 0; i < scopeStack.size(); i++) {
             Scope scope = scopeStack.get(i);
@@ -807,7 +731,6 @@ public class SemanticSymbolTable {
             writer.println();
         }
         
-        // Escribir símbolos por alcance
         for (int i = 0; i < scopeStack.size(); i++) {
             Scope scope = scopeStack.get(i);
             writer.println("===== ALCANCE: " + scope.toString() + " =====");

@@ -2,6 +2,19 @@ package main.java.symbol;
 
 import java.util.*;
 
+
+/**
+ * Tabla de símbolos para el compilador.
+ * 
+ * Esta clase implementa una estructura para almacenar y gestionar los diferentes
+ * tipos de símbolos encontrados durante el análisis léxico y sintáctico.
+ * Mantiene cuatro tablas separadas para variables, funciones, constantes y
+ * palabras reservadas del lenguaje.
+ * 
+ * @author Compilador
+ * @version 1.0
+ */
+
 public class SymbolInfo {
     private String lexema;
     private String tipo;
