@@ -4,25 +4,22 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Generador de Código Intermedio - VERSIÓN MÍNIMA
+ * Generador de Código Intermedio
  * 
- * Esta versión NO interfiere con el análisis semántico existente.
- * Solo añade la capacidad de generar código intermedio SIN modificar
- * el comportamiento del parser que ya funciona.
+ * Esta clase permite la generacion de codigo intermedio 
+ * de tres direcciones
  * 
  * @author Bayron Rodríguez & Gadir Calderón
- * @version Mínima - Solo para Proyecto 2
+ * @version 1.0 
  */
 public class IntermediateCodeGenerator {
-    
-    // === ATRIBUTOS BÁSICOS ===
+
     private List<String> code;
     private String outputFile;
     private int tempCounter;
     private int labelCounter;
     private boolean enabled;
     
-    // === CONSTRUCTOR ===
     public IntermediateCodeGenerator(String outputFile) {
         this.outputFile = outputFile;
         this.code = new ArrayList<>();
@@ -30,7 +27,6 @@ public class IntermediateCodeGenerator {
         this.labelCounter = 1;
         this.enabled = true;
         
-        // Añadir encabezado básico
         code.add("// Código Intermedio Generado");
         code.add("// Archivo: " + outputFile);
         code.add("");
@@ -38,7 +34,6 @@ public class IntermediateCodeGenerator {
         System.out.println("Generador de código intermedio inicializado: " + outputFile);
     }
     
-    // === MÉTODOS BÁSICOS ===
     
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
@@ -48,8 +43,7 @@ public class IntermediateCodeGenerator {
         return enabled;
     }
     
-    // === DECLARACIONES ===
-    
+
     public void declareVariable(String name, String type) {
         if (enabled) {
             emit("DECLARE " + name + " " + type);
@@ -70,7 +64,6 @@ public class IntermediateCodeGenerator {
         }
     }
     
-    // === ASIGNACIONES ===
     
     public void generateAssignment(String variable, String expression) {
         if (enabled) {
@@ -78,7 +71,6 @@ public class IntermediateCodeGenerator {
         }
     }
     
-    // === OPERACIONES BINARIAS ===
     
     public String generateBinaryOp(String left, String op, String right) {
         if (!enabled) return "t" + tempCounter++;
@@ -96,7 +88,6 @@ public class IntermediateCodeGenerator {
         return temp;
     }
     
-    // === OPERACIONES UNARIAS ===
     
     public String generateUnaryOp(String op, String operand) {
         if (!enabled) return "t" + tempCounter++;
@@ -120,7 +111,6 @@ public class IntermediateCodeGenerator {
         return variable;
     }
     
-    // === ACCESO A ARRAYS ===
     
     public String generateArrayAccess(String array, String index1, String index2) {
         if (!enabled) return "t" + tempCounter++;
@@ -130,12 +120,10 @@ public class IntermediateCodeGenerator {
         return temp;
     }
     
-    // === LLAMADAS A FUNCIONES ===
     
     public String generateFunctionCall(String function, List<String> args) {
         if (!enabled) return "t" + tempCounter++;
         
-        // Emitir parámetros
         for (String arg : args) {
             emit("PARAM " + arg);
         }
@@ -145,7 +133,6 @@ public class IntermediateCodeGenerator {
         return temp;
     }
     
-    // === CONTROL DE FLUJO ===
     
     public String newLabel() {
         return "L" + labelCounter++;
@@ -169,8 +156,6 @@ public class IntermediateCodeGenerator {
         }
     }
     
-    // === RETURN Y BREAK ===
-    
     public void generateReturn(String value) {
         if (enabled) {
             if (value != null) {
@@ -187,7 +172,6 @@ public class IntermediateCodeGenerator {
         }
     }
     
-    // === I/O ===
     
     public void generateRead(String variable) {
         if (enabled) {
@@ -201,8 +185,6 @@ public class IntermediateCodeGenerator {
         }
     }
     
-    // === MÉTODOS AUXILIARES ===
-    
     private String newTemp() {
         return "t" + tempCounter++;
     }
@@ -213,8 +195,6 @@ public class IntermediateCodeGenerator {
         }
     }
     
-    
-    // === SALIDA ===
     
     public void printCode() {
         if (enabled) {
@@ -267,7 +247,6 @@ public class IntermediateCodeGenerator {
         }
     }
     
-    // === MÉTODO PARA AÑADIR CÓDIGO PERSONALIZADO ===
     
     public void addCustomCode(String instruction) {
         if (enabled) {
