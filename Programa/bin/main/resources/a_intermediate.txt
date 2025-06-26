@@ -1,0 +1,36 @@
+// ========================================
+// CÓDIGO INTERMEDIO DE TRES DIRECCIONES
+// Generado automáticamente
+// ========================================
+
+  1: // Código Intermedio Generado
+  2: // Archivo: src/main/resources/a_intermediate.txt
+  3: 
+  4: FUNCTION main RETURNS VOID
+  5: BEGIN
+  6: DECLARE x INT
+  7: x = 8
+  8: DECLARE y INT
+  9: y = 1
+ 10: t1 = x > 5
+ 11: t2 = x > 10
+ 12: y = 100
+ 13: IF NOT t2 GOTO L1
+ 14: y = 50
+ 15: GOTO L2
+ 16: L1:
+ 17: L2:
+ 18: IF NOT t1 GOTO L3
+ 19: y = 10
+ 20: GOTO L4
+ 21: L3:
+ 22: L4:
+ 23: END main
+ 24: 
+
+// ========================================
+// ESTADÍSTICAS
+// Líneas: 24
+// Temporales: 2
+// Etiquetas: 0
+// ========================================

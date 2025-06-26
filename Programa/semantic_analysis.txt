@@ -1,0 +1,14 @@
+===== ANÁLISIS SEMÁNTICO =====
+Alcances procesados total: 2
+Alcances activos: 1
+Errores semánticos: 0
+Advertencias: 0
+
+===== INFORMACIÓN DE ALCANCES =====
+Alcance 1: Scope[global, nivel=0, tipo=GLOBAL, simbolos=1]
+  - Símbolos locales: 1
+  - Variables: 0, Funciones: 1
+
+===== ALCANCE: Scope[global, nivel=0, tipo=GLOBAL, simbolos=1] =====
+Lexema: main, Tipo: ID, Tipo Variable: VOID, Linea: 1, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: No
+

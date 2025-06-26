@@ -1,0 +1,101 @@
+// ========================================
+// CÓDIGO INTERMEDIO DE TRES DIRECCIONES
+// Generado automáticamente
+// ========================================
+
+  1: // Código Intermedio Generado
+  2: // Archivo: src/main/resources/tata_intermediate.txt
+  3: 
+  4: DECLARE x22 CHAR
+  5: DECLARE x23 CHAR
+  6: FUNCTION func1 RETURNS FLOAT
+  7: BEGIN
+  8: DECLARE z FLOAT
+  9: z = ERROR
+ 10: DECLARE x24 CHAR
+ 11: x24 = a
+ 12: DECLARE miChar CHAR
+ 13: miChar = !
+ 14: DECLARE miChar2 CHAR
+ 15: miChar2 = !
+ 16: DECLARE x30 INT
+ 17: x30 = ERROR
+ 18: DECLARE x40 BOOL
+ 19: x40 = false
+ 20: DECLARE x50 CHAR[][]
+ 21: // Array inicializado con matriz
+ 22: DECLARE x51 STRING
+ 23: x51 = Hola a todos los que est[a] haciendo un compilador nuevo\n
+ 24: t1 = z > 5.6
+ 25: DECLARE y INT
+ 26: DECLARE ch33 CHAR
+ 27: ch33 = a
+ 28: DECLARE str2 STRING
+ 29: str2 = sdff
+ 30: // Estructura IF-ELIF-ELSE procesada
+ 31: DECLARE i INT
+ 32: i = 0
+ 33: t2 = 4 + i
+ 34: i = i + 1
+ 35: WRITE i
+ 36: // Estructura FOR procesada con declaracion
+ 37: WRITE miChar
+ 38: READ x40
+ 39: RETURN 5.6
+ 40: END func1
+ 41: 
+ 42: FUNCTION func3 RETURNS BOOL
+ 43: BEGIN
+ 44: DECLARE b1 STRING
+ 45: b1 = hola
+ 46: RETURN false
+ 47: END func3
+ 48: 
+ 49: DECLARE b1 BOOL
+ 50: DECLARE i1 INT
+ 51: FUNCTION func2 RETURNS INT
+ 52: BEGIN
+ 53: DECLARE z INT
+ 54: z = 1
+ 55: RETURN 1
+ 56: END func2
+ 57: 
+ 58: FUNCTION main RETURNS VOID
+ 59: BEGIN
+ 60: DECLARE miChar CHAR
+ 61: miChar = !
+ 62: DECLARE miChar2 CHAR
+ 63: miChar2 = !
+ 64: DECLARE str1 STRING
+ 65: str1 = Mi string 1
+ 66: DECLARE fl1 FLOAT
+ 67: fl1 = 56.6
+ 68: DECLARE in2 INT
+ 69: in2 = 2
+ 70: in2 = in2 + 1
+ 71: t3 = in2 - 14
+ 72: DECLARE in1 INT
+ 73: in1 = ERROR
+ 74: t4 = 3.7 ** fl1
+ 75: DECLARE fl2 FLOAT
+ 76: fl2 = ERROR
+ 77: DECLARE arr INT[][]
+ 78: // Array inicializado con matriz
+ 79: t5 = CALL func1 0
+ 80: t6 = 6.7 != 8.9
+ 81: DECLARE bl0 BOOL
+ 82: bl0 = t6
+ 83: t7 = in1 >= fl1
+ 84: t8 = CALL func2 0
+ 85: DECLARE bl1 BOOL
+ 86: bl1 = ERROR
+ 87: RETURN bl1
+ 88: END main
+ 89: 
+
+// ========================================
+// ESTADÍSTICAS
+// Líneas: 89
+// Temporales: 8
+// Etiquetas: 0
+// ========================================

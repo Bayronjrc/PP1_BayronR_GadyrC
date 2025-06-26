@@ -1,0 +1,74 @@
+// ========================================
+// CÓDIGO INTERMEDIO DE TRES DIRECCIONES
+// Generado automáticamente
+// ========================================
+
+  1: // Código Intermedio Generado
+  2: // Archivo: src/main/resources/haha_intermediate.txt
+  3: 
+  4: DECLARE dif INT
+  5: DECLARE otra CHAR
+  6: FUNCTION mi RETURNS FLOAT
+  7: BEGIN
+  8: DECLARE otra INT
+  9: DECLARE var INT
+ 10: var = 0
+ 11: t1 = 3 ** 4
+ 12: t2 = 2 * t1
+ 13: t3 = 1 + t2
+ 14: DECLARE var2 INT
+ 15: var2 = t3
+ 16: DECLARE str STRING
+ 17: str = Hola $~&@/$& ʅ  mundo
+ 18: DECLARE i INT
+ 19: i = 0
+ 20: t4 = 4 + i
+ 21: t5 = i < t4
+ 22: i = i + 1
+ 23: var2 = 1
+ 24: t6 = var2 > 122
+ 25: t7 = 34 + 35
+ 26: t8 = 12 > t7
+ 27: t9 = t6 && t8
+ 28: // Estructura DO-WHILE procesada
+ 29: // Condicion: BOOL
+ 30: t10 = var == 0
+ 31: WRITE STRING
+ 32: // Estructura IF procesada
+ 33: // Condicion: BOOL
+ 34: WRITE INT
+ 35: WRITE INT
+ 36: // Estructura IF-ELSE procesada
+ 37: // Estructura FOR procesada con declaracion
+ 38: RETURN FLOAT
+ 39: END mi
+ 40: 
+ 41: FUNCTION miOtraFun RETURNS BOOL
+ 42: BEGIN
+ 43: RETURN BOOL
+ 44: END miOtraFun
+ 45: 
+ 46: FUNCTION main RETURNS VOID
+ 47: BEGIN
+ 48: DECLARE i INT
+ 49: i = 1
+ 50: t11 = 67 + i
+ 51: t12 = -0.01
+ 52: DECLARE b1 BOOL
+ 53: b1 = true
+ 54: DECLARE s1 STRING
+ 55: s1 = luna
+ 56: READ s1
+ 57: WRITE BOOL
+ 58: WRITE BOOL
+ 59: t13 = -6.7
+ 60: WRITE FLOAT
+ 61: END main
+ 62: 
+
+// ========================================
+// ESTADÍSTICAS
+// Líneas: 62
+// Temporales: 13
+// Etiquetas: 0
+// ========================================

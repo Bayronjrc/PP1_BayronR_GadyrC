@@ -2,7 +2,6 @@
  * Analizador Sintáctico con Análisis Semántico Integrado + Código Intermedio
  * --------------------------------------------------------------------------
  * 
- * 
  * CAMBIOS PARA PROYECTO 2:
  * - Manejo de scopes y tabla de símbolos semántica
  * - Verificación de tipos y compatibilidad
@@ -15,6 +14,7 @@ import java_cup.runtime.*;
 import java.util.*;
 import main.java.symbol.SymbolTable;
 import main.java.symbol.SemanticSymbolTable;
+import main.java.symbol.SymbolInfo;
 import main.java.intermedio.IntermediateCodeGenerator;
 
 /* Código de usuario */
@@ -29,10 +29,19 @@ parser code {:
     private Stack<String> scopeContext = new Stack<>();
     
     private String currentFunctionName = null;
-    
 
+    private Map<String, String> codeValues  = new HashMap<>();
+
+    private int uniqueCounter  = 0;
+    
     private IntermediateCodeGenerator codeGenerator;
+
     private boolean codeGenerationEnabled = false;
+
+    private int labelCounter = 0;
+
+    private Stack<String> labelStack = new Stack<>();
+    private Stack<String[]> labelPairStack = new Stack<>();
     
     public void enableCodeGeneration(String outputFile) {
         this.codeGenerator = new IntermediateCodeGenerator(outputFile);
@@ -197,8 +206,83 @@ parser code {:
             symbolTable.marcarComoFuncion(id, returnType);
         }
     }
+    // Para el tema del código intermedio
+    public String saveCodeValue(String semanticType, String codeValue) {
+        if (codeGenerationEnabled && codeValue != null) {
+            String uniqueKey = "expr_" + (++uniqueCounter);
+            codeValues.put(uniqueKey, codeValue);
+            System.out.println("DEBUG: Guardando " + uniqueKey + " = " + codeValue + " (tipo: " + semanticType + ")");
+            return uniqueKey;  // Devolver la clave única
+        }
+        return null;
+    }
+
+    public String getCodeValue(String key) {
+        if (key != null && key.startsWith("expr_")) {
+            String value = codeValues.get(key);
+            System.out.println("DEBUG: Recuperando " + key + " = " + value);
+            return value != null ? value : key;
+        }
+        // Si no es una clave especial, devolver tal como está
+        return key;
+    }
+
+    private Stack<String> codeKeyStack = new Stack<>();
+    
+    public void pushCodeKey(String key) {
+        if (codeGenerationEnabled && key != null) {
+            codeKeyStack.push(key);
+        }
+    }
+    
+    public String popCodeKey() {
+        if (codeGenerationEnabled && !codeKeyStack.isEmpty()) {
+            return codeKeyStack.pop();
+        }
+        return null;
+    }
+
+    // Para el tema de etiquetas únicas
+    public String generateLabel() {
+        return "L" + (++labelCounter);
+    }
+
+    public void pushLabel(String label) {
+    labelStack.push(label);
+}
+
+public String popLabel() {
+    return labelStack.isEmpty() ? null : labelStack.pop();
+}
+
+public void pushLabelPair(String label1, String label2) {
+    labelPairStack.push(new String[]{label1, label2});
+}
+
+public String[] popLabelPair() {
+    return labelPairStack.isEmpty() ? null : labelPairStack.pop();
+}
+
+public String[] peekLabelPair() {
+    return labelPairStack.isEmpty() ? null : labelPairStack.peek();
+}
 :}
 
+/* Declaración de terminales */
+terminal IF, ELIF, ELSE, DO, WHILE, FOR, BREAK, RETURN;
+terminal INT, FLOAT, BOOL, CHAR, STRING, VOID;
+terminal READ, WRITE, MAIN, TRUE, FALSE;
+terminal PLUS, MINUS, TIMES, DIVIDE, MOD, POW;
+terminal INCREMENT, DECREMENT;
+terminal LT, LTE, GT, GTE, EQ, NEQ;
+terminal AND, OR, NOT;
+terminal LPAREN, RPAREN, LBLOCK, RBLOCK;
+terminal QUESTION, COMMA, ASSIGN;
+terminal LBRACKET, RBRACKET;
+terminal ID, LIT_INT, LIT_FLOAT, LIT_BOOL, LIT_CHAR, LIT_STRING;
+terminal SWITCH, CASE, DEFAULT, COLON;
+
+/* Declaración de no terminales */
 non terminal program;
 non terminal block;
 non terminal decl_var, decl_fun, decl_arr;
@@ -220,20 +304,8 @@ non terminal String literal;
 non terminal String llamada_fun;     
 non terminal switch_stmt, case_list, case_stmt, default_stmt;
 
-terminal IF, ELIF, ELSE, DO, WHILE, FOR, BREAK, RETURN;
-terminal INT, FLOAT, BOOL, CHAR, STRING, VOID;
-terminal READ, WRITE, MAIN, TRUE, FALSE;
-terminal PLUS, MINUS, TIMES, DIVIDE, MOD, POW;
-terminal INCREMENT, DECREMENT;
-terminal LT, LTE, GT, GTE, EQ, NEQ;
-terminal AND, OR, NOT;
-terminal LPAREN, RPAREN, LBLOCK, RBLOCK;
-terminal QUESTION, COMMA, ASSIGN;
-terminal LBRACKET, RBRACKET;
-terminal UMINUS;
-terminal ID, LIT_INT, LIT_FLOAT, LIT_BOOL, LIT_CHAR, LIT_STRING;
-terminal SWITCH, CASE, DEFAULT, COLON;
 
+/* Precedencia de operadores */
 precedence left OR;
 precedence left AND;
 precedence right NOT;
@@ -241,8 +313,9 @@ precedence nonassoc LT, LTE, GT, GTE, EQ, NEQ;
 precedence left PLUS, MINUS;
 precedence left TIMES, DIVIDE, MOD;
 precedence right POW;
-precedence right UMINUS, INCREMENT, DECREMENT;
+precedence right INCREMENT, DECREMENT;
 precedence left LPAREN, RPAREN, LBRACKET, RBRACKET;
+precedence left ELSE;
 
 /* 
  * Gramática con recuperación de errores y análisis semántico
@@ -451,13 +524,23 @@ exp_list ::= exp
 /* Acceso a arreglos con verificación semántica */
 arr_access ::= ID:id LBRACKET exp:e1 RBRACKET LBRACKET exp:e2 RBRACKET
              {: 
+                // VALIDACIÓN COMPLETA: Verificar tipo de array e índices
                 if (parser.getSemanticTable() != null) {
-                }
-                
-                if (parser.codeGenerationEnabled) {
-                    RESULT = parser.getCodeGenerator().generateArrayAccess(id.toString(), e1, e2);
+                    String resultType = parser.getSemanticTable().checkArrayAccess(
+                        id.toString(), e1, e2, idleft
+                    );
+                    
+                    if (resultType == null) {
+                        RESULT = "ERROR";
+                    } else {
+                        RESULT = resultType;
+                    }                        
                 } else {
-                    RESULT = "ARRAY_ACCESS"; 
+                    RESULT = "ERROR";
+                }
+
+                if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                    String code = parser.getCodeGenerator().generateArrayAccess(id.toString(), e1, e2);
                 }
              :}
              ;
@@ -468,6 +551,7 @@ arr_access ::= ID:id LBRACKET exp:e1 RBRACKET LBRACKET exp:e2 RBRACKET
 stmt ::= exp:e QUESTION
        {: 
           if (parser.getSemanticTable() != null && e != null) {
+              // Registro de uso de expresión
           }
        :}
        | assign
@@ -491,16 +575,23 @@ stmt ::= exp:e QUESTION
  */
 assign ::= ID:id ASSIGN exp:e QUESTION
          {:
+            // e es el tipo semántico (String)
             boolean valid = parser.getSemanticTable().checkAssignment(id.toString(), e, idleft);
             
             if (valid) {
-                System.out.println("Asignacion valida: " + id + " = " + e);
+                System.out.println("DEBUG: Asignación válida de " + e + " a " + id);
+                
+                if (parser.codeGenerationEnabled) {
+                    String expKey = parser.popCodeKey();  // ← RECUPERAR DEL STACK
+                    String expCode = parser.getCodeValue(expKey);  // ← OBTENER CÓDIGO REAL
+                    
+                    System.out.println("DEBUG: Recuperando del stack: " + expKey + " = " + expCode);
+                    
+                    parser.getCodeGenerator().generateAssignment(id.toString(), expCode);
+                    System.out.println("DEBUG: Generando asignación " + id + " = " + expCode);
+                }
             } else {
-                System.err.println("Error en asignacion a variable: " + id);
-            }
-            
-            if (parser.codeGenerationEnabled && valid) {
-                parser.getCodeGenerator().generateAssignment(id.toString(), e);
+                System.err.println("Error en asignación a variable: " + id);
             }
          :}
          | arr_access:arr ASSIGN exp:e QUESTION
@@ -539,7 +630,12 @@ decl_var ::= tipo:t ID:id ASSIGN exp:e QUESTION
               if (parser.codeGenerationEnabled && declared) {
                   parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
                   if (e != null) {
-                      parser.getCodeGenerator().generateAssignment(id.toString(), e);
+                      // ✅ CORRECCIÓN: Usar el stack en lugar de e directamente
+                      String expKey = parser.popCodeKey();  // Recuperar del stack
+                      String expCode = parser.getCodeValue(expKey);  // Obtener código real
+                      
+                      System.out.println("DEBUG: Inicializando variable " + id + " con " + expCode);
+                      parser.getCodeGenerator().generateAssignment(id.toString(), expCode);
                   }
               }
            :}
@@ -562,91 +658,121 @@ decl_var ::= tipo:t ID:id ASSIGN exp:e QUESTION
 /* Valores literales con tipos semánticos */
 literal ::= LIT_INT:val
           {: 
-             RESULT = "INT"; 
-             System.out.println("Literal entero detectado");
+             RESULT = "INT";  // ✅ Siempre String para semántico
+             System.out.println("Literal entero: " + val);
              
              if (parser.codeGenerationEnabled) {
-                 RESULT = val.toString(); 
+                 String key = parser.saveCodeValue("INT", val.toString());
+                 parser.pushCodeKey(key);  // Guardar en stack para uso posterior
+                 System.out.println("DEBUG: Literal " + val + " guardado con clave " + key);
              }
           :}
          | LIT_FLOAT:val
           {: 
-             RESULT = "FLOAT"; 
-             System.out.println("Literal flotante detectado");
+             RESULT = "FLOAT";
              
              if (parser.codeGenerationEnabled) {
-                 RESULT = val.toString();
+                 String key = parser.saveCodeValue("FLOAT", val.toString());
+                 parser.pushCodeKey(key);
              }
           :}
          | LIT_BOOL:val
           {: 
-             RESULT = "BOOL"; 
-             System.out.println("Literal booleano detectado");
+             RESULT = "BOOL";
+             System.out.println("Literal booleano detectado: " + val);
              
              if (parser.codeGenerationEnabled) {
-                 RESULT = val.toString();
+                 String key = parser.saveCodeValue("BOOL", val.toString());  // ✅ Valor real: "true", "false"
+                 parser.pushCodeKey(key);
+                 System.out.println("DEBUG: Literal BOOL " + val + " guardado como código");
              }
           :}
          | LIT_CHAR:val
           {: 
-             RESULT = "CHAR"; 
-             System.out.println("Literal caracter detectado");
+             RESULT = "CHAR";
+             System.out.println("Literal caracter detectado: " + val);
              
              if (parser.codeGenerationEnabled) {
-                 RESULT = val.toString();
+                 String key = parser.saveCodeValue("CHAR", val.toString());  // ✅ Valor real: "'a'", "'x'"
+                 parser.pushCodeKey(key);
+                 System.out.println("DEBUG: Literal CHAR " + val + " guardado como código");
              }
           :}
          | LIT_STRING:val
           {: 
-             RESULT = "STRING"; 
-             System.out.println("Literal cadena detectado");
+             RESULT = "STRING";
+             System.out.println("Literal cadena detectado: " + val);
              
              if (parser.codeGenerationEnabled) {
-                 RESULT = val.toString();
+                 String key = parser.saveCodeValue("STRING", val.toString());  // ✅ Valor real: "\"hola\""
+                 parser.pushCodeKey(key);
+                 System.out.println("DEBUG: Literal STRING " + val + " guardado como código");
              }
           :}
          | TRUE 
           {: 
-             RESULT = "BOOL"; 
-             System.out.println("Literal booleano 'true' detectado");
-             
-             if (parser.codeGenerationEnabled) {
-                 RESULT = "true";
-             }
-          :}
+              RESULT = "BOOL";
+              if (parser.codeGenerationEnabled) {
+                  String key = parser.saveCodeValue("BOOL", "true");
+                  parser.pushCodeKey(key);
+              }
+           :}
          | FALSE 
           {: 
-             RESULT = "BOOL"; 
-             System.out.println("Literal booleano 'false' detectado");
-             
-             if (parser.codeGenerationEnabled) {
-                 RESULT = "false";
-             }
-          :}
+              RESULT = "BOOL";
+              if (parser.codeGenerationEnabled) {
+                  String key = parser.saveCodeValue("BOOL", "false");
+                  parser.pushCodeKey(key);
+              }
+           :}
          ;
 
 /* Llamadas a funciones con verificación semántica */
-llamada_fun ::= ID:id LPAREN arg_list RPAREN
+llamada_fun ::= ID:id LPAREN arg_list:args RPAREN
               {: 
+                 // VALIDACIÓN COMPLETA: Verificar función y argumentos
                  if (parser.getSemanticTable() != null) {
-                     RESULT = "FUNCTION_CALL"; 
+                     // TODO: Extraer tipos reales de arg_list
+                     List<String> argTypes = new ArrayList<String>(); // Implementar extracción
+                     String returnType = parser.getSemanticTable().checkFunctionCall(
+                         id.toString(), argTypes, idleft
+                     );
+                     
+                     if (returnType == null) {
+                         RESULT = "ERROR";
+                     } else {
+                         RESULT = returnType;
+                     }
+                 } else {
+                     RESULT = "ERROR";
                  }
-                 
-                 if (parser.codeGenerationEnabled) {
-                     List<String> args = new ArrayList<String>(); // TODO: extraer argumentos reales
-                     RESULT = parser.getCodeGenerator().generateFunctionCall(id.toString(), args);
+
+                 if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                    List<String> argTypes = new ArrayList<String>();
+                    String code = parser.getCodeGenerator().generateFunctionCall(id.toString(), argTypes);
                  }
               :}
               | ID:id LPAREN RPAREN
               {: 
+                 // VALIDACIÓN COMPLETA: Función sin argumentos
                  if (parser.getSemanticTable() != null) {
-                     RESULT = "FUNCTION_CALL";
-                 }
-                 
-                 if (parser.codeGenerationEnabled) {
                      List<String> noArgs = new ArrayList<String>();
-                     RESULT = parser.getCodeGenerator().generateFunctionCall(id.toString(), noArgs);
+                     String returnType = parser.getSemanticTable().checkFunctionCall(
+                         id.toString(), noArgs, idleft
+                     );
+                     
+                     if (returnType == null) {
+                         RESULT = "ERROR";
+                     } else {
+                         RESULT = returnType;
+                     }
+                 } else {
+                     RESULT = "ERROR";
                  }
+                 if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                    List<String> noArgs = new ArrayList<String>();
+                    String code = parser.getCodeGenerator().generateFunctionCall(id.toString(), noArgs);
+                }
               :}
               ;
 
@@ -657,25 +783,56 @@ exp ::= exp_log:e {: RESULT = e; :}
 /* Expresiones lógicas con verificación de tipos */
 exp_log ::= exp_log:e1 OR term_log:e2
           {: 
-             if (parser.getSemanticTable() != null) {
+             // 1. VALIDACIÓN SEMÁNTICA
+             String resultType = parser.getSemanticTable().checkLogicalOperation(
+                 e1, e2, "||", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Operación lógica OR requiere operandos booleanos", null);
+             } else {
+                 RESULT = resultType;  // Debería ser "BOOL"
              }
-             RESULT = "BOOL"; 
              
-             if (parser.codeGenerationEnabled) {
-                 RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "||", e2);
+             // 2. GENERACIÓN DE CÓDIGO
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "||", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
              }
           :}
           | term_log:e {: RESULT = e; :}
           ;
 
+
 term_log ::= term_log:e1 AND factor_log:e2
            {: 
-              if (parser.getSemanticTable() != null) {
+              // 1. VALIDACIÓN SEMÁNTICA
+              String resultType = parser.getSemanticTable().checkLogicalOperation(
+                  e1, e2, "&&", e1left
+              );
+              if (resultType == null) {
+                  RESULT = "ERROR";
+                  parser.report_error("Operación lógica AND requiere operandos booleanos", null);
+              } else {
+                  RESULT = resultType;
               }
-              RESULT = "BOOL"; 
               
-              if (parser.codeGenerationEnabled) {
-                  RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "&&", e2);
+              // 2. GENERACIÓN DE CÓDIGO
+              if (parser.codeGenerationEnabled && resultType != null) {
+                  String rightKey = parser.popCodeKey();
+                  String leftKey = parser.popCodeKey();
+                  String rightCode = parser.getCodeValue(rightKey);
+                  String leftCode = parser.getCodeValue(leftKey);
+                  
+                  String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "&&", rightCode);
+                  String newKey = parser.saveCodeValue(resultType, tempVar);
+                  parser.pushCodeKey(newKey);
               }
            :}
            | factor_log:e {: RESULT = e; :}
@@ -683,12 +840,25 @@ term_log ::= term_log:e1 AND factor_log:e2
 
 factor_log ::= NOT atom_arit:e
              {: 
-                if (parser.getSemanticTable() != null) {
+                // 1. VALIDACIÓN SEMÁNTICA
+                String resultType = parser.getSemanticTable().checkLogicalOperation(
+                    e, null, "!", eleft
+                );
+                if (resultType == null) {
+                    RESULT = "ERROR";
+                    parser.report_error("Operación NOT requiere operando booleano", null);
+                } else {
+                    RESULT = resultType;
                 }
-                RESULT = "BOOL"; 
                 
-                if (parser.codeGenerationEnabled) {
-                    RESULT = parser.getCodeGenerator().generateUnaryOp("!", e);
+                // 2. GENERACIÓN DE CÓDIGO
+                if (parser.codeGenerationEnabled && resultType != null) {
+                    String operandKey = parser.popCodeKey();
+                    String operandCode = parser.getCodeValue(operandKey);
+                    
+                    String tempVar = parser.getCodeGenerator().generateUnaryOp("!", operandCode);
+                    String newKey = parser.saveCodeValue(resultType, tempVar);
+                    parser.pushCodeKey(newKey);
                 }
              :}
              | exp_rel:e {: RESULT = e; :}
@@ -698,50 +868,142 @@ factor_log ::= NOT atom_arit:e
 /* Expresiones relacionales con verificación de tipos */
 exp_rel ::= exp_arit:e1 LT exp_arit:e2 
           {: 
-             RESULT = "BOOL"; 
+             // 1. VALIDACIÓN SEMÁNTICA
+             String resultType = parser.getSemanticTable().checkRelationalOperation(
+                 e1, e2, "<", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Tipos no comparables en operación <", null);
+             } else {
+                 RESULT = resultType;  // Debería ser "BOOL"
+             }
              
-             if (parser.codeGenerationEnabled) {
-                 RESULT = parser.getCodeGenerator().generateComparison(e1, "<", e2);
+             // 2. GENERACIÓN DE CÓDIGO
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateComparison(leftCode, "<", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
              }
           :}
           | exp_arit:e1 LTE exp_arit:e2 
           {: 
-             RESULT = "BOOL"; 
+             String resultType = parser.getSemanticTable().checkRelationalOperation(
+                 e1, e2, "<=", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Tipos no comparables en operación <=", null);
+             } else {
+                 RESULT = resultType;
+             }
              
-             if (parser.codeGenerationEnabled) {
-                 RESULT = parser.getCodeGenerator().generateComparison(e1, "<=", e2);
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateComparison(leftCode, "<=", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
              }
           :}
           | exp_arit:e1 GT exp_arit:e2 
           {: 
-             RESULT = "BOOL"; 
+             String resultType = parser.getSemanticTable().checkRelationalOperation(
+                 e1, e2, ">", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Tipos no comparables en operación >", null);
+             } else {
+                 RESULT = resultType;
+             }
              
-             if (parser.codeGenerationEnabled) {
-                 RESULT = parser.getCodeGenerator().generateComparison(e1, ">", e2);
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateComparison(leftCode, ">", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
              }
           :}
           | exp_arit:e1 GTE exp_arit:e2 
           {: 
-             RESULT = "BOOL"; 
+             String resultType = parser.getSemanticTable().checkRelationalOperation(
+                 e1, e2, ">=", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Tipos no comparables en operación >=", null);
+             } else {
+                 RESULT = resultType;
+             }
              
-             if (parser.codeGenerationEnabled) {
-                 RESULT = parser.getCodeGenerator().generateComparison(e1, ">=", e2);
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateComparison(leftCode, ">=", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
              }
           :}
           | exp_arit:e1 EQ exp_arit:e2 
           {: 
-             RESULT = "BOOL"; 
+             String resultType = parser.getSemanticTable().checkRelationalOperation(
+                 e1, e2, "==", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Tipos no comparables en operación ==", null);
+             } else {
+                 RESULT = resultType;
+             }
              
-             if (parser.codeGenerationEnabled) {
-                 RESULT = parser.getCodeGenerator().generateComparison(e1, "==", e2);
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateComparison(leftCode, "==", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
              }
           :}
           | exp_arit:e1 NEQ exp_arit:e2 
           {: 
-             RESULT = "BOOL"; 
+             String resultType = parser.getSemanticTable().checkRelationalOperation(
+                 e1, e2, "!=", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Tipos no comparables en operación !=", null);
+             } else {
+                 RESULT = resultType;
+             }
              
-             if (parser.codeGenerationEnabled) {
-                 RESULT = parser.getCodeGenerator().generateComparison(e1, "!=", e2);
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateComparison(leftCode, "!=", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
              }
           :}
           | exp_arit:e {: RESULT = e; :}
@@ -750,17 +1012,52 @@ exp_rel ::= exp_arit:e1 LT exp_arit:e2
 /* Expresiones aritméticas con propagación de tipos */
 exp_arit ::= exp_arit:e1 PLUS term_arit:e2
            {: 
-              RESULT = "NUMERIC"; 
-              if (parser.codeGenerationEnabled) {
-                  RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "+", e2);
+              // 1. VALIDACIÓN SEMÁNTICA
+              String resultType = parser.getSemanticTable().checkArithmeticOperation(
+                  e1, e2, "+", e1left
+              );
+              if (resultType == null) {
+                  RESULT = "ERROR";
+                  parser.report_error("Tipos incompatibles en operación +", null);
+              } else {
+                  RESULT = resultType;  // ✅ Tipo semántico
+              }
+              
+              // 2. GENERACIÓN DE CÓDIGO
+              if (parser.codeGenerationEnabled && resultType != null) {
+                  String rightKey = parser.popCodeKey();  // e2
+                  String leftKey = parser.popCodeKey();   // e1
+                  String rightCode = parser.getCodeValue(rightKey);
+                  String leftCode = parser.getCodeValue(leftKey);
+                  
+                  String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "+", rightCode);
+                  String newKey = parser.saveCodeValue(resultType, tempVar);
+                  parser.pushCodeKey(newKey);
               }
            :}
            | exp_arit:e1 MINUS term_arit:e2 
            {: 
-              RESULT = "NUMERIC"; 
+              // 1. VALIDACIÓN SEMÁNTICA
+              String resultType = parser.getSemanticTable().checkArithmeticOperation(
+                  e1, e2, "-", e1left
+              );
+              if (resultType == null) {
+                  RESULT = "ERROR";
+                  parser.report_error("Tipos incompatibles en operación -", null);
+              } else {
+                  RESULT = resultType;
+              }
               
-              if (parser.codeGenerationEnabled) {
-                  RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "-", e2);
+              // 2. GENERACIÓN DE CÓDIGO
+              if (parser.codeGenerationEnabled && resultType != null) {
+                  String rightKey = parser.popCodeKey();
+                  String leftKey = parser.popCodeKey();
+                  String rightCode = parser.getCodeValue(rightKey);
+                  String leftCode = parser.getCodeValue(leftKey);
+                  
+                  String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "-", rightCode);
+                  String newKey = parser.saveCodeValue(resultType, tempVar);
+                  parser.pushCodeKey(newKey);
               }
            :}
            | term_arit:e {: RESULT = e; :}
@@ -768,26 +1065,74 @@ exp_arit ::= exp_arit:e1 PLUS term_arit:e2
 
 term_arit ::= term_arit:e1 TIMES factor_arit:e2 
             {: 
-               RESULT = "NUMERIC"; 
+               // 1. VALIDACIÓN SEMÁNTICA
+               String resultType = parser.getSemanticTable().checkArithmeticOperation(
+                   e1, e2, "*", e1left
+               );
+               if (resultType == null) {
+                   RESULT = "ERROR";
+                   parser.report_error("Tipos incompatibles en operación *", null);
+               } else {
+                   RESULT = resultType;
+               }
                
-               if (parser.codeGenerationEnabled) {
-                   RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "*", e2);
+               // 2. GENERACIÓN DE CÓDIGO
+               if (parser.codeGenerationEnabled && resultType != null) {
+                   String rightKey = parser.popCodeKey();
+                   String leftKey = parser.popCodeKey();
+                   String rightCode = parser.getCodeValue(rightKey);
+                   String leftCode = parser.getCodeValue(leftKey);
+                   
+                   String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "*", rightCode);
+                   String newKey = parser.saveCodeValue(resultType, tempVar);
+                   parser.pushCodeKey(newKey);
                }
             :}
             | term_arit:e1 DIVIDE factor_arit:e2 
             {: 
-               RESULT = "NUMERIC"; 
+               // 1. VALIDACIÓN SEMÁNTICA
+               String resultType = parser.getSemanticTable().checkArithmeticOperation(
+                   e1, e2, "/", e1left
+               );
+               if (resultType == null) {
+                   RESULT = "ERROR";
+                   parser.report_error("Tipos incompatibles en operación /", null);
+               } else {
+                   RESULT = resultType;
+               }
                
-               if (parser.codeGenerationEnabled) {
-                   RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "/", e2);
+               // 2. GENERACIÓN DE CÓDIGO
+               if (parser.codeGenerationEnabled && resultType != null) {
+                   String rightKey = parser.popCodeKey();
+                   String leftKey = parser.popCodeKey();
+                   String rightCode = parser.getCodeValue(rightKey);
+                   String leftCode = parser.getCodeValue(leftKey);
+                   
+                   String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "/", rightCode);
+                   String newKey = parser.saveCodeValue(resultType, tempVar);
+                   parser.pushCodeKey(newKey);
                }
             :}
             | term_arit:e1 MOD factor_arit:e2 
             {: 
-               RESULT = "INT"; 
+               // 1. VALIDACIÓN SEMÁNTICA - MOD solo para enteros
+               if (!e1.equals("INT") || !e2.equals("INT")) {
+                   parser.report_error("Operador % requiere operandos enteros", null);
+                   RESULT = "ERROR";
+               } else {
+                   RESULT = "INT";
+               }
                
-               if (parser.codeGenerationEnabled) {
-                   RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "%", e2);
+               // 2. GENERACIÓN DE CÓDIGO
+               if (parser.codeGenerationEnabled && RESULT.equals("INT")) {
+                   String rightKey = parser.popCodeKey();
+                   String leftKey = parser.popCodeKey();
+                   String rightCode = parser.getCodeValue(rightKey);
+                   String leftCode = parser.getCodeValue(leftKey);
+                   
+                   String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "%", rightCode);
+                   String newKey = parser.saveCodeValue("INT", tempVar);
+                   parser.pushCodeKey(newKey);
                }
             :}
             | factor_arit:e {: RESULT = e; :}
@@ -795,37 +1140,138 @@ term_arit ::= term_arit:e1 TIMES factor_arit:e2
 
 factor_arit ::= factor_arit:e1 POW power_arit:e2 
               {: 
-                 RESULT = "NUMERIC"; 
+                 // 1. VALIDACIÓN SEMÁNTICA
+                 String resultType = parser.getSemanticTable().checkArithmeticOperation(
+                     e1, e2, "**", e1left
+                 );
+                 if (resultType == null) {
+                     RESULT = "ERROR";
+                     parser.report_error("Operación POW requiere operandos numéricos", null);
+                 } else {
+                     // POW inteligente: si ambos son INT, resultado es INT
+                     if (e1.equals("INT") && e2.equals("INT")) {
+                         RESULT = "INT";
+                     } else {
+                         RESULT = "FLOAT";
+                     }
+                 }
                  
-                 if (parser.codeGenerationEnabled) {
-                     RESULT = parser.getCodeGenerator().generateBinaryOp(e1, "**", e2);
+                 // 2. GENERACIÓN DE CÓDIGO
+                 if (parser.codeGenerationEnabled && resultType != null) {
+                     String rightKey = parser.popCodeKey();
+                     String leftKey = parser.popCodeKey();
+                     String rightCode = parser.getCodeValue(rightKey);
+                     String leftCode = parser.getCodeValue(leftKey);
+                     
+                     String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "**", rightCode);
+                     String newKey = parser.saveCodeValue(RESULT, tempVar);
+                     parser.pushCodeKey(newKey);
                  }
               :}
               | power_arit:e {: RESULT = e; :}
               ;
 
 power_arit ::= unary_exp:e {: RESULT = e; :}
-             | atom_arit:e {: RESULT = e; :}
-             ;
+            ;
 
 /* Operadores unarios con verificación de tipos */
-unary_exp ::= MINUS atom_arit %prec UMINUS
-            | INCREMENT ID
-            | DECREMENT ID
+unary_exp ::= MINUS atom_arit:e
+            {: 
+               // 1. VALIDACIÓN SEMÁNTICA
+               if (!e.equals("INT") && !e.equals("FLOAT")) {
+                   parser.report_error("Operador unario - requiere operando numérico (INT o FLOAT), encontrado: " + e, null);
+                   RESULT = "ERROR";
+               } else {
+                   RESULT = e;  // Mantiene el tipo original
+               }
+               
+               // 2. GENERACIÓN DE CÓDIGO
+               if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                   String operandKey = parser.popCodeKey();
+                   String operandCode = parser.getCodeValue(operandKey);
+                   
+                   String tempVar = parser.getCodeGenerator().generateUnaryOp("-", operandCode);
+                   String newKey = parser.saveCodeValue(RESULT, tempVar);
+                   parser.pushCodeKey(newKey);
+                   
+                   System.out.println("DEBUG: Menos unario: -" + operandCode + " = " + tempVar);
+               }
+            :}
+            | INCREMENT ID:id
+            {: 
+               // 1. VALIDACIÓN SEMÁNTICA
+               if (parser.getSemanticTable() != null) {
+                   SymbolInfo var = parser.getSemanticTable().checkVariableUsage(id.toString(), idleft);
+                   if (var == null) {
+                       RESULT = "ERROR";
+                   } else if (!var.getTipoVariable().equals("INT") && !var.getTipoVariable().equals("FLOAT")) {
+                       parser.report_error("Operador ++ requiere variable numérica", null);
+                       RESULT = "ERROR";
+                   } else {
+                       RESULT = var.getTipoVariable();
+                   }
+               } else {
+                   RESULT = "ERROR";
+               }
+               
+               // 2. GENERACIÓN DE CÓDIGO
+               if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                   String tempVar = parser.getCodeGenerator().generateIncrement(id.toString());
+                   String newKey = parser.saveCodeValue(RESULT, tempVar);
+                   parser.pushCodeKey(newKey);
+                   
+                   System.out.println("DEBUG: Incremento: ++" + id + " = " + tempVar);
+               }
+            :}
+            | DECREMENT ID:id
+            {: 
+               // 1. VALIDACIÓN SEMÁNTICA
+               if (parser.getSemanticTable() != null) {
+                   SymbolInfo var = parser.getSemanticTable().checkVariableUsage(id.toString(), idleft);
+                   if (var == null) {
+                       RESULT = "ERROR";
+                   } else if (!var.getTipoVariable().equals("INT") && !var.getTipoVariable().equals("FLOAT")) {
+                       parser.report_error("Operador -- requiere variable numérica", null);
+                       RESULT = "ERROR";
+                   } else {
+                       RESULT = var.getTipoVariable();
+                   }
+               } else {
+                   RESULT = "ERROR";
+               }
+               
+               // 2. GENERACIÓN DE CÓDIGO
+               if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                   String tempVar = parser.getCodeGenerator().generateDecrement(id.toString());
+                   String newKey = parser.saveCodeValue(RESULT, tempVar);
+                   parser.pushCodeKey(newKey);
+                   
+                   System.out.println("DEBUG: Decremento: --" + id + " = " + tempVar);
+               }
+            :}
+            | atom_arit:e {: RESULT = e; :}
             ;
 
 /* Términos atómicos con tipos semánticos */
 atom_arit ::= ID:id
             {: 
                if (parser.getSemanticTable() != null) {
-                   parser.getSemanticTable().useVariable(id.toString(), idleft, idright);
-               }
-               
-               if (parser.codeGenerationEnabled) {
-                   RESULT = id.toString(); 
+                   SymbolInfo symbol = parser.getSemanticTable().checkVariableUsage(id.toString(), idleft);
+                   if (symbol != null) {
+                       RESULT = symbol.getTipoVariable();  // ✅ String tipo semántico
+                       
+                       if (parser.codeGenerationEnabled) {
+                           String key = parser.saveCodeValue(RESULT, id.toString());
+                           parser.pushCodeKey(key);
+                           System.out.println("DEBUG: Variable " + id + " guardada con clave " + key);
+                       }
+                   } else {
+                       RESULT = "ERROR";
+                   }
                } else {
-                   RESULT = "VARIABLE"; 
+                   RESULT = "ERROR";
                }
+
             :}
             | literal:l {: RESULT = l; :}
             | arr_access:a {: RESULT = a; :}
@@ -839,52 +1285,68 @@ arg_list ::= exp
            ;
 
 /* Estructuras de control */
-ctrl ::= if_stmt
+ctrl ::= if_stmt:s
+        {:
+            RESULT = s;
+        :}
        | do_while
        | for_stmt
        | switch_stmt
        ;
 
 /* Estructura if-elif-else con scopes semánticos */
-if_stmt ::= IF LPAREN exp:e RPAREN LBLOCK block RBLOCK
+if_stmt ::= IF LPAREN exp:e RPAREN LBLOCK block:then_block RBLOCK
           {: 
-             parser.enterControlScope("IF");
-             parser.exitControlScope();
+             // ✅ TODA LA LÓGICA AL FINAL - SIN ACCIONES INTERMEDIAS
+             if (!e.equals("BOOL")) {
+                 parser.report_error("Condición de IF debe ser booleana", null);
+                 RESULT = "ERROR";
+             } else {
+                 RESULT = "VOID";
+             }
              
-             if (parser.codeGenerationEnabled) {
-                 parser.getCodeGenerator().addComment("Estructura IF procesada");
-                 parser.getCodeGenerator().addComment("Condicion: " + e);
+             if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                 // Recuperar condición
+                 String conditionKey = parser.popCodeKey();
+                 String conditionCode = parser.getCodeValue(conditionKey);
+                 
+                 // Generar etiqueta
+                 String endLabel = parser.generateLabel();
+                 
+                 // ✅ GENERAR CON INSERCIÓN INTELIGENTE
+                 parser.getCodeGenerator().generateCompleteIf(conditionCode, endLabel);
+                 
+                 System.out.println("DEBUG: IF simple - condición: " + conditionCode + " -> " + endLabel);
              }
           :}
-          | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK
+          
+          | IF LPAREN exp:e RPAREN LBLOCK block:then_block RBLOCK ELSE LBLOCK block:else_block RBLOCK
           {: 
-             parser.enterControlScope("IF");
-             parser.exitControlScope();
+             // ✅ TODA LA LÓGICA AL FINAL - SIN ACCIONES INTERMEDIAS
+             if (!e.equals("BOOL")) {
+                 parser.report_error("Condición de IF-ELSE debe ser booleana", null);
+                 RESULT = "ERROR";
+             } else {
+                 RESULT = "VOID";
+             }
              
-             if (parser.codeGenerationEnabled) {
-                 parser.getCodeGenerator().addComment("Estructura IF-ELIF procesada");
+             if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                 // Recuperar condición
+                 String conditionKey = parser.popCodeKey();
+                 String conditionCode = parser.getCodeValue(conditionKey);
+                 
+                 // Generar etiquetas
+                 String elseLabel = parser.generateLabel();
+                 String endLabel = parser.generateLabel();
+                 
+                 // ✅ GENERAR CON INSERCIÓN INTELIGENTE
+                 parser.getCodeGenerator().generateCompleteIfElse(conditionCode, elseLabel, endLabel);
+                 
+                 System.out.println("DEBUG: IF-ELSE - condición: " + conditionCode);
              }
           :}
-          | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
-          {: 
-             parser.enterControlScope("IF");
-             parser.exitControlScope();
-             
-             if (parser.codeGenerationEnabled) {
-                 parser.getCodeGenerator().addComment("Estructura IF-ELSE procesada");
-             }
-          :}
-          | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
-          {: 
-             parser.enterControlScope("IF");
-             parser.exitControlScope();
-             
-             if (parser.codeGenerationEnabled) {
-                 parser.getCodeGenerator().addComment("Estructura IF-ELIF-ELSE procesada");
-             }
-          :}
-          | IF LPAREN error RPAREN LBLOCK block RBLOCK  {: System.err.println("Error en condición IF. Continuando..."); :}
           ;
+
 
 /* Estructura do-while con scope semántico*/
 do_while ::= DO LBLOCK block RBLOCK WHILE LPAREN exp:e RPAREN QUESTION
@@ -994,26 +1456,45 @@ return_stmt ::= RETURN exp:e QUESTION
               | RETURN error QUESTION  {: System.err.println("Error en expresión RETURN. Continuando..."); :}
               ;
 
+// Agrega al final de tu archivo .cup, antes del último ;
+
 /* Funciones de entrada/salida */
 read_stmt ::= READ LPAREN ID:id RPAREN QUESTION
             {: 
+               // VALIDACIÓN: Verificar que la variable existe
                if (parser.getSemanticTable() != null) {
-                   parser.getSemanticTable().useVariable(id.toString(), idleft, idright);
+                   SymbolInfo var = parser.getSemanticTable().checkVariableUsage(id.toString(), idleft);
+                   if (var == null) {
+                       parser.report_error("Variable '" + id + "' no declarada en READ", null);
+                   } else {
+                       var.setInicializada(true); // READ inicializa la variable
+                   }
                }
                
                if (parser.codeGenerationEnabled) {
                    parser.getCodeGenerator().generateRead(id.toString());
                }
             :}
-            | READ LPAREN error RPAREN QUESTION  {: System.err.println("Error en función READ. Continuando..."); :}
+            | READ LPAREN error RPAREN QUESTION  
+            {: 
+                parser.report_error("Error en función read - argumento inválido", null); 
+            :}
             ;
 
 write_stmt ::= WRITE LPAREN exp:e RPAREN QUESTION
              {: 
+                // VALIDACIÓN: Verificar que la expresión sea válida
+                if (e != null && e.equals("ERROR")) {
+                    parser.report_error("Expresión inválida en write", null);
+                }
                 
-                if (parser.codeGenerationEnabled) {
+                if (parser.codeGenerationEnabled && !e.equals("ERROR")) {
                     parser.getCodeGenerator().generateWrite(e);
                 }
              :}
-             | WRITE LPAREN error RPAREN QUESTION  {: System.err.println("Error en función WRITE. Continuando..."); :}
+             | WRITE LPAREN error RPAREN QUESTION  
+             {: 
+                 parser.report_error("Error en función write - expresión inválida", null); 
+             :}
              ;
+

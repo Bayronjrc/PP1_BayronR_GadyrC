@@ -1,114 +1,274 @@
 /* 
- * Analizador Sintáctico para el Compilador
- * ---------------------------------------
+ * Analizador Sintáctico con Análisis Semántico Integrado + Código Intermedio
+ * --------------------------------------------------------------------------
  * 
- * OBJETIVO: Verificar la estructura del programa según las reglas gramaticales
- * del lenguaje y construir un árbol de sintaxis abstracta.
+ * CAMBIOS PARA PROYECTO 2:
+ * - Manejo de scopes y tabla de símbolos semántica
+ * - Verificación de tipos y compatibilidad
+ * - Detección de errores semánticos
  * 
- * ENTRADAS: 
- * - Secuencia de tokens generados por el analizador léxico
- * - Tabla de símbolos para actualización semántica
- * 
- * SALIDAS: 
- * - Árbol de sintaxis abstracta (implícito)
- * - Actualización de la tabla de símbolos con información semántica
- * - Mensajes de error en caso de errores sintácticos
- * 
- * RESTRICCIONES:
- * - La gramática debe ser LALR(1) para ser compatible con CUP
- * - Manejo adecuado de precedencias y asociatividad para evitar conflictos
  */
 
 /* Imports y paquetes */
 import java_cup.runtime.*;
 import java.util.*;
 import main.java.symbol.SymbolTable;
+import main.java.symbol.SemanticSymbolTable;
+import main.java.symbol.SymbolInfo;
+import main.java.intermedio.IntermediateCodeGenerator;
 
 /* Código de usuario */
 parser code {:
-    /* 
-     * Tabla de símbolos utilizada para el análisis semántico
-     * OBJETIVO: Almacenar y acceder a la información de variables y funciones
-     */
+
+    private SemanticSymbolTable semanticTable;
+    
     private SymbolTable symbolTable;
     
-    /* Contador de errores para implementar recuperación en modo pánico */
     private int errorCount = 0;
+
+    private Stack<String> scopeContext = new Stack<>();
     
-    /* 
-     * OBJETIVO: Establecer la tabla de símbolos para este análisis
-     * ENTRADA: Objeto SymbolTable inicializado
-     */
-    public void setSymbolTable(SymbolTable symbolTable) {
-        this.symbolTable = symbolTable;
+    private String currentFunctionName = null;
+
+    private Map<String, String> codeValues  = new HashMap<>();
+
+    private int uniqueCounter  = 0;
+    
+    private IntermediateCodeGenerator codeGenerator;
+
+    private boolean codeGenerationEnabled = false;
+
+    private int labelCounter = 0;
+
+    private Stack<String> labelStack = new Stack<>();
+    private Stack<String[]> labelPairStack = new Stack<>();
+    
+    public void enableCodeGeneration(String outputFile) {
+        this.codeGenerator = new IntermediateCodeGenerator(outputFile);
+        this.codeGenerationEnabled = true;
+        System.out.println("Generación de código intermedio habilitada");
     }
     
-    /* 
-     * Métodos para manejo de errores con recuperación en modo pánico
-     * OBJETIVO: Continuar el análisis después de encontrar errores
-     */
+    public void disableCodeGeneration() {
+        this.codeGenerationEnabled = false;
+        this.codeGenerator = null;
+    }
+    
+    public IntermediateCodeGenerator getCodeGenerator() {
+        return codeGenerator;
+    }
+
+    public void initTables() {
+        semanticTable = new SemanticSymbolTable();
+        symbolTable = semanticTable.getOriginalTable();
+        System.out.println("Iniciando analisis semantico...");
+        
+        scopeContext.push("GLOBAL");
+    }
+    
+    public void setSymbolTable(SymbolTable symbolTable) {
+        this.symbolTable = symbolTable;
+        if (semanticTable == null) {
+            initTables();
+        }
+    }
+    
+    public SemanticSymbolTable getSemanticTable() {
+        if (semanticTable == null) {
+            initTables();
+        }
+        return semanticTable;
+    }
+
+    public String getCurrentFunctionName() {
+        return currentFunctionName;
+    }
+    
+    public void setCurrentFunctionName(String functionName) {
+        this.currentFunctionName = functionName;
+    }
+    
+    public void enterFunctionScope(String functionName, String returnType, List<String> params, int line, int column) {
+        if (semanticTable != null) {
+            semanticTable.enterScope("FUNCTION", functionName);
+            scopeContext.push("FUNCTION:" + functionName);
+            setCurrentFunctionName(functionName); 
+            System.out.println("Entrando a función: " + functionName);
+        }
+    }
+    
+    public void exitFunctionScope() {
+        if (semanticTable != null && !scopeContext.isEmpty()) {
+            String context = scopeContext.pop();
+            semanticTable.exitScope();
+            setCurrentFunctionName(null);
+            System.out.println("Saliendo de scope: " + context);
+        }
+    }
+    
+    public void enterBlockScope() {
+        if (semanticTable != null) {
+            semanticTable.enterScope("BLOCK", "block");
+            scopeContext.push("BLOCK");
+            System.out.println("Entrando a bloque...");
+        }
+    }
+    
+    public void exitBlockScope() {
+        if (semanticTable != null && !scopeContext.isEmpty()) {
+            String context = scopeContext.pop();
+            semanticTable.exitScope();
+            System.out.println("Saliendo de bloque...");
+        }
+    }
+    
+    public void enterControlScope(String controlType) {
+        if (semanticTable != null) {
+            semanticTable.enterScope(controlType.toUpperCase(), controlType.toLowerCase() + "_block");
+            scopeContext.push(controlType.toUpperCase());
+            System.out.println("Entrando a " + controlType + "...");
+        }
+    }
+    
+    public void exitControlScope() {
+        if (semanticTable != null && !scopeContext.isEmpty()) {
+            String context = scopeContext.pop();
+            semanticTable.exitScope();
+            System.out.println("Saliendo de control: " + context);
+        }
+    }
+    
+    public void finalizeSemantic() {
+        if (semanticTable != null) {
+            boolean hasMain = semanticTable.checkMainFunction();
+            if (!hasMain) {
+                errorCount++;
+            }
+            
+            semanticTable.printSummary();
+            
+            try {
+                semanticTable.escribirTablas("semantic_analysis.txt");
+                System.out.println("Analisis semantico completado. Ver: semantic_analysis.txt");
+            } catch (Exception e) {
+                System.err.println("Error escribiendo archivo semantico: " + e.getMessage());
+            }
+        }
+        
+        if (codeGenerationEnabled && codeGenerator != null) {
+            codeGenerator.printCode();
+            codeGenerator.printStatistics();
+            codeGenerator.writeToFile();
+        }
+    }
+    
+    /* Métodos de manejo de errores existentes */
     public void syntax_error(Symbol s) {
         errorCount++;
-        System.err.println("Error sintáctico #" + errorCount + " en línea " + (s.left + 1) + 
+        System.err.println("Error sintactico #" + errorCount + " en linea " + (s.left + 1) + 
                           ", columna " + (s.right + 1) + ": Token inesperado '" + s.value + "'");
-        
-        // No lanzar excepción, continuar con el análisis
     }
 
     public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception {
         errorCount++;
-        System.err.println("Error sintáctico fatal #" + errorCount + " en línea " + (s.left + 1) + 
+        System.err.println("Error sintactico fatal #" + errorCount + " en linea " + (s.left + 1) + 
                           ", columna " + (s.right + 1) + ": No se pudo recuperar del error");
         
-        // Reportar el total de errores encontrados antes de terminar
         System.err.println("Total de errores encontrados: " + errorCount);
         
-        // Continuar hasta el final del análisis en lugar de terminar inmediatamente
-        // done_parsing();
+        finalizeSemantic();
     }
     
-    /* Método para reportar errores de recuperación */
     public void report_error(String message, Object info) {
         errorCount++;
         if (info instanceof Symbol) {
             Symbol s = (Symbol) info;
-            System.err.println("Error de recuperación #" + errorCount + " en línea " + (s.left + 1) + 
+            System.err.println("Error de recuperacion #" + errorCount + " en linea " + (s.left + 1) + 
                               ", columna " + (s.right + 1) + ": " + message);
         } else {
-            System.err.println("Error de recuperación #" + errorCount + ": " + message);
+            System.err.println("Error de recuperacion #" + errorCount + ": " + message);
         }
     }
     
-    /* Método para obtener el número total de errores */
     public int getErrorCount() {
-        return errorCount;
+        return errorCount + (semanticTable != null ? semanticTable.getErrorCount() : 0);
     }
     
-    /* 
-     * OBJETIVO: Actualizar el tipo de una variable en la tabla de símbolos
-     * ENTRADAS: ID de la variable y su tipo declarado
-     */
+    /* Métodos de compatibilidad existentes */
     public void updateVariableType(String id, String type) {
         if (symbolTable != null) {
             symbolTable.actualizarTipoVariable(id, type);
         }
     }
     
-    /* 
-     * OBJETIVO: Marcar un identificador como función en la tabla de símbolos
-     * ENTRADAS: ID de la función y su tipo de retorno
-     */
     public void markAsFunction(String id, String returnType) {
         if (symbolTable != null) {
             symbolTable.marcarComoFuncion(id, returnType);
         }
     }
+    // Para el tema del código intermedio
+    public String saveCodeValue(String semanticType, String codeValue) {
+        if (codeGenerationEnabled && codeValue != null) {
+            String uniqueKey = "expr_" + (++uniqueCounter);
+            codeValues.put(uniqueKey, codeValue);
+            System.out.println("DEBUG: Guardando " + uniqueKey + " = " + codeValue + " (tipo: " + semanticType + ")");
+            return uniqueKey;  // Devolver la clave única
+        }
+        return null;
+    }
+
+    public String getCodeValue(String key) {
+        if (key != null && key.startsWith("expr_")) {
+            String value = codeValues.get(key);
+            System.out.println("DEBUG: Recuperando " + key + " = " + value);
+            return value != null ? value : key;
+        }
+        // Si no es una clave especial, devolver tal como está
+        return key;
+    }
+
+    private Stack<String> codeKeyStack = new Stack<>();
+    
+    public void pushCodeKey(String key) {
+        if (codeGenerationEnabled && key != null) {
+            codeKeyStack.push(key);
+        }
+    }
+    
+    public String popCodeKey() {
+        if (codeGenerationEnabled && !codeKeyStack.isEmpty()) {
+            return codeKeyStack.pop();
+        }
+        return null;
+    }
+
+    // Para el tema de etiquetas únicas
+    public String generateLabel() {
+        return "L" + (++labelCounter);
+    }
+
+    public void pushLabel(String label) {
+    labelStack.push(label);
+}
+
+public String popLabel() {
+    return labelStack.isEmpty() ? null : labelStack.pop();
+}
+
+public void pushLabelPair(String label1, String label2) {
+    labelPairStack.push(new String[]{label1, label2});
+}
+
+public String[] popLabelPair() {
+    return labelPairStack.isEmpty() ? null : labelPairStack.pop();
+}
+
+public String[] peekLabelPair() {
+    return labelPairStack.isEmpty() ? null : labelPairStack.peek();
+}
 :}
 
-/* 
- * Símbolos terminales
- * OBJETIVO: Declarar todos los tokens que pueden aparecer en el programa
- */
+/* Declaración de terminales */
 terminal IF, ELIF, ELSE, DO, WHILE, FOR, BREAK, RETURN;
 terminal INT, FLOAT, BOOL, CHAR, STRING, VOID;
 terminal READ, WRITE, MAIN, TRUE, FALSE;
@@ -119,40 +279,33 @@ terminal AND, OR, NOT;
 terminal LPAREN, RPAREN, LBLOCK, RBLOCK;
 terminal QUESTION, COMMA, ASSIGN;
 terminal LBRACKET, RBRACKET;
-terminal UMINUS;  // Para operador unario
 terminal ID, LIT_INT, LIT_FLOAT, LIT_BOOL, LIT_CHAR, LIT_STRING;
 terminal SWITCH, CASE, DEFAULT, COLON;
 
-/* 
- * Símbolos no terminales
- * OBJETIVO: Declarar las categorías gramaticales del lenguaje
- */
+/* Declaración de no terminales */
 non terminal program;
 non terminal block;
 non terminal decl_var, decl_fun, decl_arr;
 non terminal stmt;
 non terminal assign;
-non terminal exp;
-non terminal exp_arit, term_arit, factor_arit, power_arit, atom_arit;
-non terminal exp_rel;
-non terminal exp_log, term_log, factor_log;
-non terminal unary_exp;
+non terminal String exp;              
+non terminal String exp_arit, term_arit, factor_arit, power_arit, atom_arit;
+non terminal String exp_rel;          
+non terminal String exp_log, term_log, factor_log;
+non terminal String unary_exp;        
 non terminal ctrl, if_stmt, do_while, for_stmt;
 non terminal break_stmt, return_stmt;
 non terminal read_stmt, write_stmt;
-non terminal tipo, tipo_r;
-non terminal arr_access;
+non terminal String tipo, tipo_r;     
+non terminal String arr_access;      
 non terminal exp_list, exp_matrix, matrix_row;
 non terminal param, param_list, arg_list;
-non terminal literal;
-non terminal llamada_fun;
+non terminal String literal;         
+non terminal String llamada_fun;     
 non terminal switch_stmt, case_list, case_stmt, default_stmt;
 
-/* 
- * Precedencias - ordenadas de menor a mayor
- * OBJETIVO: Resolver ambigüedades en expresiones complejas
- * RESTRICCIÓN: Definir adecuadamente para evitar conflictos shift/reduce
- */
+
+/* Precedencia de operadores */
 precedence left OR;
 precedence left AND;
 precedence right NOT;
@@ -160,43 +313,117 @@ precedence nonassoc LT, LTE, GT, GTE, EQ, NEQ;
 precedence left PLUS, MINUS;
 precedence left TIMES, DIVIDE, MOD;
 precedence right POW;
-precedence right UMINUS, INCREMENT, DECREMENT;
+precedence right INCREMENT, DECREMENT;
 precedence left LPAREN, RPAREN, LBRACKET, RBRACKET;
+precedence left ELSE;
 
 /* 
- * Gramática con recuperación de errores
- * OBJETIVO: Definir la estructura sintáctica del lenguaje con puntos de recuperación
+ * Gramática con recuperación de errores y análisis semántico
  */
 start with program;
 
 /* 
- * Estructura del programa con recuperación de errores
- * OBJETIVO: Define punto de entrada y estructura general
+ * Estructura del programa con manejo correcto de main
  */
-program ::= VOID MAIN LPAREN RPAREN LBLOCK block RBLOCK
-          | decl_fun program
-          | error program  {: System.err.println("Error en la estructura del programa. Continuando análisis..."); :}
+program ::= VOID MAIN:m LPAREN RPAREN LBLOCK 
+          {: 
+             List<String> noParams = new ArrayList<String>();
+             parser.getSemanticTable().declareFunction("main", "VOID", noParams, mleft, mright);
+             
+             parser.getSemanticTable().enterScope("FUNCTION", "main");
+             parser.setCurrentFunctionName("main");
+             System.out.println("Entrando a función main");
+             
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().startFunction("main", "VOID");
+             }
+          :}
+          block RBLOCK
+          {: 
+             parser.getSemanticTable().exitScope();
+             parser.setCurrentFunctionName(null);
+             System.out.println("Saliendo de función main");
+             
+             if (parser.codeGenerationEnabled) {
+                 parser.getCodeGenerator().endFunction("main");
+             }
+             
+             parser.finalizeSemantic();
+          :}
+          | decl_fun:f program
+          {: 
+             if (f != null) {
+                 System.out.println("Función declarada: " + f.toString());
+             }
+          :}
+          | error program  
+          {: 
+             System.err.println("Error en la estructura del programa. Continuando análisis..."); 
+          :}
           | /* programa vacío */
           ;
 
 /* 
- * Declaración de funciones con recuperación de errores
- * OBJETIVO: Define la estructura de funciones en el lenguaje
- * ACCIÓN: Marca el ID como función en la tabla de símbolos
+ * Declaración de funciones con análisis semántico y scope correcto
  */
-decl_fun ::= tipo_r:t ID:id LPAREN param_list RPAREN LBLOCK block RBLOCK
-           {: RESULT = id; 
-              parser.markAsFunction(id.toString(), t.toString()); 
+decl_fun ::= tipo_r:t ID:id LPAREN param_list RPAREN LBLOCK 
+           {: 
+              List<String> params = new ArrayList<String>(); 
+              parser.getSemanticTable().declareFunction(id.toString(), t.toString(), params, idleft, idright);
+              
+              parser.getSemanticTable().enterScope("FUNCTION", id.toString());
+              parser.setCurrentFunctionName(id.toString());
+              System.out.println("Entrando a función: " + id.toString() + " tipo: " + t.toString());
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().startFunction(id.toString(), t.toString());
+              }
            :}
-           | tipo_r:t ID:id LPAREN RPAREN LBLOCK block RBLOCK
-           {: RESULT = id; 
+           block RBLOCK
+           {: 
+              RESULT = id; 
+              
+              parser.getSemanticTable().exitScope();
+              parser.setCurrentFunctionName(null);
+              System.out.println("Saliendo de función: " + id.toString());
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().endFunction(id.toString());
+              }
+              
+              parser.markAsFunction(id.toString(), t.toString());
+           :}
+           | tipo_r:t ID:id LPAREN RPAREN LBLOCK 
+           {: 
+              List<String> noParams = new ArrayList<String>();
+              parser.getSemanticTable().declareFunction(id.toString(), t.toString(), noParams, idleft, idright);
+              
+              parser.getSemanticTable().enterScope("FUNCTION", id.toString());
+              parser.setCurrentFunctionName(id.toString());
+              System.out.println("Entrando a función sin parámetros: " + id.toString() + " tipo: " + t.toString());
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().startFunction(id.toString(), t.toString());
+              }
+           :}
+           block RBLOCK
+           {: 
+              RESULT = id; 
+              
+              parser.getSemanticTable().exitScope();
+              parser.setCurrentFunctionName(null);
+              System.out.println("Saliendo de función: " + id.toString());
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().endFunction(id.toString());
+              }
+              
               parser.markAsFunction(id.toString(), t.toString()); 
            :}
            ;
 
 /* 
  * Tipos de retorno para funciones
- * OBJETIVO: Define los tipos posibles para valores de retorno
  */
 tipo_r ::= INT {: RESULT = "INT"; :}
          | FLOAT {: RESULT = "FLOAT"; :}
@@ -206,27 +433,31 @@ tipo_r ::= INT {: RESULT = "INT"; :}
          ;
 
 /* 
- * Lista de parámetros de función con recuperación de errores
- * OBJETIVO: Define la estructura de parámetros en declaraciones de función
+ * Lista de parámetros de función
  */
 param_list ::= param
              | param_list COMMA param
              ;
 
 /* 
- * Parámetro individual
- * OBJETIVO: Define la estructura de un parámetro
- * ACCIÓN: Actualiza el tipo de la variable en la tabla de símbolos
+ * Parámetro individual con análisis semántico
  */
 param ::= tipo:t ID:id 
         {: 
+           if (parser.getSemanticTable() != null) {
+               parser.getSemanticTable().declareVariable(id.toString(), t.toString(), idleft, idright);
+           }
+           
+           if (parser.codeGenerationEnabled) {
+               parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
+           }
+           
            parser.updateVariableType(id.toString(), t.toString());
         :}
         ;
 
 /* 
- * Bloque de código con recuperación de errores
- * OBJETIVO: Define una secuencia de sentencias
+ * Bloque de código
  */
 block ::= stmt block
         | error block  {: System.err.println("Error en bloque de código. Continuando..."); :}
@@ -235,7 +466,6 @@ block ::= stmt block
 
 /* 
  * Tipos de datos
- * OBJETIVO: Define los tipos básicos del lenguaje
  */
 tipo ::= INT {: RESULT = "INT"; :}
        | FLOAT {: RESULT = "FLOAT"; :}
@@ -245,54 +475,85 @@ tipo ::= INT {: RESULT = "INT"; :}
        ;
 
 /* 
- * Arreglos - sólo bidimensionales con recuperación de errores
- * OBJETIVO: Define la estructura para declaración de arreglos 2D
- * ACCIÓN: Actualiza el tipo de la variable como arreglo en la tabla de símbolos
+ * Declaración de arreglos con análisis semántico
  */
-decl_arr ::= tipo:t ID:id LBRACKET exp RBRACKET LBRACKET exp RBRACKET QUESTION
+decl_arr ::= tipo:t ID:id LBRACKET exp:e1 RBRACKET LBRACKET exp:e2 RBRACKET QUESTION
            {: 
-              parser.updateVariableType(id.toString(), t.toString() + "[][]");
+              String arrayType = t.toString() + "[][]";
+              
+              if (parser.getSemanticTable() != null) {
+                  parser.getSemanticTable().declareVariable(id.toString(), arrayType, idleft, idright);
+              }
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().declareVariable(id.toString(), arrayType);
+              }
+              
+              parser.updateVariableType(id.toString(), arrayType);
            :}
-           | tipo:t ID:id LBRACKET exp RBRACKET LBRACKET exp RBRACKET ASSIGN exp_matrix QUESTION
+           | tipo:t ID:id LBRACKET exp:e1 RBRACKET LBRACKET exp:e2 RBRACKET ASSIGN exp_matrix QUESTION
            {: 
-              parser.updateVariableType(id.toString(), t.toString() + "[][]");
+              String arrayType = t.toString() + "[][]";
+              
+              if (parser.getSemanticTable() != null) {
+                  parser.getSemanticTable().declareVariable(id.toString(), arrayType, idleft, idright);
+              }
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().declareVariable(id.toString(), arrayType);
+                  parser.getCodeGenerator().addComment("Array inicializado con matriz");
+              }
+              
+              parser.updateVariableType(id.toString(), arrayType);
            :}
            ;
 
-/* 
- * Estructura de matriz
- * OBJETIVO: Define la estructura para inicialización de matrices
- * RESTRICCIÓN: Usando filas separadas para evitar ambigüedad
- */
+/* Estructura de matriz */
 exp_matrix ::= LBRACKET matrix_row RBRACKET
              | LBRACKET matrix_row COMMA matrix_row RBRACKET
              ;
 
-/* 
- * Fila de matriz
- * OBJETIVO: Define una fila dentro de una matriz
- */
+/* Fila de matriz */
 matrix_row ::= LBRACKET exp_list RBRACKET;
 
-/* 
- * Lista de expresiones con recuperación de errores
- * OBJETIVO: Define una secuencia de expresiones separadas por comas
- */
+/* Lista de expresiones */
 exp_list ::= exp
            | exp COMMA exp_list
            ;
 
-/* 
- * Acceso a arreglos
- * OBJETIVO: Define la estructura para acceder a elementos de un arreglo 2D
- */
-arr_access ::= ID LBRACKET exp RBRACKET LBRACKET exp RBRACKET;
+/* Acceso a arreglos con verificación semántica */
+arr_access ::= ID:id LBRACKET exp:e1 RBRACKET LBRACKET exp:e2 RBRACKET
+             {: 
+                // VALIDACIÓN COMPLETA: Verificar tipo de array e índices
+                if (parser.getSemanticTable() != null) {
+                    String resultType = parser.getSemanticTable().checkArrayAccess(
+                        id.toString(), e1, e2, idleft
+                    );
+                    
+                    if (resultType == null) {
+                        RESULT = "ERROR";
+                    } else {
+                        RESULT = resultType;
+                    }                        
+                } else {
+                    RESULT = "ERROR";
+                }
+
+                if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                    String code = parser.getCodeGenerator().generateArrayAccess(id.toString(), e1, e2);
+                }
+             :}
+             ;
 
 /* 
- * Sentencias con recuperación de errores
- * OBJETIVO: Define los tipos de instrucciones permitidas en el lenguaje
+ * Sentencias con manejo semántico de bloques
  */
-stmt ::= exp QUESTION
+stmt ::= exp:e QUESTION
+       {: 
+          if (parser.getSemanticTable() != null && e != null) {
+              // Registro de uso de expresión
+          }
+       :}
        | assign
        | decl_var
        | decl_arr
@@ -301,239 +562,939 @@ stmt ::= exp QUESTION
        | return_stmt
        | read_stmt
        | write_stmt
+       | LBLOCK block RBLOCK
+       {: 
+          parser.enterBlockScope();
+          parser.exitBlockScope();
+       :}
        | error QUESTION  {: System.err.println("Error en sentencia. Recuperando en ';'..."); :}
        ;
 
 /* 
- * Asignación con recuperación de errores
- * OBJETIVO: Define la estructura para asignar valores a variables o elementos de arreglos
+ * Asignación con verificación de tipos 
  */
-assign ::= ID:id ASSIGN exp QUESTION
-         | arr_access ASSIGN exp QUESTION
+assign ::= ID:id ASSIGN exp:e QUESTION
+         {:
+            // e es el tipo semántico (String)
+            boolean valid = parser.getSemanticTable().checkAssignment(id.toString(), e, idleft);
+            
+            if (valid) {
+                System.out.println("DEBUG: Asignación válida de " + e + " a " + id);
+                
+                if (parser.codeGenerationEnabled) {
+                    String expKey = parser.popCodeKey();  // ← RECUPERAR DEL STACK
+                    String expCode = parser.getCodeValue(expKey);  // ← OBTENER CÓDIGO REAL
+                    
+                    System.out.println("DEBUG: Recuperando del stack: " + expKey + " = " + expCode);
+                    
+                    parser.getCodeGenerator().generateAssignment(id.toString(), expCode);
+                    System.out.println("DEBUG: Generando asignación " + id + " = " + expCode);
+                }
+            } else {
+                System.err.println("Error en asignación a variable: " + id);
+            }
+         :}
+         | arr_access:arr ASSIGN exp:e QUESTION
+         {: 
+            if (parser.getSemanticTable() != null) {
+                System.out.println("Asignacion a array: " + arr + " = " + e);
+                
+                if (parser.codeGenerationEnabled) {
+                    parser.getCodeGenerator().addComment("Asignación a elemento de array");
+                }
+            }
+         :}
          | ID ASSIGN error QUESTION  {: System.err.println("Error en expresión de asignación. Continuando..."); :}
          ;
 
 /* 
- * Declaración de variables con recuperación de errores
- * OBJETIVO: Define la estructura para declarar variables simples
- * ACCIÓN: Actualiza el tipo de la variable en la tabla de símbolos
+ * Declaración de variables con verificación semántica completa
  */
-decl_var ::= tipo:t ID:id ASSIGN exp QUESTION
+decl_var ::= tipo:t ID:id ASSIGN exp:e QUESTION
            {: 
+              boolean declared = parser.getSemanticTable().declareVariable(id.toString(), t, idleft, idright, true);
+              
+              if (declared) {
+                  if (e != null) {
+                      boolean compatible = parser.getSemanticTable().checkTypeCompatibility(t, e, idleft);
+                      if (compatible) {
+                          System.out.println("Variable '" + id + "' declarada e inicializada correctamente como " + t);
+                      } else {
+                          System.err.println("Error: tipos incompatibles en inicializacion de " + id);
+                      }
+                  }
+              }
+              
               parser.updateVariableType(id.toString(), t.toString());
+              
+              if (parser.codeGenerationEnabled && declared) {
+                  parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
+                  if (e != null) {
+                      // ✅ CORRECCIÓN: Usar el stack en lugar de e directamente
+                      String expKey = parser.popCodeKey();  // Recuperar del stack
+                      String expCode = parser.getCodeValue(expKey);  // Obtener código real
+                      
+                      System.out.println("DEBUG: Inicializando variable " + id + " con " + expCode);
+                      parser.getCodeGenerator().generateAssignment(id.toString(), expCode);
+                  }
+              }
            :}
            | tipo:t ID:id QUESTION
            {: 
+              boolean declared = parser.getSemanticTable().declareVariable(id.toString(), t, idleft, idright, false);
+              
+              if (declared) {
+                  System.out.println("Variable '" + id + "' declarada como " + t + " (sin inicializar)");
+              }
+              
               parser.updateVariableType(id.toString(), t.toString());
+              
+              if (parser.codeGenerationEnabled && declared) {
+                  parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
+              }
            :}
            ;
 
-/* 
- * Valores literales
- * OBJETIVO: Unifica todos los tipos de literales para simplificar la gramática
- */
-literal ::= LIT_INT
-         | LIT_FLOAT
-         | LIT_BOOL
-         | LIT_CHAR
-         | LIT_STRING
-         | TRUE
-         | FALSE
+/* Valores literales con tipos semánticos */
+literal ::= LIT_INT:val
+          {: 
+             RESULT = "INT";  // ✅ Siempre String para semántico
+             System.out.println("Literal entero: " + val);
+             
+             if (parser.codeGenerationEnabled) {
+                 String key = parser.saveCodeValue("INT", val.toString());
+                 parser.pushCodeKey(key);  // Guardar en stack para uso posterior
+                 System.out.println("DEBUG: Literal " + val + " guardado con clave " + key);
+             }
+          :}
+         | LIT_FLOAT:val
+          {: 
+             RESULT = "FLOAT";
+             
+             if (parser.codeGenerationEnabled) {
+                 String key = parser.saveCodeValue("FLOAT", val.toString());
+                 parser.pushCodeKey(key);
+             }
+          :}
+         | LIT_BOOL:val
+          {: 
+             RESULT = "BOOL";
+             System.out.println("Literal booleano detectado: " + val);
+             
+             if (parser.codeGenerationEnabled) {
+                 String key = parser.saveCodeValue("BOOL", val.toString());  // ✅ Valor real: "true", "false"
+                 parser.pushCodeKey(key);
+                 System.out.println("DEBUG: Literal BOOL " + val + " guardado como código");
+             }
+          :}
+         | LIT_CHAR:val
+          {: 
+             RESULT = "CHAR";
+             System.out.println("Literal caracter detectado: " + val);
+             
+             if (parser.codeGenerationEnabled) {
+                 String key = parser.saveCodeValue("CHAR", val.toString());  // ✅ Valor real: "'a'", "'x'"
+                 parser.pushCodeKey(key);
+                 System.out.println("DEBUG: Literal CHAR " + val + " guardado como código");
+             }
+          :}
+         | LIT_STRING:val
+          {: 
+             RESULT = "STRING";
+             System.out.println("Literal cadena detectado: " + val);
+             
+             if (parser.codeGenerationEnabled) {
+                 String key = parser.saveCodeValue("STRING", val.toString());  // ✅ Valor real: "\"hola\""
+                 parser.pushCodeKey(key);
+                 System.out.println("DEBUG: Literal STRING " + val + " guardado como código");
+             }
+          :}
+         | TRUE 
+          {: 
+              RESULT = "BOOL";
+              if (parser.codeGenerationEnabled) {
+                  String key = parser.saveCodeValue("BOOL", "true");
+                  parser.pushCodeKey(key);
+              }
+           :}
+         | FALSE 
+          {: 
+              RESULT = "BOOL";
+              if (parser.codeGenerationEnabled) {
+                  String key = parser.saveCodeValue("BOOL", "false");
+                  parser.pushCodeKey(key);
+              }
+           :}
          ;
 
-/* 
- * Llamadas a funciones con recuperación de errores
- * OBJETIVO: Define la estructura para invocar funciones
- */
-llamada_fun ::= ID LPAREN arg_list RPAREN
-              | ID LPAREN RPAREN
+/* Llamadas a funciones con verificación semántica */
+llamada_fun ::= ID:id LPAREN arg_list:args RPAREN
+              {: 
+                 // VALIDACIÓN COMPLETA: Verificar función y argumentos
+                 if (parser.getSemanticTable() != null) {
+                     // TODO: Extraer tipos reales de arg_list
+                     List<String> argTypes = new ArrayList<String>(); // Implementar extracción
+                     String returnType = parser.getSemanticTable().checkFunctionCall(
+                         id.toString(), argTypes, idleft
+                     );
+                     
+                     if (returnType == null) {
+                         RESULT = "ERROR";
+                     } else {
+                         RESULT = returnType;
+                     }
+                 } else {
+                     RESULT = "ERROR";
+                 }
+
+                 if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                    List<String> argTypes = new ArrayList<String>();
+                    String code = parser.getCodeGenerator().generateFunctionCall(id.toString(), argTypes);
+                 }
+              :}
+              | ID:id LPAREN RPAREN
+              {: 
+                 // VALIDACIÓN COMPLETA: Función sin argumentos
+                 if (parser.getSemanticTable() != null) {
+                     List<String> noArgs = new ArrayList<String>();
+                     String returnType = parser.getSemanticTable().checkFunctionCall(
+                         id.toString(), noArgs, idleft
+                     );
+                     
+                     if (returnType == null) {
+                         RESULT = "ERROR";
+                     } else {
+                         RESULT = returnType;
+                     }
+                 } else {
+                     RESULT = "ERROR";
+                 }
+                 if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                    List<String> noArgs = new ArrayList<String>();
+                    String code = parser.getCodeGenerator().generateFunctionCall(id.toString(), noArgs);
+                }
+              :}
               ;
 
-/* 
- * Expresiones con recuperación de errores
- * OBJETIVO: Punto de entrada para todas las expresiones
- */
-exp ::= exp_log
+/* Punto de entrada para expresiones con propagación de tipos */
+exp ::= exp_log:e {: RESULT = e; :}
       ;
 
-/* 
- * Expresiones lógicas
- * OBJETIVO: Define las operaciones lógicas con precedencia apropiada
- */
-exp_log ::= exp_log OR term_log
-          | term_log
+/* Expresiones lógicas con verificación de tipos */
+exp_log ::= exp_log:e1 OR term_log:e2
+          {: 
+             // 1. VALIDACIÓN SEMÁNTICA
+             String resultType = parser.getSemanticTable().checkLogicalOperation(
+                 e1, e2, "||", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Operación lógica OR requiere operandos booleanos", null);
+             } else {
+                 RESULT = resultType;  // Debería ser "BOOL"
+             }
+             
+             // 2. GENERACIÓN DE CÓDIGO
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "||", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
+             }
+          :}
+          | term_log:e {: RESULT = e; :}
           ;
 
-term_log ::= term_log AND factor_log
-           | factor_log
+
+term_log ::= term_log:e1 AND factor_log:e2
+           {: 
+              // 1. VALIDACIÓN SEMÁNTICA
+              String resultType = parser.getSemanticTable().checkLogicalOperation(
+                  e1, e2, "&&", e1left
+              );
+              if (resultType == null) {
+                  RESULT = "ERROR";
+                  parser.report_error("Operación lógica AND requiere operandos booleanos", null);
+              } else {
+                  RESULT = resultType;
+              }
+              
+              // 2. GENERACIÓN DE CÓDIGO
+              if (parser.codeGenerationEnabled && resultType != null) {
+                  String rightKey = parser.popCodeKey();
+                  String leftKey = parser.popCodeKey();
+                  String rightCode = parser.getCodeValue(rightKey);
+                  String leftCode = parser.getCodeValue(leftKey);
+                  
+                  String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "&&", rightCode);
+                  String newKey = parser.saveCodeValue(resultType, tempVar);
+                  parser.pushCodeKey(newKey);
+              }
+           :}
+           | factor_log:e {: RESULT = e; :}
            ;
 
-/* 
- * Factor lógico
- * OBJETIVO: Define operaciones lógicas de mayor precedencia
- * RESTRICCIÓN: Revisado para evitar recursión problemática
- */
-factor_log ::= NOT atom_arit
-             | exp_rel
-             | LPAREN exp_log RPAREN
+factor_log ::= NOT atom_arit:e
+             {: 
+                // 1. VALIDACIÓN SEMÁNTICA
+                String resultType = parser.getSemanticTable().checkLogicalOperation(
+                    e, null, "!", eleft
+                );
+                if (resultType == null) {
+                    RESULT = "ERROR";
+                    parser.report_error("Operación NOT requiere operando booleano", null);
+                } else {
+                    RESULT = resultType;
+                }
+                
+                // 2. GENERACIÓN DE CÓDIGO
+                if (parser.codeGenerationEnabled && resultType != null) {
+                    String operandKey = parser.popCodeKey();
+                    String operandCode = parser.getCodeValue(operandKey);
+                    
+                    String tempVar = parser.getCodeGenerator().generateUnaryOp("!", operandCode);
+                    String newKey = parser.saveCodeValue(resultType, tempVar);
+                    parser.pushCodeKey(newKey);
+                }
+             :}
+             | exp_rel:e {: RESULT = e; :}
+             | LPAREN exp_log:e RPAREN {: RESULT = e; :}
              ;
 
-/* 
- * Expresiones relacionales
- * OBJETIVO: Define operaciones de comparación
- */
-exp_rel ::= exp_arit LT exp_arit
-          | exp_arit LTE exp_arit
-          | exp_arit GT exp_arit
-          | exp_arit GTE exp_arit
-          | exp_arit EQ exp_arit
-          | exp_arit NEQ exp_arit
-          | exp_arit
+/* Expresiones relacionales con verificación de tipos */
+exp_rel ::= exp_arit:e1 LT exp_arit:e2 
+          {: 
+             // 1. VALIDACIÓN SEMÁNTICA
+             String resultType = parser.getSemanticTable().checkRelationalOperation(
+                 e1, e2, "<", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Tipos no comparables en operación <", null);
+             } else {
+                 RESULT = resultType;  // Debería ser "BOOL"
+             }
+             
+             // 2. GENERACIÓN DE CÓDIGO
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateComparison(leftCode, "<", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
+             }
+          :}
+          | exp_arit:e1 LTE exp_arit:e2 
+          {: 
+             String resultType = parser.getSemanticTable().checkRelationalOperation(
+                 e1, e2, "<=", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Tipos no comparables en operación <=", null);
+             } else {
+                 RESULT = resultType;
+             }
+             
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateComparison(leftCode, "<=", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
+             }
+          :}
+          | exp_arit:e1 GT exp_arit:e2 
+          {: 
+             String resultType = parser.getSemanticTable().checkRelationalOperation(
+                 e1, e2, ">", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Tipos no comparables en operación >", null);
+             } else {
+                 RESULT = resultType;
+             }
+             
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateComparison(leftCode, ">", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
+             }
+          :}
+          | exp_arit:e1 GTE exp_arit:e2 
+          {: 
+             String resultType = parser.getSemanticTable().checkRelationalOperation(
+                 e1, e2, ">=", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Tipos no comparables en operación >=", null);
+             } else {
+                 RESULT = resultType;
+             }
+             
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateComparison(leftCode, ">=", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
+             }
+          :}
+          | exp_arit:e1 EQ exp_arit:e2 
+          {: 
+             String resultType = parser.getSemanticTable().checkRelationalOperation(
+                 e1, e2, "==", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Tipos no comparables en operación ==", null);
+             } else {
+                 RESULT = resultType;
+             }
+             
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateComparison(leftCode, "==", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
+             }
+          :}
+          | exp_arit:e1 NEQ exp_arit:e2 
+          {: 
+             String resultType = parser.getSemanticTable().checkRelationalOperation(
+                 e1, e2, "!=", e1left
+             );
+             if (resultType == null) {
+                 RESULT = "ERROR";
+                 parser.report_error("Tipos no comparables en operación !=", null);
+             } else {
+                 RESULT = resultType;
+             }
+             
+             if (parser.codeGenerationEnabled && resultType != null) {
+                 String rightKey = parser.popCodeKey();
+                 String leftKey = parser.popCodeKey();
+                 String rightCode = parser.getCodeValue(rightKey);
+                 String leftCode = parser.getCodeValue(leftKey);
+                 
+                 String tempVar = parser.getCodeGenerator().generateComparison(leftCode, "!=", rightCode);
+                 String newKey = parser.saveCodeValue(resultType, tempVar);
+                 parser.pushCodeKey(newKey);
+             }
+          :}
+          | exp_arit:e {: RESULT = e; :}
           ;
 
-/* 
- * Expresiones aritméticas
- * OBJETIVO: Define operaciones aritméticas con estructura jerárquica clara
- */
-exp_arit ::= exp_arit PLUS term_arit
-           | exp_arit MINUS term_arit
-           | term_arit
+/* Expresiones aritméticas con propagación de tipos */
+exp_arit ::= exp_arit:e1 PLUS term_arit:e2
+           {: 
+              // 1. VALIDACIÓN SEMÁNTICA
+              String resultType = parser.getSemanticTable().checkArithmeticOperation(
+                  e1, e2, "+", e1left
+              );
+              if (resultType == null) {
+                  RESULT = "ERROR";
+                  parser.report_error("Tipos incompatibles en operación +", null);
+              } else {
+                  RESULT = resultType;  // ✅ Tipo semántico
+              }
+              
+              // 2. GENERACIÓN DE CÓDIGO
+              if (parser.codeGenerationEnabled && resultType != null) {
+                  String rightKey = parser.popCodeKey();  // e2
+                  String leftKey = parser.popCodeKey();   // e1
+                  String rightCode = parser.getCodeValue(rightKey);
+                  String leftCode = parser.getCodeValue(leftKey);
+                  
+                  String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "+", rightCode);
+                  String newKey = parser.saveCodeValue(resultType, tempVar);
+                  parser.pushCodeKey(newKey);
+              }
+           :}
+           | exp_arit:e1 MINUS term_arit:e2 
+           {: 
+              // 1. VALIDACIÓN SEMÁNTICA
+              String resultType = parser.getSemanticTable().checkArithmeticOperation(
+                  e1, e2, "-", e1left
+              );
+              if (resultType == null) {
+                  RESULT = "ERROR";
+                  parser.report_error("Tipos incompatibles en operación -", null);
+              } else {
+                  RESULT = resultType;
+              }
+              
+              // 2. GENERACIÓN DE CÓDIGO
+              if (parser.codeGenerationEnabled && resultType != null) {
+                  String rightKey = parser.popCodeKey();
+                  String leftKey = parser.popCodeKey();
+                  String rightCode = parser.getCodeValue(rightKey);
+                  String leftCode = parser.getCodeValue(leftKey);
+                  
+                  String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "-", rightCode);
+                  String newKey = parser.saveCodeValue(resultType, tempVar);
+                  parser.pushCodeKey(newKey);
+              }
+           :}
+           | term_arit:e {: RESULT = e; :}
            ;
 
-term_arit ::= term_arit TIMES factor_arit
-            | term_arit DIVIDE factor_arit
-            | term_arit MOD factor_arit
-            | factor_arit
+term_arit ::= term_arit:e1 TIMES factor_arit:e2 
+            {: 
+               // 1. VALIDACIÓN SEMÁNTICA
+               String resultType = parser.getSemanticTable().checkArithmeticOperation(
+                   e1, e2, "*", e1left
+               );
+               if (resultType == null) {
+                   RESULT = "ERROR";
+                   parser.report_error("Tipos incompatibles en operación *", null);
+               } else {
+                   RESULT = resultType;
+               }
+               
+               // 2. GENERACIÓN DE CÓDIGO
+               if (parser.codeGenerationEnabled && resultType != null) {
+                   String rightKey = parser.popCodeKey();
+                   String leftKey = parser.popCodeKey();
+                   String rightCode = parser.getCodeValue(rightKey);
+                   String leftCode = parser.getCodeValue(leftKey);
+                   
+                   String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "*", rightCode);
+                   String newKey = parser.saveCodeValue(resultType, tempVar);
+                   parser.pushCodeKey(newKey);
+               }
+            :}
+            | term_arit:e1 DIVIDE factor_arit:e2 
+            {: 
+               // 1. VALIDACIÓN SEMÁNTICA
+               String resultType = parser.getSemanticTable().checkArithmeticOperation(
+                   e1, e2, "/", e1left
+               );
+               if (resultType == null) {
+                   RESULT = "ERROR";
+                   parser.report_error("Tipos incompatibles en operación /", null);
+               } else {
+                   RESULT = resultType;
+               }
+               
+               // 2. GENERACIÓN DE CÓDIGO
+               if (parser.codeGenerationEnabled && resultType != null) {
+                   String rightKey = parser.popCodeKey();
+                   String leftKey = parser.popCodeKey();
+                   String rightCode = parser.getCodeValue(rightKey);
+                   String leftCode = parser.getCodeValue(leftKey);
+                   
+                   String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "/", rightCode);
+                   String newKey = parser.saveCodeValue(resultType, tempVar);
+                   parser.pushCodeKey(newKey);
+               }
+            :}
+            | term_arit:e1 MOD factor_arit:e2 
+            {: 
+               // 1. VALIDACIÓN SEMÁNTICA - MOD solo para enteros
+               if (!e1.equals("INT") || !e2.equals("INT")) {
+                   parser.report_error("Operador % requiere operandos enteros", null);
+                   RESULT = "ERROR";
+               } else {
+                   RESULT = "INT";
+               }
+               
+               // 2. GENERACIÓN DE CÓDIGO
+               if (parser.codeGenerationEnabled && RESULT.equals("INT")) {
+                   String rightKey = parser.popCodeKey();
+                   String leftKey = parser.popCodeKey();
+                   String rightCode = parser.getCodeValue(rightKey);
+                   String leftCode = parser.getCodeValue(leftKey);
+                   
+                   String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "%", rightCode);
+                   String newKey = parser.saveCodeValue("INT", tempVar);
+                   parser.pushCodeKey(newKey);
+               }
+            :}
+            | factor_arit:e {: RESULT = e; :}
             ;
 
-factor_arit ::= factor_arit POW power_arit
-              | power_arit
+factor_arit ::= factor_arit:e1 POW power_arit:e2 
+              {: 
+                 // 1. VALIDACIÓN SEMÁNTICA
+                 String resultType = parser.getSemanticTable().checkArithmeticOperation(
+                     e1, e2, "**", e1left
+                 );
+                 if (resultType == null) {
+                     RESULT = "ERROR";
+                     parser.report_error("Operación POW requiere operandos numéricos", null);
+                 } else {
+                     // POW inteligente: si ambos son INT, resultado es INT
+                     if (e1.equals("INT") && e2.equals("INT")) {
+                         RESULT = "INT";
+                     } else {
+                         RESULT = "FLOAT";
+                     }
+                 }
+                 
+                 // 2. GENERACIÓN DE CÓDIGO
+                 if (parser.codeGenerationEnabled && resultType != null) {
+                     String rightKey = parser.popCodeKey();
+                     String leftKey = parser.popCodeKey();
+                     String rightCode = parser.getCodeValue(rightKey);
+                     String leftCode = parser.getCodeValue(leftKey);
+                     
+                     String tempVar = parser.getCodeGenerator().generateBinaryOp(leftCode, "**", rightCode);
+                     String newKey = parser.saveCodeValue(RESULT, tempVar);
+                     parser.pushCodeKey(newKey);
+                 }
+              :}
+              | power_arit:e {: RESULT = e; :}
               ;
 
-power_arit ::= unary_exp
-             | atom_arit
-             ;
-
-/* 
- * Operadores unarios
- * OBJETIVO: Define operaciones que afectan a un solo operando
- */
-unary_exp ::= MINUS atom_arit %prec UMINUS
-            | INCREMENT ID
-            | DECREMENT ID
+power_arit ::= unary_exp:e {: RESULT = e; :}
             ;
 
-/* 
- * Términos atómicos
- * OBJETIVO: Define los elementos básicos que pueden aparecer en expresiones
- * RESTRICCIÓN: Estructurado para evitar conflictos
- */
-atom_arit ::= ID
-            | literal
-            | arr_access
-            | llamada_fun
-            | LPAREN exp RPAREN
+/* Operadores unarios con verificación de tipos */
+unary_exp ::= MINUS atom_arit:e
+            {: 
+               // 1. VALIDACIÓN SEMÁNTICA
+               if (!e.equals("INT") && !e.equals("FLOAT")) {
+                   parser.report_error("Operador unario - requiere operando numérico (INT o FLOAT), encontrado: " + e, null);
+                   RESULT = "ERROR";
+               } else {
+                   RESULT = e;  // Mantiene el tipo original
+               }
+               
+               // 2. GENERACIÓN DE CÓDIGO
+               if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                   String operandKey = parser.popCodeKey();
+                   String operandCode = parser.getCodeValue(operandKey);
+                   
+                   String tempVar = parser.getCodeGenerator().generateUnaryOp("-", operandCode);
+                   String newKey = parser.saveCodeValue(RESULT, tempVar);
+                   parser.pushCodeKey(newKey);
+                   
+                   System.out.println("DEBUG: Menos unario: -" + operandCode + " = " + tempVar);
+               }
+            :}
+            | INCREMENT ID:id
+            {: 
+               // 1. VALIDACIÓN SEMÁNTICA
+               if (parser.getSemanticTable() != null) {
+                   SymbolInfo var = parser.getSemanticTable().checkVariableUsage(id.toString(), idleft);
+                   if (var == null) {
+                       RESULT = "ERROR";
+                   } else if (!var.getTipoVariable().equals("INT") && !var.getTipoVariable().equals("FLOAT")) {
+                       parser.report_error("Operador ++ requiere variable numérica", null);
+                       RESULT = "ERROR";
+                   } else {
+                       RESULT = var.getTipoVariable();
+                   }
+               } else {
+                   RESULT = "ERROR";
+               }
+               
+               // 2. GENERACIÓN DE CÓDIGO
+               if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                   String tempVar = parser.getCodeGenerator().generateIncrement(id.toString());
+                   String newKey = parser.saveCodeValue(RESULT, tempVar);
+                   parser.pushCodeKey(newKey);
+                   
+                   System.out.println("DEBUG: Incremento: ++" + id + " = " + tempVar);
+               }
+            :}
+            | DECREMENT ID:id
+            {: 
+               // 1. VALIDACIÓN SEMÁNTICA
+               if (parser.getSemanticTable() != null) {
+                   SymbolInfo var = parser.getSemanticTable().checkVariableUsage(id.toString(), idleft);
+                   if (var == null) {
+                       RESULT = "ERROR";
+                   } else if (!var.getTipoVariable().equals("INT") && !var.getTipoVariable().equals("FLOAT")) {
+                       parser.report_error("Operador -- requiere variable numérica", null);
+                       RESULT = "ERROR";
+                   } else {
+                       RESULT = var.getTipoVariable();
+                   }
+               } else {
+                   RESULT = "ERROR";
+               }
+               
+               // 2. GENERACIÓN DE CÓDIGO
+               if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                   String tempVar = parser.getCodeGenerator().generateDecrement(id.toString());
+                   String newKey = parser.saveCodeValue(RESULT, tempVar);
+                   parser.pushCodeKey(newKey);
+                   
+                   System.out.println("DEBUG: Decremento: --" + id + " = " + tempVar);
+               }
+            :}
+            | atom_arit:e {: RESULT = e; :}
             ;
 
-/* 
- * Lista de argumentos con recuperación de errores
- * OBJETIVO: Define la estructura para pasar argumentos a funciones
- */
+/* Términos atómicos con tipos semánticos */
+atom_arit ::= ID:id
+            {: 
+               if (parser.getSemanticTable() != null) {
+                   SymbolInfo symbol = parser.getSemanticTable().checkVariableUsage(id.toString(), idleft);
+                   if (symbol != null) {
+                       RESULT = symbol.getTipoVariable();  // ✅ String tipo semántico
+                       
+                       if (parser.codeGenerationEnabled) {
+                           String key = parser.saveCodeValue(RESULT, id.toString());
+                           parser.pushCodeKey(key);
+                           System.out.println("DEBUG: Variable " + id + " guardada con clave " + key);
+                       }
+                   } else {
+                       RESULT = "ERROR";
+                   }
+               } else {
+                   RESULT = "ERROR";
+               }
+
+            :}
+            | literal:l {: RESULT = l; :}
+            | arr_access:a {: RESULT = a; :}
+            | llamada_fun:f {: RESULT = f; :}
+            | LPAREN exp:e RPAREN {: RESULT = e; :}
+            ;
+
+/* Lista de argumentos */
 arg_list ::= exp
            | exp COMMA arg_list
            ;
 
-/* 
- * Estructuras de control
- * OBJETIVO: Define construcciones para controlar el flujo del programa
- */
-ctrl ::= if_stmt
+/* Estructuras de control */
+ctrl ::= if_stmt:s
+        {:
+            RESULT = s;
+        :}
        | do_while
        | for_stmt
        | switch_stmt
        ;
 
-/* 
- * Estructura if-elif-else con recuperación de errores
- * OBJETIVO: Define las variantes de la construcción condicional
- */
-if_stmt ::= IF LPAREN exp RPAREN LBLOCK block RBLOCK
-          | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK
-          | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
-          | IF LPAREN exp RPAREN LBLOCK block RBLOCK ELIF LPAREN exp RPAREN LBLOCK block RBLOCK ELSE LBLOCK block RBLOCK
-          | IF LPAREN error RPAREN LBLOCK block RBLOCK  {: System.err.println("Error en condición IF. Continuando..."); :}
+/* Estructura if-elif-else con scopes semánticos */
+if_stmt ::= IF LPAREN exp:e RPAREN LBLOCK block:then_block RBLOCK
+          {: 
+             // ✅ TODA LA LÓGICA AL FINAL - SIN ACCIONES INTERMEDIAS
+             if (!e.equals("BOOL")) {
+                 parser.report_error("Condición de IF debe ser booleana", null);
+                 RESULT = "ERROR";
+             } else {
+                 RESULT = "VOID";
+             }
+             
+             if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                 // Recuperar condición
+                 String conditionKey = parser.popCodeKey();
+                 String conditionCode = parser.getCodeValue(conditionKey);
+                 
+                 // Generar etiqueta
+                 String endLabel = parser.generateLabel();
+                 
+                 // ✅ GENERAR CON INSERCIÓN INTELIGENTE
+                 parser.getCodeGenerator().generateCompleteIf(conditionCode, endLabel);
+                 
+                 System.out.println("DEBUG: IF simple - condición: " + conditionCode + " -> " + endLabel);
+             }
+          :}
+          
+          | IF LPAREN exp:e RPAREN LBLOCK block:then_block RBLOCK ELSE LBLOCK block:else_block RBLOCK
+          {: 
+             // ✅ TODA LA LÓGICA AL FINAL - SIN ACCIONES INTERMEDIAS
+             if (!e.equals("BOOL")) {
+                 parser.report_error("Condición de IF-ELSE debe ser booleana", null);
+                 RESULT = "ERROR";
+             } else {
+                 RESULT = "VOID";
+             }
+             
+             if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                 // Recuperar condición
+                 String conditionKey = parser.popCodeKey();
+                 String conditionCode = parser.getCodeValue(conditionKey);
+                 
+                 // Generar etiquetas
+                 String elseLabel = parser.generateLabel();
+                 String endLabel = parser.generateLabel();
+                 
+                 // ✅ GENERAR CON INSERCIÓN INTELIGENTE
+                 parser.getCodeGenerator().generateCompleteIfElse(conditionCode, elseLabel, endLabel);
+                 
+                 System.out.println("DEBUG: IF-ELSE - condición: " + conditionCode);
+             }
+          :}
           ;
 
-/* 
- * Estructura do-while con recuperación de errores
- * OBJETIVO: Define el bucle do-while
- */
-do_while ::= DO LBLOCK block RBLOCK WHILE LPAREN exp RPAREN QUESTION
+
+/* Estructura do-while con scope semántico*/
+do_while ::= DO LBLOCK block RBLOCK WHILE LPAREN exp:e RPAREN QUESTION
+           {: 
+              parser.enterControlScope("WHILE");
+              parser.exitControlScope();
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().addComment("Estructura DO-WHILE procesada");
+                  parser.getCodeGenerator().addComment("Condicion: " + e);
+              }
+           :}
            | DO LBLOCK block RBLOCK WHILE LPAREN error RPAREN QUESTION  {: System.err.println("Error en condición WHILE. Continuando..."); :}
            ;
 
-/* 
- * Estructura for con recuperación de errores
- * OBJETIVO: Define las variantes del bucle for
- */
+/* Estructura for con scope semántico */
 for_stmt ::= FOR LPAREN decl_var exp QUESTION exp RPAREN LBLOCK block RBLOCK
+           {: 
+              parser.enterControlScope("FOR");
+              parser.exitControlScope();
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().addComment("Estructura FOR procesada con declaracion");
+              }
+           :}
            | FOR LPAREN assign exp QUESTION exp RPAREN LBLOCK block RBLOCK
+           {: 
+              parser.enterControlScope("FOR");
+              parser.exitControlScope();
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().addComment("Estructura FOR procesada con asignacion");
+              }
+           :}
            | FOR LPAREN QUESTION exp QUESTION exp RPAREN LBLOCK block RBLOCK
+           {: 
+              parser.enterControlScope("FOR");
+              parser.exitControlScope();
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().addComment("Estructura FOR procesada sin inicializacion");
+              }
+           :}
            | FOR LPAREN error RPAREN LBLOCK block RBLOCK  {: System.err.println("Error en estructura FOR. Continuando..."); :}
            ;
 
-/* 
- * Estructura switch con recuperación de errores
- * OBJETIVO: Define la estructura de selección múltiple
- */
+/* Estructura switch */
 switch_stmt ::= SWITCH LPAREN exp RPAREN LBLOCK case_list RBLOCK
+              {: 
+                 if (parser.codeGenerationEnabled) {
+                     parser.getCodeGenerator().addComment("Estructura SWITCH procesada");
+                 }
+              :}
               | SWITCH LPAREN error RPAREN LBLOCK case_list RBLOCK  {: System.err.println("Error en expresión SWITCH. Continuando..."); :}
               ;
 
-/* 
- * Lista de casos con recuperación de errores
- * OBJETIVO: Define la secuencia de casos en un switch
- */
+/* Lista de casos */
 case_list ::= case_stmt case_list
            | default_stmt
            | /* vacío */
            ;
 
-/* 
- * Caso individual
- * OBJETIVO: Define un caso específico en un switch
- */
+/* Caso individual */
 case_stmt ::= CASE exp COLON block;
 
-/* 
- * Caso por defecto
- * OBJETIVO: Define el caso por defecto en un switch
- */
+/* Caso por defecto */
 default_stmt ::= DEFAULT COLON block;
 
-/* 
- * Sentencia break
- * OBJETIVO: Define la instrucción para salir de un bucle o switch
- */
-break_stmt ::= BREAK QUESTION;
+/* Sentencia break */
+break_stmt ::= BREAK QUESTION
+             {: 
+                if (parser.codeGenerationEnabled) {
+                    parser.getCodeGenerator().generateBreak();
+                }
+             :}
+             ;
 
-/* 
- * Sentencia return con recuperación de errores
- * OBJETIVO: Define la instrucción para retornar valores de funciones
- */
-return_stmt ::= RETURN exp QUESTION
-              | RETURN QUESTION
+/* Sentencia return con verificación de tipos */
+return_stmt ::= RETURN exp:e QUESTION
+              {: 
+                 System.out.println("DEBUG: Return con expresión, función actual: " + parser.getCurrentFunctionName());
+                 
+                 if (parser.getSemanticTable() != null && parser.getCurrentFunctionName() != null) {
+                     parser.getSemanticTable().checkReturnStatement(parser.getCurrentFunctionName(), e, eleft);
+                 } else {
+                     System.err.println("ERROR: No se puede verificar return - función actual: " + parser.getCurrentFunctionName());
+                 }
+                 
+                 if (parser.codeGenerationEnabled) {
+                     parser.getCodeGenerator().generateReturn(e);
+                 }
+              :}
+              | RETURN:r QUESTION
+              {: 
+                 System.out.println("DEBUG: Return sin expresión, función actual: " + parser.getCurrentFunctionName());
+                 
+                 if (parser.getSemanticTable() != null && parser.getCurrentFunctionName() != null) {
+                     parser.getSemanticTable().checkReturnStatement(parser.getCurrentFunctionName(), null, rleft);
+                 } else {
+                     System.err.println("ERROR: No se puede verificar return - función actual: " + parser.getCurrentFunctionName());
+                 }
+                 
+                 if (parser.codeGenerationEnabled) {
+                     parser.getCodeGenerator().generateReturn(null);
+                 }
+              :}
               | RETURN error QUESTION  {: System.err.println("Error en expresión RETURN. Continuando..."); :}
               ;
 
-/* 
- * Funciones de entrada/salida con recuperación de errores
- * OBJETIVO: Define operaciones básicas de I/O
- */
-read_stmt ::= READ LPAREN ID RPAREN QUESTION
-            | READ LPAREN error RPAREN QUESTION  {: System.err.println("Error en función READ. Continuando..."); :}
+// Agrega al final de tu archivo .cup, antes del último ;
+
+/* Funciones de entrada/salida */
+read_stmt ::= READ LPAREN ID:id RPAREN QUESTION
+            {: 
+               // VALIDACIÓN: Verificar que la variable existe
+               if (parser.getSemanticTable() != null) {
+                   SymbolInfo var = parser.getSemanticTable().checkVariableUsage(id.toString(), idleft);
+                   if (var == null) {
+                       parser.report_error("Variable '" + id + "' no declarada en READ", null);
+                   } else {
+                       var.setInicializada(true); // READ inicializa la variable
+                   }
+               }
+               
+               if (parser.codeGenerationEnabled) {
+                   parser.getCodeGenerator().generateRead(id.toString());
+               }
+            :}
+            | READ LPAREN error RPAREN QUESTION  
+            {: 
+                parser.report_error("Error en función read - argumento inválido", null); 
+            :}
             ;
 
-write_stmt ::= WRITE LPAREN exp RPAREN QUESTION
-             | WRITE LPAREN error RPAREN QUESTION  {: System.err.println("Error en función WRITE. Continuando..."); :}
+write_stmt ::= WRITE LPAREN exp:e RPAREN QUESTION
+             {: 
+                // VALIDACIÓN: Verificar que la expresión sea válida
+                if (e != null && e.equals("ERROR")) {
+                    parser.report_error("Expresión inválida en write", null);
+                }
+                
+                if (parser.codeGenerationEnabled && !e.equals("ERROR")) {
+                    parser.getCodeGenerator().generateWrite(e);
+                }
+             :}
+             | WRITE LPAREN error RPAREN QUESTION  
+             {: 
+                 parser.report_error("Error en función write - expresión inválida", null); 
+             :}
              ;
+

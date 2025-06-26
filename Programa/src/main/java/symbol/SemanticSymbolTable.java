@@ -2,6 +2,7 @@ package main.java.symbol;
 
 import java.util.*;
 import java.io.*;
+import main.java.symbol.SymbolInfo;
 
 /**
  * Tabla de simbolos para analisis semantico.
@@ -261,25 +262,37 @@ public class SemanticSymbolTable {
      * @return true si son compatibles
      */
     public boolean checkTypeCompatibility(String expected, String actual, int line) {
-        if (expected == null || actual == null) {
-            addError("Tipo nulo en verificacion de compatibilidad en linea " + line);
-            return false;
-        }
-        
-        if (expected.equals(actual)) {
-            return true;
-        }
-        
-        SymbolInfo tempSymbol = new SymbolInfo("temp", "ID", line, 0);
-        tempSymbol.setTipoVariable(expected);
-        
-        if (!tempSymbol.esCompatibleCon(actual)) {
-            addError("Tipos incompatibles: esperado '" + expected + "', encontrado '" + actual + "' en linea " + line);
-            return false;
-        }
-        
+    if (expected == null || actual == null) {
+        addError("Tipo nulo en verificación de compatibilidad en línea " + line);
+        return false;
+    }
+    
+    // ✅ COMPATIBILIDAD EXACTA
+    if (expected.equals(actual)) {
         return true;
     }
+    
+    // ✅ CONVERSIONES IMPLÍCITAS PERMITIDAS
+    // INT puede convertirse a FLOAT
+    if (expected.equals("FLOAT") && actual.equals("INT")) {
+        return true;
+    }
+    
+    // FLOAT puede usarse donde se espera un número en operaciones
+    if (expected.equals("INT") && actual.equals("FLOAT")) {
+        addWarning("Conversión implícita de FLOAT a INT en línea " + line + " (posible pérdida de precisión)");
+        return true; // Permitir pero advertir
+    }
+    
+    // ✅ TIPOS NUMÉRICOS SON COMPATIBLES ENTRE SÍ
+    if (isNumericType(expected) && isNumericType(actual)) {
+        return true;
+    }
+    
+    // ❌ INCOMPATIBLES
+    addError("Tipos incompatibles: esperado '" + expected + "', encontrado '" + actual + "' en línea " + line);
+    return false;
+}
     
     /**
      * Verifica una llamada a funcion
@@ -332,24 +345,34 @@ public class SemanticSymbolTable {
      * @return Tipo resultante de la operación o null si es invalida
      */
     public String checkArithmeticOperation(String leftType, String rightType, String operator, int line) {
-        SymbolInfo leftSymbol = new SymbolInfo("temp_left", "ID", line, 0);
-        leftSymbol.setTipoVariable(leftType);
-        
-        SymbolInfo rightSymbol = new SymbolInfo("temp_right", "ID", line, 0);
-        rightSymbol.setTipoVariable(rightType);
-        
-        if (!leftSymbol.esNumerico() || !rightSymbol.esNumerico()) {
-            addError("Operacion aritmetica '" + operator + "' requiere operandos numericos en linea " + line);
-            return null;
-        }
-        
-        String resultType = leftSymbol.tipoResultanteConOperacion(rightType);
-        if (resultType == null) {
-            addError("Operacion aritmetica invalida entre '" + leftType + "' y '" + rightType + "' en linea " + line);
-        }
-        
-        return resultType;
+    // ✅ VERIFICAR QUE AMBOS SEAN TIPOS VÁLIDOS
+    if (leftType == null || rightType == null) {
+        addError("Tipo nulo en operación aritmética '" + operator + "' en línea " + line);
+        return null;
     }
+    
+    // ✅ PROCESAR TIPOS DE EXPRESIONES
+    String processedLeft = processExpressionType(leftType);
+    String processedRight = processExpressionType(rightType);
+    
+    // ✅ VERIFICAR QUE SEAN NUMÉRICOS
+    if (!isNumericType(processedLeft)) {
+        addError("Operando izquierdo de '" + operator + "' debe ser numérico, encontrado: " + leftType + " en línea " + line);
+        return null;
+    }
+    
+    if (!isNumericType(processedRight)) {
+        addError("Operando derecho de '" + operator + "' debe ser numérico, encontrado: " + rightType + " en línea " + line);
+        return null;
+    }
+    
+    // ✅ DETERMINAR TIPO RESULTANTE
+    if (processedLeft.equals("FLOAT") || processedRight.equals("FLOAT")) {
+        return "FLOAT";
+    } else {
+        return "INT";
+    }
+}
     
     /**
      * Verifica una operacion relacional
@@ -361,29 +384,36 @@ public class SemanticSymbolTable {
      * @return "BOOL" si es valida, null si es invalida
      */
     public String checkRelationalOperation(String leftType, String rightType, String operator, int line) {
-        if (operator.equals("==") || operator.equals("!=")) {
-            if (leftType.equals("BOOL") && rightType.equals("BOOL")) {
-                return "BOOL";
-            }
-        }
-        
-        SymbolInfo leftSymbol = new SymbolInfo("temp_left", "ID", line, 0);
-        leftSymbol.setTipoVariable(leftType);
-        
-        SymbolInfo rightSymbol = new SymbolInfo("temp_right", "ID", line, 0);
-        rightSymbol.setTipoVariable(rightType);
-        
-        if (!leftSymbol.esComparable() || !rightSymbol.esComparable()) {
-            addError("Operación relacional '" + operator + "' requiere operandos comparables en línea " + line);
+    // ✅ PROCESAR TIPOS
+    String processedLeft = processExpressionType(leftType);
+    String processedRight = processExpressionType(rightType);
+    
+    // ✅ OPERADORES DE IGUALDAD (== y !=) son más flexibles
+    if (operator.equals("==") || operator.equals("!=")) {
+        // Pueden comparar cualquier tipo compatible
+        if (areComparableTypes(processedLeft, processedRight)) {
+            return "BOOL";
+        } else {
+            addError("Tipos no comparables en operación '" + operator + "': " + leftType + " y " + rightType + " en línea " + line);
             return null;
         }
-        
-        if (!checkTypeCompatibility(leftType, rightType, line)) {
-            return null;
-        }
-        
-        return "BOOL";
     }
+    
+    // ✅ OPERADORES DE ORDEN (<, >, <=, >=) requieren tipos numéricos o char
+    if (!isOrderComparableType(processedLeft) || !isOrderComparableType(processedRight)) {
+        addError("Operación relacional '" + operator + "' requiere operandos numéricos o char en línea " + line);
+        return null;
+    }
+    
+    // ✅ VERIFICAR COMPATIBILIDAD
+    if (!areCompatibleForComparison(processedLeft, processedRight)) {
+        addError("Tipos incompatibles en comparación '" + operator + "': " + leftType + " y " + rightType + " en línea " + line);
+        return null;
+    }
+    
+    return "BOOL";
+}
+
     
     /**
      * Verifica una operacion logica
@@ -395,18 +425,25 @@ public class SemanticSymbolTable {
      * @return "BOOL" si es valida, null si es invalida
      */
     public String checkLogicalOperation(String leftType, String rightType, String operator, int line) {
-        if (!leftType.equals("BOOL")) {
-            addError("Operación lógica '" + operator + "' requiere operando booleano en línea " + line);
-            return null;
-        }
-        
-        if (rightType != null && !rightType.equals("BOOL")) {
-            addError("Operación lógica '" + operator + "' requiere ambos operandos booleanos en línea " + line);
-            return null;
-        }
-        
-        return "BOOL";
+    String processedLeft = processExpressionType(leftType);
+    
+    // ✅ VERIFICAR OPERANDO IZQUIERDO
+    if (!processedLeft.equals("BOOL")) {
+        addError("Operación lógica '" + operator + "' requiere operando booleano, encontrado: " + leftType + " en línea " + line);
+        return null;
     }
+    
+    // ✅ VERIFICAR OPERANDO DERECHO (si existe - para operaciones binarias)
+    if (rightType != null) {
+        String processedRight = processExpressionType(rightType);
+        if (!processedRight.equals("BOOL")) {
+            addError("Operación lógica '" + operator + "' requiere ambos operandos booleanos, encontrado: " + rightType + " en línea " + line);
+            return null;
+        }
+    }
+    
+    return "BOOL";
+}
     
     /**
      * Verifica acceso a array
@@ -748,7 +785,82 @@ public class SemanticSymbolTable {
         
         writer.close();
     }
+// =================== MÉTODOS AUXILIARES ===================
+/**
+ * Procesa tipos de expresiones para obtener el tipo real
+ */
+private String processExpressionType(String type) {
+    if (type == null) return "UNKNOWN";
     
+    // ✅ TIPOS DIRECTOS
+    if (type.equals("INT") || type.equals("FLOAT") || type.equals("BOOL") || 
+        type.equals("CHAR") || type.equals("STRING")) {
+        return type;
+    }
+    
+    // ✅ TIPOS ESPECIALES
+    if (type.equals("NUMERIC")) {
+        return "FLOAT"; // Por defecto
+    }
+    
+    if (type.equals("VARIABLE")) {
+        return "UNKNOWN"; // Necesitaría más contexto
+    }
+    
+    // ✅ LITERALES ESPECÍFICOS
+    if (type.matches("\\d+")) { // Es un número entero literal
+        return "INT";
+    }
+    
+    if (type.matches("\\d+\\.\\d*")) { // Es un número decimal literal
+        return "FLOAT";
+    }
+    
+    // ✅ VARIABLES - buscar en tabla
+    SymbolInfo symbol = getCurrentScope().lookup(type);
+    if (symbol != null && symbol.esVariable()) {
+        return symbol.getTipoVariable();
+    }
+    
+    return type; // Devolver tal como está si no se puede procesar
+}
+
+/**
+ * Verifica si un tipo es numérico
+ */
+private boolean isNumericType(String type) {
+    return type != null && (type.equals("INT") || type.equals("FLOAT"));
+}
+
+/**
+ * Verifica si un tipo puede usarse en comparaciones de orden
+ */
+private boolean isOrderComparableType(String type) {
+    return type != null && (type.equals("INT") || type.equals("FLOAT") || type.equals("CHAR"));
+}
+
+/**
+ * Verifica si dos tipos son comparables entre sí
+ */
+private boolean areComparableTypes(String type1, String type2) {
+    if (type1 == null || type2 == null) return false;
+    
+    // ✅ TIPOS IGUALES
+    if (type1.equals(type2)) return true;
+    
+    // ✅ TIPOS NUMÉRICOS ENTRE SÍ
+    if (isNumericType(type1) && isNumericType(type2)) return true;
+    
+    // ✅ OTROS CASOS ESPECÍFICOS
+    return false;
+}
+
+/**
+ * Verifica compatibilidad para comparaciones
+ */
+private boolean areCompatibleForComparison(String type1, String type2) {
+    return areComparableTypes(type1, type2);
+}
     /**
      * Obtiene estadisticas del analisis MEJORADAS
      */
