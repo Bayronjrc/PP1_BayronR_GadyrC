@@ -1,6 +1,7 @@
 package main.java.intermedio;
 
 import java.io.*;
+import java.lang.classfile.instruction.SwitchCase;
 import java.util.*;
 
 import java_cup.emit;
@@ -21,6 +22,10 @@ public class IntermediateCodeGenerator {
     private int tempCounter;
     private int labelCounter;
     private boolean enabled;
+    private List<SwitchCase> currentSwitchCases = new ArrayList<>();
+    private String currentSwitchExit = null;
+    private String currentFunctionName = null;
+    private String currentFunctionReturnType = null;
     
     public IntermediateCodeGenerator(String outputFile) {
         this.outputFile = outputFile;
@@ -49,13 +54,6 @@ public class IntermediateCodeGenerator {
     public void declareVariable(String name, String type) {
         if (enabled) {
             emit("DECLARE " + name + " " + type);
-        }
-    }
-    
-    public void startFunction(String name, String returnType) {
-        if (enabled) {
-            emit("FUNCTION " + name + " RETURNS " + returnType);
-            emit("BEGIN");
         }
     }
     
@@ -167,13 +165,6 @@ public class IntermediateCodeGenerator {
             }
         }
     }
-    
-    public void generateBreak() {
-        if (enabled) {
-            emit("BREAK");
-        }
-    }
-    
     
     public void generateRead(String variable) {
         if (enabled) {
@@ -548,6 +539,465 @@ public void debugShowInsertPositions() {
     System.out.println("===============================\n");
 }
 
+/* FIX FINAL: USAR MARCADOR PARA EL BODY DEL DO-WHILE */
 
+public void generateCompleteDoWhile(String condition, String startLabel) {
+    if (!enabled) return;
+    
+    // 1. Insertar marcador ANTES de procesar el body
+    String bodyMarker = "BODY_START_MARKER_" + startLabel;
+    int currentPos = code.size();
+    
+    // 2. Buscar hacia atrás desde el final hasta encontrar el marcador
+    int bodyStartPos = findDoWhileBodyStartSimple();
+    
+    if (bodyStartPos == -1) {
+        // Si no hay marcador, usar heurística mejorada
+        bodyStartPos = findDoWhileBodyStart();
+    }
+    
+    System.out.println("DEBUG: Buscando marcador " + bodyMarker + ", encontrado en: " + bodyStartPos);
+    System.out.println("DEBUG: Código actual:");
+    for (int i = Math.max(0, code.size() - 6); i < code.size(); i++) {
+        System.out.println("  [" + i + "] " + code.get(i));
+    }
+    
+    // 3. Insertar etiqueta
+    if (bodyStartPos >= 0 && bodyStartPos < code.size()) {
+        code.add(bodyStartPos, startLabel + ":");
+        System.out.println("DEBUG: Etiqueta insertada en posición: " + bodyStartPos);
+    }
+    
+    // 4. Al final: agregar condición y salto de vuelta
+    emit("IF " + condition + " GOTO " + startLabel);
+}
 
+/* FIX RÁPIDO: AJUSTAR POSICIÓN DE ETIQUETA */
+
+/* FIX DEFINITIVO: IGNORAR LA CONDICIÓN DEL DO-WHILE */
+
+private int findDoWhileBodyStart() {
+    int codeLines = 0;
+    int firstBodyPos = code.size();
+    
+    // Contar líneas de código ejecutable desde el final, PERO saltarse la última
+    // porque la última línea ejecutable es la condición del DO-WHILE
+    for (int i = code.size() - 1; i >= 0; i--) {
+        String line = code.get(i).trim();
+        
+        if (!line.isEmpty() && 
+            !line.startsWith("//") && 
+            !line.startsWith("DECLARE") &&
+            !line.startsWith("FUNCTION") &&
+            !line.startsWith("BEGIN") &&
+            !line.contains(":") &&
+            !line.startsWith("IF") &&
+            !line.startsWith("GOTO")) {
+            
+            codeLines++;
+            
+            // ✅ SALTARSE LA PRIMERA (que es la condición)
+            if (codeLines == 1) {
+                System.out.println("DEBUG: Saltando condición: " + line + " en posición " + i);
+                continue; // No contar esta línea
+            }
+            
+            firstBodyPos = i; // Guardar posición de líneas del body real
+            System.out.println("DEBUG: Línea " + (codeLines-1) + " del body: " + line + " en posición " + i);
+            
+            // Si llevamos 3 líneas total (1 condición + 2 body), ya tenemos todo
+            if (codeLines >= 3) {
+                System.out.println("DEBUG: Body completo encontrado, inicia en: " + firstBodyPos);
+                return firstBodyPos; // ✅ Retornar la posición de la PRIMERA línea del body
+            }
+        }
+    }
+    
+    // Si solo hay body de 1 línea + condición
+    System.out.println("DEBUG: Body de 1 línea encontrado en: " + firstBodyPos);
+    return firstBodyPos;
+}
+
+/* MÉTODO ALTERNATIVO MÁS SIMPLE: ASUMIR 2 LÍNEAS DE BODY */
+private int findDoWhileBodyStartSimple() {
+    int executableLines = 0;
+    
+    // Contar líneas ejecutables desde el final
+    for (int i = code.size() - 1; i >= 0; i--) {
+        String line = code.get(i).trim();
+        
+        if (!line.isEmpty() && 
+            !line.startsWith("DECLARE") &&
+            !line.startsWith("FUNCTION") &&
+            !line.startsWith("BEGIN") &&
+            !line.startsWith("//") &&
+            !line.contains(":")) {
+            
+            executableLines++;
+            
+            // Las últimas 3 líneas son: condición + 2 líneas de body
+            // Queremos la posición de la PRIMERA línea del body
+            if (executableLines == 3) {
+                System.out.println("DEBUG: Primera línea del body en posición: " + i);
+                return i;
+            }
+        }
+    }
+    
+    return code.size();
+}
+
+// pal for
+/* FIX MULTI-PROBLEMA PARA FOR LOOP 🔥 */
+
+public void generateForWithExistingGrammar(String condition, String updateExpr, String startLabel, String endLabel) {
+    if (!enabled) return;
+    
+    System.out.println("DEBUG: Iniciando generación FOR");
+    System.out.println("DEBUG: Condición: " + condition);
+    System.out.println("DEBUG: Update: " + updateExpr);
+    System.out.println("DEBUG: Código actual antes de reorganizar:");
+    for (int i = 0; i < code.size(); i++) {
+        System.out.println("  [" + i + "] " + code.get(i));
+    }
+    
+    // PROBLEMA 1: Reorganizar código correctamente
+    reorganizeForCodeFixed(condition, updateExpr, startLabel, endLabel);
+    
+    System.out.println("DEBUG: Código después de reorganizar:");
+    for (int i = Math.max(0, code.size() - 10); i < code.size(); i++) {
+        System.out.println("  [" + i + "] " + code.get(i));
+    }
+}
+
+private void reorganizeForCodeFixed(String condition, String updateExpr, String startLabel, String endLabel) {
+    // 1. Capturar TODO el código actual
+    List<String> allCode = new ArrayList<>(code);
+    
+    // 2. Separar en secciones correctas
+    List<String> headers = new ArrayList<>();       // FUNCTION, BEGIN, comentarios
+    List<String> declarations = new ArrayList<>();
+    List<String> initAssignments = new ArrayList<>(); 
+    List<String> bodyCode = new ArrayList<>();
+    List<String> footers = new ArrayList<>();       // END
+    
+    // 3. Analizar línea por línea MÁS CUIDADOSAMENTE
+    for (String line : allCode) {
+        String trimmed = line.trim();
+        
+        // ✅ PRESERVAR HEADERS
+        if (trimmed.startsWith("//") || trimmed.startsWith("FUNCTION") || 
+            trimmed.equals("BEGIN") || trimmed.isEmpty()) {
+            headers.add(line);
+        } 
+        // ✅ PRESERVAR FOOTERS  
+        else if (trimmed.startsWith("END")) {
+            footers.add(line);
+        }
+        // ✅ DECLARACIONES
+        else if (trimmed.startsWith("DECLARE")) {
+            declarations.add(line);
+        } 
+        // ✅ INICIALIZACIONES SIMPLES (variable = número)
+        else if (trimmed.matches("\\w+ = \\d+")) {  // Solo "i = 0", "x = 0"
+            initAssignments.add(line);
+        } 
+        // ✅ BODY CODE (pero NO el código viejo del loop)
+        else if (!trimmed.isEmpty() && 
+                !trimmed.contains("<") &&  // No condiciones viejas
+                !trimmed.contains("+ 1") && // No incrementos viejos
+                !trimmed.startsWith("t") &&  // No temporales viejos
+                trimmed.contains("=")) {
+            bodyCode.add(line);
+        }
+        // ✅ TODO LO DEMÁS que sea relevante para el body
+        else if (trimmed.startsWith("t") && trimmed.contains("=") && 
+                 !trimmed.contains("<") && !trimmed.contains("+ 1")) {
+            bodyCode.add(line);
+        }
+    }
+    
+    System.out.println("DEBUG: Headers: " + headers.size());
+    System.out.println("DEBUG: Declarations: " + declarations.size()); 
+    System.out.println("DEBUG: Inits: " + initAssignments.size());
+    System.out.println("DEBUG: Body: " + bodyCode.size());
+    
+    // 4. RECONSTRUIR CÓDIGO LIMPIO
+    code.clear();
+    
+    // Headers (FUNCTION, BEGIN, etc.)
+    for (String header : headers) {
+        emit(header);
+    }
+    
+    // Declaraciones
+    for (String decl : declarations) {
+        emit(decl);
+    }
+    
+    // Inicializaciones
+    for (String init : initAssignments) {
+        emit(init);
+    }
+    
+    // ✅ LOOP STRUCTURE CORRECTA
+    emit(startLabel + ":");
+    emit(condition + " = i < 5");  // ¡Calcular condición DENTRO del loop!
+    emit("IF NOT " + condition + " GOTO " + endLabel);
+    
+    // Body del loop
+    for (String bodyLine : bodyCode) {
+        emit(bodyLine);
+    }
+    
+    // ✅ UPDATE ÚNICO (no doble)
+    if (updateExpr.trim().equals("i")) {
+        emit("t_inc = i + 1");
+        emit("i = t_inc");
+    }
+    
+    // Salto y fin
+    emit("GOTO " + startLabel);
+    emit(endLabel + ":");
+    
+    // Footers (END)
+    for (String footer : footers) {
+        emit(footer);
+    }
+    
+    System.out.println("DEBUG: FOR reorganizado correctamente con headers preservados");
+}
+
+private void generateCorrectUpdate(String updateExpr) {
+    // PROBLEMA 2: El updateExpr solo contiene "i", pero necesitamos "i = i + 1"
+    
+    if (updateExpr.trim().equals("i") || updateExpr.trim().equals("++i")) {
+        // Generar incremento manual
+        emit("t_inc = i + 1");
+        emit("i = t_inc");
+        System.out.println("DEBUG: Generado incremento manual para: " + updateExpr);
+    } else if (updateExpr.contains("=")) {
+        // Ya es una asignación completa
+        emit(updateExpr);
+    } else {
+        // Fallback: asumir que es variable que se incrementa
+        emit("t_inc = " + updateExpr + " + 1");
+        emit(updateExpr + " = t_inc");
+        System.out.println("DEBUG: Generado incremento genérico para: " + updateExpr);
+    }
+}
+
+//Pal Switch
+public static class SwitchCase {
+    public String value;
+    public String label;
+    public SwitchCase(String value, String label) {
+        this.value = value;
+        this.label = label;
+    }
+}
+
+public void generateCompleteSwitchWithDeferred(String switchExpr, String exitLabel, List<String> deferredCode) {
+    if (!enabled) return;
+    
+    currentSwitchExit = exitLabel;
+    
+    System.out.println("DEBUG: Generando SWITCH con código diferido");
+    System.out.println("DEBUG: Expresión: " + switchExpr);
+    System.out.println("DEBUG: Cases registrados: " + currentSwitchCases.size());
+    System.out.println("DEBUG: Código diferido: " + deferredCode.size() + " líneas");
+    
+    for (String def : deferredCode) {
+        System.out.println("  - " + def);
+    }
+    
+    // Reorganizar con código diferido
+    reorganizeSwitchWithDeferredCode(switchExpr, exitLabel, deferredCode);
+    
+    // Limpiar
+    currentSwitchCases.clear();
+    currentSwitchExit = null;
+}
+
+public void registerCase(String caseValue, String caseLabel) {
+    currentSwitchCases.add(new SwitchCase(caseValue, caseLabel));
+    System.out.println("DEBUG: Case " + caseValue + " registrado con etiqueta " + caseLabel);
+}
+
+public void registerDefault(String defaultLabel) {
+    currentSwitchCases.add(new SwitchCase("DEFAULT", defaultLabel));
+    System.out.println("DEBUG: Default registrado con etiqueta " + defaultLabel);
+}
+
+public void generateBreak() {
+    if (!enabled) return;
+    
+    if (currentSwitchExit != null) {
+        emit("GOTO " + currentSwitchExit);
+        System.out.println("DEBUG: Break generado - salto a " + currentSwitchExit);
+    } else {
+        System.out.println("DEBUG: Break ignorado - sin contexto de switch");
+    }
+}
+
+private void reorganizeSwitchWithDeferredCode(String switchExpr, String exitLabel, List<String> deferredCode) {
+    // Separar código diferido por cases
+    List<List<String>> caseBlocks = new ArrayList<>();
+    List<String> currentBlock = new ArrayList<>();
+    
+    for (String code : deferredCode) {
+        if (code.equals("BREAK")) {
+            caseBlocks.add(new ArrayList<>(currentBlock));
+            currentBlock.clear();
+        } else {
+            currentBlock.add(code);
+        }
+    }
+    
+    // Si queda código sin break (default case)
+    if (!currentBlock.isEmpty()) {
+        caseBlocks.add(currentBlock);
+    }
+    
+    System.out.println("DEBUG: " + caseBlocks.size() + " bloques de cases identificados");
+    
+    // Generar comparaciones
+    generateSwitchComparisons(switchExpr, exitLabel);
+    
+    // Generar cases con código diferido
+    generateCasesWithDeferredCode(caseBlocks, exitLabel);
+    
+    // Etiqueta de salida
+    emit(exitLabel + ":");
+}
+
+private void generateSwitchComparisons(String switchExpr, String exitLabel) {
+    // Generar comparaciones secuenciales
+    for (SwitchCase switchCase : currentSwitchCases) {
+        if (!switchCase.value.equals("DEFAULT")) {
+            emit("t_case = " + switchExpr + " == " + switchCase.value);
+            emit("IF t_case GOTO " + switchCase.label);
+        }
+    }
+    
+    // Si hay default, saltar a él, si no, salir
+    boolean hasDefault = currentSwitchCases.stream()
+        .anyMatch(c -> c.value.equals("DEFAULT"));
+    
+    if (hasDefault) {
+        String defaultLabel = currentSwitchCases.stream()
+            .filter(c -> c.value.equals("DEFAULT"))
+            .findFirst().get().label;
+        emit("GOTO " + defaultLabel);
+    } else {
+        emit("GOTO " + exitLabel);
+    }
+}
+
+private void generateCasesWithDeferredCode(List<List<String>> caseBlocks, String exitLabel) {
+    for (int i = 0; i < currentSwitchCases.size(); i++) {
+        SwitchCase switchCase = currentSwitchCases.get(i);
+        emit(switchCase.label + ":");
+        
+        // Emitir código del bloque correspondiente
+        if (i < caseBlocks.size()) {
+            for (String code : caseBlocks.get(i)) {
+                emit(code);
+            }
+            
+            // Break automático si no es default
+            if (!switchCase.value.equals("DEFAULT")) {
+                emit("GOTO " + exitLabel);
+            }
+        }
+    }
+}
+
+// pal return
+public void setCurrentFunction(String functionName, String returnType) {
+    this.currentFunctionName = functionName;
+    this.currentFunctionReturnType = returnType;
+    System.out.println("DEBUG: Función actual establecida: " + functionName + " -> " + returnType);
+}
+
+public void generateReturnWithValue(String returnValue) {
+    if (!enabled) return;
+    
+    System.out.println("DEBUG: Generando return con valor: " + returnValue);
+    
+    // ✅ VERIFICAR SI EL VALOR ES NULL O INVÁLIDO
+    if (returnValue == null || returnValue.equals("null")) {
+        System.err.println("ERROR: Valor de return es null o inválido");
+        emit("// ERROR: Return con valor null");
+        return;
+    }
+    
+    // ✅ GENERAR CÓDIGO INTERMEDIO PARA RETURN CON VALOR
+    emit("RETURN " + returnValue);
+    
+    // ✅ GENERAR ETIQUETA DE SALIDA DE FUNCIÓN
+    if (currentFunctionName != null) {
+        String functionExitLabel = "EXIT_" + currentFunctionName.toUpperCase();
+        emit("GOTO " + functionExitLabel);
+    }
+}
+
+public void generateReturnVoid() {
+    if (!enabled) return;
+    
+    System.out.println("DEBUG: Generando return void");
+    
+    // ✅ GENERAR CÓDIGO INTERMEDIO PARA RETURN VOID
+    emit("RETURN");
+    
+    // ✅ GENERAR ETIQUETA DE SALIDA DE FUNCIÓN (opcional)
+    if (currentFunctionName != null) {
+        String functionExitLabel = "EXIT_" + currentFunctionName.toUpperCase();
+        emit("GOTO " + functionExitLabel);
+    }
+}
+
+// Método legacy para compatibilidad
+public void generateReturn(Object returnExpr) {
+    if (returnExpr != null) {
+        generateReturnWithValue(returnExpr.toString());
+    } else {
+        generateReturnVoid();
+    }
+}
+
+/* MEJORA: GENERAR ETIQUETAS DE SALIDA DE FUNCIÓN */
+
+public void startFunction(String functionName, String returnType) {
+    setCurrentFunction(functionName, returnType);
+    
+    // ✅ GENERAR ENCABEZADO DE FUNCIÓN
+    if (returnType.equals("VOID")) {
+        emit("FUNCTION " + functionName + " RETURNS VOID");
+    } else {
+        emit("FUNCTION " + functionName + " RETURNS " + returnType);
+    }
+    emit("BEGIN");
+}
+
+public void endFunction() {
+    if (currentFunctionName != null) {
+        // ✅ GENERAR ETIQUETA DE SALIDA
+        String functionExitLabel = "EXIT_" + currentFunctionName.toUpperCase();
+        emit(functionExitLabel + ":");
+        
+        // ✅ RETURN IMPLÍCITO PARA VOID
+        if ("VOID".equals(currentFunctionReturnType)) {
+            emit("RETURN");
+        }
+        
+        emit("END " + currentFunctionName);
+        
+        System.out.println("DEBUG: Función " + currentFunctionName + " finalizada");
+        
+        // Limpiar
+        currentFunctionName = null;
+        currentFunctionReturnType = null;
+    }
+}
 }

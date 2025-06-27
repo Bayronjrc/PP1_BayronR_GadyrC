@@ -1,6 +1,9 @@
 ===== TABLA DE VARIABLES =====
-Lexema: x, Tipo: ID, Linea: 6, Columna: 8, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: x, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: y, Tipo: ID, Linea: 13, Columna: 3, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: y, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: suma, Tipo: ID, Linea: 2, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: suma, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: a, Tipo: ID, Linea: 3, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: a, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: b, Tipo: ID, Linea: 3, Columna: 16, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: b, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: test, Tipo: ID, Linea: 6, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: test, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: x, Tipo: ID, Linea: 7, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: x, Variable: Si, Inicializada: No, Utilizada: No
 
 ===== TABLA DE FUNCIONES =====
 

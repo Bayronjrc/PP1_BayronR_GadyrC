@@ -1,16 +1,12 @@
-void main ʃ  ʅ  \
-    int x|8?
-	int y|1?
 
-	if ʃ x>5 ʅ \
-		if ʃ x>10 ʅ \ 
-			y | 100 ?
-		/ else \ 
-			y | 50 ?
-		/
-	/
-	else \
-		y | 10 ?
-	 /
+int suma ʃ int a, int b ʅ \
+    return a + b ?
 /
 
+void test ʃ ʅ \
+    x | 5 ?
+    return ?
+/
+
+void main ʃ ʅ \
+/

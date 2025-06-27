@@ -42,6 +42,9 @@ parser code {:
 
     private Stack<String> labelStack = new Stack<>();
     private Stack<String[]> labelPairStack = new Stack<>();
+
+    private boolean inSwitchContext = false;
+    private List<String> deferredSwitchCode = new ArrayList<>();
     
     public void enableCodeGeneration(String outputFile) {
         this.codeGenerator = new IntermediateCodeGenerator(outputFile);
@@ -266,6 +269,32 @@ public String[] popLabelPair() {
 public String[] peekLabelPair() {
     return labelPairStack.isEmpty() ? null : labelPairStack.peek();
 }
+
+public void enterSwitchContext() {
+        inSwitchContext = true;
+        deferredSwitchCode.clear();
+        System.out.println("DEBUG: Entrando a contexto SWITCH - código diferido");
+    }
+    
+    public void exitSwitchContext() {
+        inSwitchContext = false;
+        System.out.println("DEBUG: Saliendo de contexto SWITCH");
+    }
+    
+    public boolean isInSwitchContext() {
+        return inSwitchContext;
+    }
+    
+    public void deferSwitchCode(String code) {
+        if (inSwitchContext) {
+            deferredSwitchCode.add(code);
+            System.out.println("DEBUG: Código diferido para switch: " + code);
+        }
+    }
+    
+    public List<String> getDeferredSwitchCode() {
+        return new ArrayList<>(deferredSwitchCode);
+    }
 :}
 
 /* Declaración de terminales */
@@ -573,38 +602,32 @@ stmt ::= exp:e QUESTION
 /* 
  * Asignación con verificación de tipos 
  */
+/* ASSIGN TAMBIÉN MODIFICADO PARA CONTEXTO SWITCH */
 assign ::= ID:id ASSIGN exp:e QUESTION
          {:
-            // e es el tipo semántico (String)
             boolean valid = parser.getSemanticTable().checkAssignment(id.toString(), e, idleft);
             
             if (valid) {
-                System.out.println("DEBUG: Asignación válida de " + e + " a " + id);
+                System.out.println("Asignacion valida: " + id + " = " + e);
                 
-                if (parser.codeGenerationEnabled) {
-                    String expKey = parser.popCodeKey();  // ← RECUPERAR DEL STACK
-                    String expCode = parser.getCodeValue(expKey);  // ← OBTENER CÓDIGO REAL
+                if (parser.codeGenerationEnabled && valid) {
+                    String expKey = parser.popCodeKey();
+                    String expCode = parser.getCodeValue(expKey);
                     
-                    System.out.println("DEBUG: Recuperando del stack: " + expKey + " = " + expCode);
-                    
-                    parser.getCodeGenerator().generateAssignment(id.toString(), expCode);
-                    System.out.println("DEBUG: Generando asignación " + id + " = " + expCode);
+                    // ✅ SI ESTAMOS EN SWITCH, DIFERIR LA ASIGNACIÓN
+                    if (parser.isInSwitchContext()) {
+                        parser.deferSwitchCode(id.toString() + " = " + expCode);
+                        System.out.println("DEBUG: Asignación diferida para switch: " + id + " = " + expCode);
+                    } else {
+                        // Generar normalmente
+                        parser.getCodeGenerator().generateAssignment(id.toString(), expCode);
+                        System.out.println("DEBUG: Asignación inmediata: " + id + " = " + expCode);
+                    }
                 }
             } else {
-                System.err.println("Error en asignación a variable: " + id);
+                System.err.println("Error en asignacion a variable: " + id);
             }
          :}
-         | arr_access:arr ASSIGN exp:e QUESTION
-         {: 
-            if (parser.getSemanticTable() != null) {
-                System.out.println("Asignacion a array: " + arr + " = " + e);
-                
-                if (parser.codeGenerationEnabled) {
-                    parser.getCodeGenerator().addComment("Asignación a elemento de array");
-                }
-            }
-         :}
-         | ID ASSIGN error QUESTION  {: System.err.println("Error en expresión de asignación. Continuando..."); :}
          ;
 
 /* 
@@ -630,12 +653,18 @@ decl_var ::= tipo:t ID:id ASSIGN exp:e QUESTION
               if (parser.codeGenerationEnabled && declared) {
                   parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
                   if (e != null) {
-                      // ✅ CORRECCIÓN: Usar el stack en lugar de e directamente
-                      String expKey = parser.popCodeKey();  // Recuperar del stack
-                      String expCode = parser.getCodeValue(expKey);  // Obtener código real
+                      String expKey = parser.popCodeKey();
+                      String expCode = parser.getCodeValue(expKey);
                       
-                      System.out.println("DEBUG: Inicializando variable " + id + " con " + expCode);
-                      parser.getCodeGenerator().generateAssignment(id.toString(), expCode);
+                      // ✅ SI ESTAMOS EN SWITCH, DIFERIR LA INICIALIZACIÓN
+                      if (parser.isInSwitchContext()) {
+                          parser.deferSwitchCode(id.toString() + " = " + expCode);
+                          System.out.println("DEBUG: Inicialización diferida para switch: " + id + " = " + expCode);
+                      } else {
+                          // Generar normalmente
+                          System.out.println("DEBUG: Inicializando variable " + id + " con " + expCode);
+                          parser.getCodeGenerator().generateAssignment(id.toString(), expCode);
+                      }
                   }
               }
            :}
@@ -1349,58 +1378,91 @@ if_stmt ::= IF LPAREN exp:e RPAREN LBLOCK block:then_block RBLOCK
 
 
 /* Estructura do-while con scope semántico*/
-do_while ::= DO LBLOCK block RBLOCK WHILE LPAREN exp:e RPAREN QUESTION
-           {: 
-              parser.enterControlScope("WHILE");
-              parser.exitControlScope();
-              
-              if (parser.codeGenerationEnabled) {
-                  parser.getCodeGenerator().addComment("Estructura DO-WHILE procesada");
-                  parser.getCodeGenerator().addComment("Condicion: " + e);
-              }
-           :}
-           | DO LBLOCK block RBLOCK WHILE LPAREN error RPAREN QUESTION  {: System.err.println("Error en condición WHILE. Continuando..."); :}
-           ;
+do_while ::= DO LBLOCK block:body RBLOCK WHILE LPAREN exp:condition RPAREN QUESTION
+          {: 
+             // 1. VALIDACIÓN SEMÁNTICA
+             if (!condition.equals("BOOL")) {
+                 parser.report_error("Condición de DO-WHILE debe ser booleana", null);
+                 RESULT = "ERROR";
+             } else {
+                 RESULT = "VOID";
+             }
+             
+             // 2. GENERACIÓN DE CÓDIGO
+             if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                 // Recuperar condición
+                 String conditionKey = parser.popCodeKey();
+                 String conditionCode = parser.getCodeValue(conditionKey);
+                 
+                 // Generar etiqueta de inicio
+                 String startLabel = parser.generateLabel();
+                 
+                 // ✅ GENERAR DO-WHILE COMPLETO
+                 parser.getCodeGenerator().generateCompleteDoWhile(conditionCode, startLabel);
+                 
+                 System.out.println("DEBUG: DO-WHILE - condición: " + conditionCode + " -> " + startLabel);
+             }
+          :}
+          ;
 
 /* Estructura for con scope semántico */
-for_stmt ::= FOR LPAREN decl_var exp QUESTION exp RPAREN LBLOCK block RBLOCK
-           {: 
-              parser.enterControlScope("FOR");
-              parser.exitControlScope();
-              
-              if (parser.codeGenerationEnabled) {
-                  parser.getCodeGenerator().addComment("Estructura FOR procesada con declaracion");
-              }
-           :}
-           | FOR LPAREN assign exp QUESTION exp RPAREN LBLOCK block RBLOCK
-           {: 
-              parser.enterControlScope("FOR");
-              parser.exitControlScope();
-              
-              if (parser.codeGenerationEnabled) {
-                  parser.getCodeGenerator().addComment("Estructura FOR procesada con asignacion");
-              }
-           :}
-           | FOR LPAREN QUESTION exp QUESTION exp RPAREN LBLOCK block RBLOCK
-           {: 
-              parser.enterControlScope("FOR");
-              parser.exitControlScope();
-              
-              if (parser.codeGenerationEnabled) {
-                  parser.getCodeGenerator().addComment("Estructura FOR procesada sin inicializacion");
-              }
-           :}
-           | FOR LPAREN error RPAREN LBLOCK block RBLOCK  {: System.err.println("Error en estructura FOR. Continuando..."); :}
-           ;
+for_stmt ::= FOR LPAREN decl_var:init exp:condition QUESTION exp:update RPAREN LBLOCK block:body RBLOCK
+          {: 
+             // 1. VALIDACIÓN SEMÁNTICA
+             if (!condition.equals("BOOL")) {
+                 parser.report_error("Condición de FOR debe ser booleana", null);
+                 RESULT = "ERROR";
+             } else {
+                 RESULT = "VOID";
+             }
+             
+             // 2. GENERACIÓN DE CÓDIGO
+             if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                 // Recuperar códigos generados
+                 String updateKey = parser.popCodeKey();
+                 String updateCode = parser.getCodeValue(updateKey);
+                 
+                 String conditionKey = parser.popCodeKey();
+                 String conditionCode = parser.getCodeValue(conditionKey);
+                 
+                 // Generar etiquetas
+                 String startLabel = parser.generateLabel();
+                 String endLabel = parser.generateLabel();
+                 
+                 // ✅ GENERAR FOR COMPLETO CON TU ESTRUCTURA
+                 parser.getCodeGenerator().generateForWithExistingGrammar(conditionCode, updateCode, startLabel, endLabel);
+                 
+                 System.out.println("DEBUG: FOR - condición: " + conditionCode + ", update: " + updateCode);
+             }
+          :}
+          ;
 
-/* Estructura switch */
-switch_stmt ::= SWITCH LPAREN exp RPAREN LBLOCK case_list RBLOCK
+/* ESTRUCTURA SWITCH ACTUALIZADA */
+switch_stmt ::= SWITCH
+                {: 
+                 // ✅ ENTRAR A MODO SWITCH ANTES DE PROCESAR
+                 parser.enterSwitchContext();
+                 System.out.println("DEBUG: INICIANDO SWITCH - modo diferido activado");
+              :} 
+            LPAREN exp:switchExpr RPAREN LBLOCK case_list:cases RBLOCK
               {: 
                  if (parser.codeGenerationEnabled) {
-                     parser.getCodeGenerator().addComment("Estructura SWITCH procesada");
+                     // Recuperar la expresión del switch
+                     String switchKey = parser.popCodeKey();
+                     String switchValue = parser.getCodeValue(switchKey);
+                     
+                     // Generar etiquetas para el switch
+                     String exitLabel = parser.generateLabel();
+                     
+                     // ✅ GENERAR SWITCH CON CÓDIGO DIFERIDO
+                     parser.getCodeGenerator().generateCompleteSwitchWithDeferred(switchValue, exitLabel, parser.getDeferredSwitchCode());
+                     
+                     System.out.println("DEBUG: SWITCH generado - expr: " + switchValue + " -> " + exitLabel);
                  }
+                 
+                 // ✅ SALIR DEL MODO SWITCH
+                 parser.exitSwitchContext();
               :}
-              | SWITCH LPAREN error RPAREN LBLOCK case_list RBLOCK  {: System.err.println("Error en expresión SWITCH. Continuando..."); :}
               ;
 
 /* Lista de casos */
@@ -1409,17 +1471,52 @@ case_list ::= case_stmt case_list
            | /* vacío */
            ;
 
-/* Caso individual */
-case_stmt ::= CASE exp COLON block;
+/* CASO INDIVIDUAL MEJORADO */
+case_stmt ::= CASE exp:caseValue COLON block:caseBlock
+            {: 
+               if (parser.codeGenerationEnabled) {
+                   // Recuperar valor del case
+                   String caseKey = parser.popCodeKey();
+                   String caseVal = parser.getCodeValue(caseKey);
+                   
+                   // Generar etiqueta para este case
+                   String caseLabel = parser.generateLabel();
+                   
+                   // ✅ REGISTRAR CASE para el switch
+                   parser.getCodeGenerator().registerCase(caseVal, caseLabel);
+                   
+                   System.out.println("DEBUG: CASE registrado - valor: " + caseVal + " -> " + caseLabel);
+               }
+            :}
+            ;
 
-/* Caso por defecto */
-default_stmt ::= DEFAULT COLON block;
+/* DEFAULT MEJORADO */
+default_stmt ::= DEFAULT COLON block:defaultBlock
+               {: 
+                  if (parser.codeGenerationEnabled) {
+                      // Generar etiqueta para default
+                      String defaultLabel = parser.generateLabel();
+                      
+                      // ✅ REGISTRAR DEFAULT
+                      parser.getCodeGenerator().registerDefault(defaultLabel);
+                      
+                      System.out.println("DEBUG: DEFAULT registrado -> " + defaultLabel);
+                  }
+               :}
+               ;
 
-/* Sentencia break */
+/* BREAK MEJORADO */
 break_stmt ::= BREAK QUESTION
              {: 
                 if (parser.codeGenerationEnabled) {
-                    parser.getCodeGenerator().generateBreak();
+                    // ✅ SI ESTAMOS EN SWITCH, DIFERIR EL BREAK
+                    if (parser.isInSwitchContext()) {
+                        parser.deferSwitchCode("BREAK");
+                        System.out.println("DEBUG: Break diferido para switch");
+                    } else {
+                        parser.getCodeGenerator().generateBreak();
+                        System.out.println("DEBUG: Break inmediato (fuera de switch)");
+                    }
                 }
              :}
              ;
@@ -1436,7 +1533,18 @@ return_stmt ::= RETURN exp:e QUESTION
                  }
                  
                  if (parser.codeGenerationEnabled) {
-                     parser.getCodeGenerator().generateReturn(e);
+                     // ✅ RECUPERAR EXPRESIÓN DEL STACK CORRECTAMENTE
+                     String expKey = parser.popCodeKey();
+                     
+                     if (expKey != null) {
+                         String expValue = parser.getCodeValue(expKey);
+                         parser.getCodeGenerator().generateReturnWithValue(expValue);
+                         System.out.println("DEBUG: Return generado con valor: " + expValue + " (clave: " + expKey + ")");
+                     } else {
+                         // ✅ SI NO HAY CLAVE, USAR LA EXPRESIÓN DIRECTAMENTE
+                         parser.getCodeGenerator().generateReturnWithValue(e.toString());
+                         System.out.println("DEBUG: Return generado con valor directo: " + e.toString());
+                     }
                  }
               :}
               | RETURN:r QUESTION
@@ -1450,7 +1558,8 @@ return_stmt ::= RETURN exp:e QUESTION
                  }
                  
                  if (parser.codeGenerationEnabled) {
-                     parser.getCodeGenerator().generateReturn(null);
+                     parser.getCodeGenerator().generateReturnVoid();
+                     System.out.println("DEBUG: Return void generado");
                  }
               :}
               | RETURN error QUESTION  {: System.err.println("Error en expresión RETURN. Continuando..."); :}

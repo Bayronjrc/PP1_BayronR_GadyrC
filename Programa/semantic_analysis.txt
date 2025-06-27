@@ -1,14 +1,25 @@
 ===== ANÁLISIS SEMÁNTICO =====
-Alcances procesados total: 2
+Alcances procesados total: 4
 Alcances activos: 1
-Errores semánticos: 0
+Errores semánticos: 5
 Advertencias: 0
 
-===== INFORMACIÓN DE ALCANCES =====
-Alcance 1: Scope[global, nivel=0, tipo=GLOBAL, simbolos=1]
-  - Símbolos locales: 1
-  - Variables: 0, Funciones: 1
+===== ERRORES SEMÁNTICOS =====
+Variable 'a' usada sin inicializar en linea 3
+Variable 'b' usada sin inicializar en linea 3
+Operando izquierdo de '+' debe ser numérico, encontrado: ERROR en línea 3
+Función 'suma' esperaba retornar INT pero retorna ERROR en línea 3
+Variable 'x' no declarada en linea 7
 
-===== ALCANCE: Scope[global, nivel=0, tipo=GLOBAL, simbolos=1] =====
-Lexema: main, Tipo: ID, Tipo Variable: VOID, Linea: 1, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: No
+===== INFORMACIÓN DE ALCANCES =====
+Alcance 1: Scope[global, nivel=0, tipo=GLOBAL, simbolos=5]
+  - Símbolos locales: 5
+  - Variables: 2, Funciones: 3
+
+===== ALCANCE: Scope[global, nivel=0, tipo=GLOBAL, simbolos=5] =====
+Lexema: suma, Tipo: ID, Tipo Variable: INT, Linea: 2, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: No
+Lexema: a, Tipo: ID, Tipo Variable: INT, Linea: 2, Columna: 16, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Variable: Si, Inicializada: No, Utilizada: Si
+Lexema: b, Tipo: ID, Tipo Variable: INT, Linea: 2, Columna: 23, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Variable: Si, Inicializada: No, Utilizada: Si
+Lexema: main, Tipo: ID, Tipo Variable: VOID, Linea: 11, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: No
+Lexema: test, Tipo: ID, Tipo Variable: VOID, Linea: 6, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: No
 
