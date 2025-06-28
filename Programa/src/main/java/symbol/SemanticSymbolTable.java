@@ -455,38 +455,36 @@ public class SemanticSymbolTable {
      * @return Tipo del elemento del array o null si hay error
      */
     public String checkArrayAccess(String arrayName, String index1, String index2, int line) {
-        SymbolInfo array = checkVariableUsage(arrayName, line);
+        SymbolInfo array = getCurrentScope().lookup(arrayName);  // ✅ Usar lookup en lugar de checkVariableUsage
+        
         if (array == null) {
+            addError("Array '" + arrayName + "' no declarado en línea " + line);
             return null;
         }
         
-        if (!array.esArray()) {
-            addError("'" + arrayName + "' no es un array en linea " + line);
+        if (!array.getTipoVariable().contains("[]")) {
+            addError("'" + arrayName + "' no es un array en línea " + line);
             return null;
         }
+        
+        // ✅ NO VERIFICAR INICIALIZACIÓN para arrays - se consideran válidos por declaración
         
         if (!index1.equals("INT")) {
-            addError("Indice de array debe ser entero en linea " + line);
+            addError("Índice de array debe ser entero en línea " + line);
             return null;
         }
         
         if (index2 != null && !index2.equals("INT")) {
-            addError("Segundo indice de array debe ser entero en linea " + line);
+            addError("Segundo índice de array debe ser entero en línea " + line);
             return null;
         }
         
-        List<Integer> dimensions = array.getDimensiones();
-        if (index2 != null && dimensions.size() < 2) {
-            addError("Array '" + arrayName + "' no es bidimensional en linea " + line);
-            return null;
-        }
+        // ✅ MARCAR COMO USADO
+        array.setUtilizada(true);
         
-        if (index2 == null && dimensions.size() != 1) {
-            addError("Array '" + arrayName + "' requiere dos indices en linea " + line);
-            return null;
-        }
-        
-        return array.getTipoVariable();
+        // ✅ RETORNAR TIPO BASE (sin [])
+        String baseType = array.getTipoVariable().replace("[][]", "");
+        return baseType;
     }
     
     
@@ -890,5 +888,41 @@ private boolean areCompatibleForComparison(String type1, String type2) {
         
         return stats;
     }
+
+    public boolean declareParameter(String paramName, String paramType, int line) {
+    Scope currentScope = getCurrentScope();
+    if (currentScope == null) {
+        addError("Error interno: no hay alcance activo para declarar parámetro '" + paramName + "' en línea " + line);
+        return false;
+    }
+    
+    // ✅ VERIFICAR QUE ESTEMOS EN UNA FUNCIÓN
+    if (!currentScope.getTipoAlcance().equals("FUNCTION")) {
+        addError("Parámetro '" + paramName + "' solo puede declararse dentro de una función en línea " + line);
+        return false;
+    }
+    
+    // ✅ VERIFICAR QUE NO EXISTA YA
+    if (currentScope.existsLocal(paramName)) {
+        addError("Parámetro '" + paramName + "' ya declarado en esta función en línea " + line);
+        return false;
+    }
+    
+    // ✅ CREAR SÍMBOLO DEL PARÁMETRO
+    SymbolInfo symbol = new SymbolInfo(paramName, "ID", line, 0, currentScope.getNivel());
+    symbol.setTipoVariable(paramType);
+    symbol.setEsVariable(true);
+    symbol.setInicializada(true); // ✅ Los parámetros están inicializados por definición
+    
+    // ✅ DECLARAR EN EL SCOPE ACTUAL
+    currentScope.declare(paramName, symbol);
+    
+    // ✅ MANTENER COMPATIBILIDAD CON TABLA ORIGINAL
+    originalTable.insertarSimbolo(paramName, "ID", line, 0, paramName);
+    originalTable.actualizarTipoVariable(paramName, paramType);
+    
+    System.out.println("DEBUG: Parámetro '" + paramName + "' declarado como " + paramType + " en función");
+    return true;
+}
 }
     

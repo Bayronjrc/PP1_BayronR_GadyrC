@@ -42,6 +42,7 @@ parser code {:
 
     private Stack<String> labelStack = new Stack<>();
     private Stack<String[]> labelPairStack = new Stack<>();
+    private Stack<String[]> loopLabelStack = new Stack<>();
 
     private boolean inSwitchContext = false;
     private List<String> deferredSwitchCode = new ArrayList<>();
@@ -90,8 +91,9 @@ parser code {:
     public void setCurrentFunctionName(String functionName) {
         this.currentFunctionName = functionName;
     }
-    
-    public void enterFunctionScope(String functionName, String returnType, List<String> params, int line, int column) {
+    // Le borre los paramatros List<String> params, int line, int column para hacer pruebas
+    // y porque no los estaba usando en ningún lado
+    public void enterFunctionScope(String functionName, String returnType) {
         if (semanticTable != null) {
             semanticTable.enterScope("FUNCTION", functionName);
             scopeContext.push("FUNCTION:" + functionName);
@@ -295,10 +297,28 @@ public void enterSwitchContext() {
     public List<String> getDeferredSwitchCode() {
         return new ArrayList<>(deferredSwitchCode);
     }
+
+    public void pushLoopLabels(String startLabel, String endLabel) {
+        loopLabelStack.push(new String[]{startLabel, endLabel});
+        System.out.println("DEBUG: Loop labels pushed - start: " + startLabel + ", end: " + endLabel);
+    }
+    
+    public String[] popLoopLabels() {
+        if (!loopLabelStack.isEmpty()) {
+            String[] labels = loopLabelStack.pop();
+            System.out.println("DEBUG: Loop labels popped - start: " + labels[0] + ", end: " + labels[1]);
+            return labels;
+        }
+        return null;
+    }
+    
+    public String[] peekLoopLabels() {
+        return loopLabelStack.isEmpty() ? null : loopLabelStack.peek();
+    }
 :}
 
 /* Declaración de terminales */
-terminal IF, ELIF, ELSE, DO, WHILE, FOR, BREAK, RETURN;
+terminal IF, ELIF, ELSE, DO, WHILE, FOR, BREAK, CONTINUE, RETURN;
 terminal INT, FLOAT, BOOL, CHAR, STRING, VOID;
 terminal READ, WRITE, MAIN, TRUE, FALSE;
 terminal PLUS, MINUS, TIMES, DIVIDE, MOD, POW;
@@ -317,13 +337,14 @@ non terminal block;
 non terminal decl_var, decl_fun, decl_arr;
 non terminal stmt;
 non terminal assign;
+non terminal array_assign;
 non terminal String exp;              
 non terminal String exp_arit, term_arit, factor_arit, power_arit, atom_arit;
 non terminal String exp_rel;          
 non terminal String exp_log, term_log, factor_log;
 non terminal String unary_exp;        
 non terminal ctrl, if_stmt, do_while, for_stmt;
-non terminal break_stmt, return_stmt;
+non terminal break_stmt, continue_stmt, return_stmt;
 non terminal read_stmt, write_stmt;
 non terminal String tipo, tipo_r;     
 non terminal String arr_access;      
@@ -395,59 +416,67 @@ program ::= VOID MAIN:m LPAREN RPAREN LBLOCK
 /* 
  * Declaración de funciones con análisis semántico y scope correcto
  */
-decl_fun ::= tipo_r:t ID:id LPAREN param_list RPAREN LBLOCK 
-           {: 
-              List<String> params = new ArrayList<String>(); 
-              parser.getSemanticTable().declareFunction(id.toString(), t.toString(), params, idleft, idright);
-              
-              parser.getSemanticTable().enterScope("FUNCTION", id.toString());
-              parser.setCurrentFunctionName(id.toString());
-              System.out.println("Entrando a función: " + id.toString() + " tipo: " + t.toString());
+decl_fun ::= tipo_r:t ID:id LPAREN 
+            {: 
+              // ✅ PASO 1: Entrar al scope ANTES de procesar parámetros
+              parser.enterFunctionScope(id.toString(), t.toString());
               
               if (parser.codeGenerationEnabled) {
                   parser.getCodeGenerator().startFunction(id.toString(), t.toString());
               }
+              
+              System.out.println("DEBUG: Iniciando función " + id + ", scope abierto para parámetros");
            :}
-           block RBLOCK
+           param_list:params RPAREN 
            {: 
-              RESULT = id; 
-              
-              parser.getSemanticTable().exitScope();
-              parser.setCurrentFunctionName(null);
-              System.out.println("Saliendo de función: " + id.toString());
-              
-              if (parser.codeGenerationEnabled) {
-                  parser.getCodeGenerator().endFunction(id.toString());
+              // ✅ PASO 2: Declarar función CON parámetros reales (después de procesarlos)
+              List<String> paramTypes = new ArrayList<String>();
+              if (params != null) {
+                  paramTypes = (List<String>) params;
               }
               
-              parser.markAsFunction(id.toString(), t.toString());
-           :}
-           | tipo_r:t ID:id LPAREN RPAREN LBLOCK 
-           {: 
-              List<String> noParams = new ArrayList<String>();
-              parser.getSemanticTable().declareFunction(id.toString(), t.toString(), noParams, idleft, idright);
+              if (parser.getSemanticTable() != null) {
+                  parser.getSemanticTable().declareFunction(id.toString(), t.toString(), paramTypes, idleft, idright);
+                  System.out.println("DEBUG: Función '" + id + "' declarada con " + paramTypes.size() + " parámetros");
+              }
               
-              parser.getSemanticTable().enterScope("FUNCTION", id.toString());
-              parser.setCurrentFunctionName(id.toString());
-              System.out.println("Entrando a función sin parámetros: " + id.toString() + " tipo: " + t.toString());
+              System.out.println("DEBUG: Parámetros procesados, entrando al cuerpo de función");
+           :}
+           LBLOCK block RBLOCK
+           {: 
+              // ✅ PASO 3: CERRAR TODO AL FINAL (solo una vez)
+              System.out.println("DEBUG: Finalizando función completa");
+              
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().endFunction();
+              }
+              
+              parser.exitFunctionScope();
+           :}
+           | tipo_r:t ID:id LPAREN RPAREN 
+           {: 
+              // ✅ FUNCIÓN SIN PARÁMETROS - mismo patrón
+              parser.enterFunctionScope(id.toString(), t.toString());
               
               if (parser.codeGenerationEnabled) {
                   parser.getCodeGenerator().startFunction(id.toString(), t.toString());
               }
+              
+              // Declarar inmediatamente (sin parámetros)
+              if (parser.getSemanticTable() != null) {
+                  List<String> noParams = new ArrayList<String>();
+                  parser.getSemanticTable().declareFunction(id.toString(), t.toString(), noParams, idleft, idright);
+                  System.out.println("DEBUG: Función '" + id + "' sin parámetros declarada");
+              }
            :}
-           block RBLOCK
+           LBLOCK block RBLOCK
            {: 
-              RESULT = id; 
-              
-              parser.getSemanticTable().exitScope();
-              parser.setCurrentFunctionName(null);
-              System.out.println("Saliendo de función: " + id.toString());
-              
+              // ✅ CERRAR AL FINAL
               if (parser.codeGenerationEnabled) {
-                  parser.getCodeGenerator().endFunction(id.toString());
+                  parser.getCodeGenerator().endFunction();
               }
               
-              parser.markAsFunction(id.toString(), t.toString()); 
+              parser.exitFunctionScope();
            :}
            ;
 
@@ -464,8 +493,26 @@ tipo_r ::= INT {: RESULT = "INT"; :}
 /* 
  * Lista de parámetros de función
  */
-param_list ::= param
-             | param_list COMMA param
+param_list ::= param:p
+             {: 
+                List<String> paramList = new ArrayList<String>();
+                if (p != null) {
+                    paramList.add(p.toString());
+                }
+                RESULT = paramList;
+             :}
+             | param_list:list COMMA param:p
+             {: 
+                // ✅ CAST EXPLÍCITO
+                List<String> paramList = new ArrayList<String>();
+                if (list != null) {
+                    paramList = (List<String>) list;
+                }
+                if (p != null) {
+                    paramList.add(p.toString());
+                }
+                RESULT = paramList;
+             :}
              ;
 
 /* 
@@ -473,15 +520,18 @@ param_list ::= param
  */
 param ::= tipo:t ID:id 
         {: 
+           // ✅ DECLARAR PARÁMETRO EN SCOPE ACTUAL
            if (parser.getSemanticTable() != null) {
-               parser.getSemanticTable().declareVariable(id.toString(), t.toString(), idleft, idright);
+               parser.getSemanticTable().declareParameter(id.toString(), t.toString(), idleft);
+               System.out.println("DEBUG: Parámetro '" + id + "' declarado como " + t);
            }
            
+           // ✅ GENERAR DECLARACIÓN DE PARÁMETRO
            if (parser.codeGenerationEnabled) {
-               parser.getCodeGenerator().declareVariable(id.toString(), t.toString());
+               parser.getCodeGenerator().declareParameter(id.toString(), t.toString());
            }
            
-           parser.updateVariableType(id.toString(), t.toString());
+           RESULT = t.toString();
         :}
         ;
 
@@ -511,7 +561,7 @@ decl_arr ::= tipo:t ID:id LBRACKET exp:e1 RBRACKET LBRACKET exp:e2 RBRACKET QUES
               String arrayType = t.toString() + "[][]";
               
               if (parser.getSemanticTable() != null) {
-                  parser.getSemanticTable().declareVariable(id.toString(), arrayType, idleft, idright);
+                  parser.getSemanticTable().declareVariable(id.toString(), arrayType, idleft, idright,true);
               }
               
               if (parser.codeGenerationEnabled) {
@@ -553,7 +603,7 @@ exp_list ::= exp
 /* Acceso a arreglos con verificación semántica */
 arr_access ::= ID:id LBRACKET exp:e1 RBRACKET LBRACKET exp:e2 RBRACKET
              {: 
-                // VALIDACIÓN COMPLETA: Verificar tipo de array e índices
+                // 1. VALIDACIÓN SEMÁNTICA (igual)
                 if (parser.getSemanticTable() != null) {
                     String resultType = parser.getSemanticTable().checkArrayAccess(
                         id.toString(), e1, e2, idleft
@@ -562,14 +612,26 @@ arr_access ::= ID:id LBRACKET exp:e1 RBRACKET LBRACKET exp:e2 RBRACKET
                     if (resultType == null) {
                         RESULT = "ERROR";
                     } else {
-                        RESULT = resultType;
+                        RESULT = resultType;  // ✅ Tipo del elemento
                     }                        
                 } else {
                     RESULT = "ERROR";
                 }
 
+                // 2. GENERACIÓN DE CÓDIGO
                 if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
-                    String code = parser.getCodeGenerator().generateArrayAccess(id.toString(), e1, e2);
+                    String index2Key = parser.popCodeKey();
+                    String index1Key = parser.popCodeKey();
+                    String index2Code = parser.getCodeValue(index2Key);
+                    String index1Code = parser.getCodeValue(index1Key);
+                    
+                    String tempVar = parser.getCodeGenerator().generateArrayAccess(id.toString(), index1Code, index2Code);
+                    
+                    // ✅ GUARDAR CORRECTAMENTE EN STACK
+                    String newKey = parser.saveCodeValue(RESULT, tempVar);
+                    parser.pushCodeKey(newKey);
+                    
+                    System.out.println("DEBUG: Array access " + id + "[" + index1Code + "][" + index2Code + "] = " + tempVar);
                 }
              :}
              ;
@@ -584,10 +646,12 @@ stmt ::= exp:e QUESTION
           }
        :}
        | assign
+       | array_assign
        | decl_var
        | decl_arr
        | ctrl
        | break_stmt
+       | continue_stmt
        | return_stmt
        | read_stmt
        | write_stmt
@@ -599,6 +663,35 @@ stmt ::= exp:e QUESTION
        | error QUESTION  {: System.err.println("Error en sentencia. Recuperando en ';'..."); :}
        ;
 
+
+// Nueva regla para asignación a arrays:
+array_assign ::= ID:id LBRACKET exp:e1 RBRACKET LBRACKET exp:e2 RBRACKET ASSIGN exp:value QUESTION
+               {: 
+                  // 1. VALIDACIÓN SEMÁNTICA
+                  if (parser.getSemanticTable() != null) {
+                      String arrayType = parser.getSemanticTable().checkArrayAccess(id.toString(), e1, e2, idleft);
+                      
+                      if (arrayType != null && !parser.getSemanticTable().checkTypeCompatibility(arrayType, value, idleft)) {
+                          parser.report_error("Tipo incompatible en asignación a array", null);
+                      }
+                  }
+                  
+                  // 2. GENERACIÓN DE CÓDIGO
+                  if (parser.codeGenerationEnabled) {
+                      String valueKey = parser.popCodeKey();   // value
+                      String index2Key = parser.popCodeKey();  // e2  
+                      String index1Key = parser.popCodeKey();  // e1
+                      
+                      String valueCode = parser.getCodeValue(valueKey);
+                      String index2Code = parser.getCodeValue(index2Key);
+                      String index1Code = parser.getCodeValue(index1Key);
+                      
+                      parser.getCodeGenerator().generateArrayAssignment(id.toString(), index1Code, index2Code, valueCode);
+                      
+                      System.out.println("DEBUG: Array assignment " + id + "[" + index1Code + "][" + index2Code + "] = " + valueCode);
+                  }
+               :}
+               ;
 /* 
  * Asignación con verificación de tipos 
  */
@@ -1378,65 +1471,88 @@ if_stmt ::= IF LPAREN exp:e RPAREN LBLOCK block:then_block RBLOCK
 
 
 /* Estructura do-while con scope semántico*/
-do_while ::= DO LBLOCK block:body RBLOCK WHILE LPAREN exp:condition RPAREN QUESTION
-          {: 
-             // 1. VALIDACIÓN SEMÁNTICA
-             if (!condition.equals("BOOL")) {
-                 parser.report_error("Condición de DO-WHILE debe ser booleana", null);
-                 RESULT = "ERROR";
-             } else {
-                 RESULT = "VOID";
-             }
-             
-             // 2. GENERACIÓN DE CÓDIGO
-             if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
-                 // Recuperar condición
-                 String conditionKey = parser.popCodeKey();
-                 String conditionCode = parser.getCodeValue(conditionKey);
-                 
-                 // Generar etiqueta de inicio
-                 String startLabel = parser.generateLabel();
-                 
-                 // ✅ GENERAR DO-WHILE COMPLETO
-                 parser.getCodeGenerator().generateCompleteDoWhile(conditionCode, startLabel);
-                 
-                 System.out.println("DEBUG: DO-WHILE - condición: " + conditionCode + " -> " + startLabel);
-             }
-          :}
-          ;
+do_while ::= DO LBLOCK 
+           {: 
+              // ✅ GENERAR ETIQUETAS PARA ESTE LOOP
+              String startLabel = parser.generateLabel();
+              String endLabel = parser.generateLabel();
+              parser.pushLoopLabels(startLabel, endLabel);
+              System.out.println("DEBUG: DO-WHILE iniciado - start: " + startLabel + ", end: " + endLabel);
+           :}
+           block:body RBLOCK WHILE LPAREN exp:condition RPAREN QUESTION
+           {: 
+              // 1. VALIDACIÓN SEMÁNTICA
+              if (!condition.equals("BOOL")) {
+                  parser.report_error("Condición de DO-WHILE debe ser booleana", null);
+                  RESULT = "ERROR";
+              } else {
+                  RESULT = "VOID";
+              }
+              
+              // 2. GENERACIÓN DE CÓDIGO
+              if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                  // Recuperar condición
+                  String conditionKey = parser.popCodeKey();
+                  String conditionCode = parser.getCodeValue(conditionKey);
+                  
+                  // ✅ USAR ETIQUETAS DEL STACK
+                  String[] labels = parser.peekLoopLabels();
+                  String startLabel = labels[0];
+                  
+                  // ✅ GENERAR DO-WHILE CON ETIQUETAS
+                  parser.getCodeGenerator().generateCompleteDoWhile(conditionCode, startLabel);
+                  
+                  System.out.println("DEBUG: DO-WHILE - condición: " + conditionCode + " -> " + startLabel);
+              }
+              
+              // ✅ POP DEL STACK AL TERMINAR
+              parser.popLoopLabels();
+           :}
+           ;
 
 /* Estructura for con scope semántico */
-for_stmt ::= FOR LPAREN decl_var:init exp:condition QUESTION exp:update RPAREN LBLOCK block:body RBLOCK
-          {: 
-             // 1. VALIDACIÓN SEMÁNTICA
-             if (!condition.equals("BOOL")) {
-                 parser.report_error("Condición de FOR debe ser booleana", null);
-                 RESULT = "ERROR";
-             } else {
-                 RESULT = "VOID";
-             }
-             
-             // 2. GENERACIÓN DE CÓDIGO
-             if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
-                 // Recuperar códigos generados
-                 String updateKey = parser.popCodeKey();
-                 String updateCode = parser.getCodeValue(updateKey);
-                 
-                 String conditionKey = parser.popCodeKey();
-                 String conditionCode = parser.getCodeValue(conditionKey);
-                 
-                 // Generar etiquetas
-                 String startLabel = parser.generateLabel();
-                 String endLabel = parser.generateLabel();
-                 
-                 // ✅ GENERAR FOR COMPLETO CON TU ESTRUCTURA
-                 parser.getCodeGenerator().generateForWithExistingGrammar(conditionCode, updateCode, startLabel, endLabel);
-                 
-                 System.out.println("DEBUG: FOR - condición: " + conditionCode + ", update: " + updateCode);
-             }
-          :}
-          ;
-
+for_stmt ::= FOR LPAREN decl_var:init exp:condition QUESTION exp:update RPAREN LBLOCK 
+           {: 
+              // ✅ GENERAR ETIQUETAS PARA ESTE LOOP
+              String startLabel = parser.generateLabel();
+              String endLabel = parser.generateLabel();
+              parser.pushLoopLabels(startLabel, endLabel);
+              System.out.println("DEBUG: FOR iniciado - start: " + startLabel + ", end: " + endLabel);
+           :}
+           block:body RBLOCK
+           {: 
+              // 1. VALIDACIÓN SEMÁNTICA
+              if (!condition.equals("BOOL")) {
+                  parser.report_error("Condición de FOR debe ser booleana", null);
+                  RESULT = "ERROR";
+              } else {
+                  RESULT = "VOID";
+              }
+              
+              // 2. GENERACIÓN DE CÓDIGO
+              if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
+                  // Recuperar códigos generados
+                  String updateKey = parser.popCodeKey();
+                  String updateCode = parser.getCodeValue(updateKey);
+                  
+                  String conditionKey = parser.popCodeKey();
+                  String conditionCode = parser.getCodeValue(conditionKey);
+                  
+                  // ✅ USAR ETIQUETAS DEL STACK
+                  String[] labels = parser.peekLoopLabels();
+                  String startLabel = labels[0];
+                  String endLabel = labels[1];
+                  
+                  // ✅ GENERAR FOR CON ETIQUETAS DEL STACK
+                  parser.getCodeGenerator().generateForWithExistingGrammar(conditionCode, updateCode, startLabel, endLabel);
+                  
+                  System.out.println("DEBUG: FOR - condición: " + conditionCode + ", update: " + updateCode);
+              }
+              
+              // ✅ POP DEL STACK AL TERMINAR
+              parser.popLoopLabels();
+           :}
+           ;
 /* ESTRUCTURA SWITCH ACTUALIZADA */
 switch_stmt ::= SWITCH
                 {: 
@@ -1505,21 +1621,46 @@ default_stmt ::= DEFAULT COLON block:defaultBlock
                :}
                ;
 
-/* BREAK MEJORADO */
+/* BREAK MEJORADO PARA SWITCH Y LOOPS */
 break_stmt ::= BREAK QUESTION
              {: 
                 if (parser.codeGenerationEnabled) {
-                    // ✅ SI ESTAMOS EN SWITCH, DIFERIR EL BREAK
+                    // ✅ PRIORIDAD 1: Si estamos en switch, usar el mecanismo de switch
                     if (parser.isInSwitchContext()) {
                         parser.deferSwitchCode("BREAK");
                         System.out.println("DEBUG: Break diferido para switch");
-                    } else {
-                        parser.getCodeGenerator().generateBreak();
-                        System.out.println("DEBUG: Break inmediato (fuera de switch)");
+                    } 
+                    // ✅ PRIORIDAD 2: Si estamos en loop, usar etiquetas de loop
+                    else {
+                        String[] loopLabels = parser.peekLoopLabels();
+                        if (loopLabels != null) {
+                            String endLabel = loopLabels[1];  // Etiqueta de salida del loop
+                            parser.getCodeGenerator().generateBreakToLabel(endLabel);
+                            System.out.println("DEBUG: Break generado para loop -> " + endLabel);
+                        } else {
+                            // ✅ FALLBACK: Break genérico (switch sin contexto activo)
+                            parser.getCodeGenerator().generateBreak();
+                            System.out.println("DEBUG: Break genérico");
+                        }
                     }
                 }
              :}
              ;
+/* CONTINUE PARA LOOPS */
+continue_stmt ::= CONTINUE QUESTION
+                {: 
+                   if (parser.codeGenerationEnabled) {
+                       String[] loopLabels = parser.peekLoopLabels();
+                       if (loopLabels != null) {
+                           String startLabel = loopLabels[0];  // Etiqueta de inicio del loop
+                           parser.getCodeGenerator().generateContinue(startLabel);
+                           System.out.println("DEBUG: Continue generado -> " + startLabel);
+                       } else {
+                           parser.report_error("CONTINUE solo puede usarse dentro de un loop", null);
+                       }
+                   }
+                :}
+                ;
 
 /* Sentencia return con verificación de tipos */
 return_stmt ::= RETURN exp:e QUESTION
@@ -1570,18 +1711,20 @@ return_stmt ::= RETURN exp:e QUESTION
 /* Funciones de entrada/salida */
 read_stmt ::= READ LPAREN ID:id RPAREN QUESTION
             {: 
-               // VALIDACIÓN: Verificar que la variable existe
+               // ✅ VALIDACIÓN: Verificar que la variable existe
                if (parser.getSemanticTable() != null) {
                    SymbolInfo var = parser.getSemanticTable().checkVariableUsage(id.toString(), idleft);
                    if (var == null) {
                        parser.report_error("Variable '" + id + "' no declarada en READ", null);
                    } else {
-                       var.setInicializada(true); // READ inicializa la variable
+                       var.setInicializada(true); // ✅ READ inicializa la variable
+                       System.out.println("DEBUG: READ de variable '" + id + "' tipo " + var.getTipoVariable());
                    }
                }
                
                if (parser.codeGenerationEnabled) {
                    parser.getCodeGenerator().generateRead(id.toString());
+                   System.out.println("DEBUG: READ generado para " + id);
                }
             :}
             | READ LPAREN error RPAREN QUESTION  
@@ -1592,13 +1735,26 @@ read_stmt ::= READ LPAREN ID:id RPAREN QUESTION
 
 write_stmt ::= WRITE LPAREN exp:e RPAREN QUESTION
              {: 
-                // VALIDACIÓN: Verificar que la expresión sea válida
+                System.out.println("DEBUG: WRITE con expresión: " + e);
+                
+                // ✅ VALIDACIÓN: Verificar que la expresión sea válida
                 if (e != null && e.equals("ERROR")) {
                     parser.report_error("Expresión inválida en write", null);
                 }
                 
                 if (parser.codeGenerationEnabled && !e.equals("ERROR")) {
-                    parser.getCodeGenerator().generateWrite(e);
+                    // ✅ PROCESAR STACK DE CÓDIGOS (como en return)
+                    String expKey = parser.popCodeKey();
+                    
+                    if (expKey != null) {
+                        String expValue = parser.getCodeValue(expKey);
+                        parser.getCodeGenerator().generateWrite(expValue);
+                        System.out.println("DEBUG: WRITE generado con valor: " + expValue + " (clave: " + expKey + ")");
+                    } else {
+                        // ✅ FALLBACK: usar la expresión directamente
+                        parser.getCodeGenerator().generateWrite(e.toString());
+                        System.out.println("DEBUG: WRITE generado con valor directo: " + e);
+                    }
                 }
              :}
              | WRITE LPAREN error RPAREN QUESTION  

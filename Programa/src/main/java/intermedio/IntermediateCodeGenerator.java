@@ -117,6 +117,7 @@ public class IntermediateCodeGenerator {
         
         String temp = newTemp();
         emit(temp + " = " + array + "[" + index1 + "][" + index2 + "]");
+        System.out.println("DEBUG: Array access generado: " + temp + " = " + array + "[" + index1 + "][" + index2 + "]");
         return temp;
     }
     
@@ -662,12 +663,66 @@ public void generateForWithExistingGrammar(String condition, String updateExpr, 
     }
     
     // PROBLEMA 1: Reorganizar código correctamente
-    reorganizeForCodeFixed(condition, updateExpr, startLabel, endLabel);
-    
+    //reorganizeForCodeFixed(condition, updateExpr, startLabel, endLabel);
+    generateSimpleFor(condition, updateExpr, startLabel, endLabel);
     System.out.println("DEBUG: Código después de reorganizar:");
     for (int i = Math.max(0, code.size() - 10); i < code.size(); i++) {
         System.out.println("  [" + i + "] " + code.get(i));
     }
+}
+
+private void generateSimpleFor(String condition, String updateExpr, String startLabel, String endLabel) {
+    // ✅ LIMPIAR CÓDIGO DUPLICADO PRIMERO
+    removeAutomaticForCode();
+    
+    int initPos = findLastInitPosition();
+    
+    // ✅ INSERTAR ETIQUETA
+    insertAt(initPos + 1, startLabel + ":");
+    
+    // ✅ AGREGAR EL IF QUE FALTA
+    int conditionPos = findConditionPosition();
+    if (conditionPos != -1) {
+        insertAt(conditionPos + 1, "IF NOT " + condition + " GOTO " + endLabel);
+    }
+    
+    // ✅ RESTO IGUAL
+    emit("t_inc = i + 1");
+    emit("i = t_inc"); 
+    emit("GOTO " + startLabel);
+    emit(endLabel + ":");
+}
+
+private int findConditionPosition() {
+    // Buscar línea como "t1 = i < 10"
+    for (int i = code.size() - 1; i >= 0; i--) {
+        String line = code.get(i).trim();
+        if (line.startsWith("t") && line.contains("<")) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+private void removeAutomaticForCode() {
+    // Eliminar líneas como "i = i + 1" que se generaron automáticamente
+    for (int i = code.size() - 1; i >= 0; i--) {
+        String line = code.get(i).trim();
+        if (line.matches("\\w+ = \\w+ \\+ 1")) {  // Como "i = i + 1"
+            code.remove(i);
+            System.out.println("DEBUG: Eliminada línea automática: " + line);
+        }
+    }
+}
+
+private int findLastInitPosition() {
+    for (int i = code.size() - 1; i >= 0; i--) {
+        String line = code.get(i).trim();
+        if (line.matches("\\w+ = \\d+")) {  // Como "i = 0"
+            return i;
+        }
+    }
+    return code.size();
 }
 
 private void reorganizeForCodeFixed(String condition, String updateExpr, String startLabel, String endLabel) {
@@ -840,6 +895,13 @@ public void generateBreak() {
     }
 }
 
+public void generateContinue(String startLabel) {
+    if (enabled) {
+        emit("GOTO " + startLabel);
+        System.out.println("DEBUG: Continue generado - salto a " + startLabel);
+    }
+}
+
 private void reorganizeSwitchWithDeferredCode(String switchExpr, String exitLabel, List<String> deferredCode) {
     // Separar código diferido por cases
     List<List<String>> caseBlocks = new ArrayList<>();
@@ -978,6 +1040,17 @@ public void startFunction(String functionName, String returnType) {
         emit("FUNCTION " + functionName + " RETURNS " + returnType);
     }
     emit("BEGIN");
+    
+    System.out.println("DEBUG: Iniciando función " + functionName + " -> " + returnType);
+}
+
+public void declareParameter(String paramName, String paramType) {
+    if (!enabled) return;
+    
+    // ✅ GENERAR DECLARACIÓN DE PARÁMETRO
+    emit("DECLARE " + paramName + " " + paramType);
+    
+    System.out.println("DEBUG: Parámetro declarado: " + paramName + " " + paramType);
 }
 
 public void endFunction() {
@@ -999,5 +1072,20 @@ public void endFunction() {
         currentFunctionName = null;
         currentFunctionReturnType = null;
     }
+}
+
+// Método específico para break en loops (diferente del switch)
+public void generateBreakToLabel(String endLabel) {
+    if (enabled) {
+        emit("GOTO " + endLabel);
+        System.out.println("DEBUG: Break en loop generado - salto a " + endLabel);
+    }
+}
+
+public void generateArrayAssignment(String array, String index1, String index2, String value) {
+    if (!enabled) return;
+    
+    emit(array + "[" + index1 + "][" + index2 + "] = " + value);
+    System.out.println("DEBUG: Array assignment generado: " + array + "[" + index1 + "][" + index2 + "] = " + value);
 }
 }

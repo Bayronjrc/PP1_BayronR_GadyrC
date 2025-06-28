@@ -75,6 +75,7 @@ CommentBlock   = "{"[^}]*"}"
 "while"     { return symbol(sym.WHILE); }
 "for"       { return symbol(sym.FOR); }
 "break"     { return symbol(sym.BREAK); }
+"continue"  { return symbol(sym.CONTINUE); }
 "return"    { return symbol(sym.RETURN); }
 "int"       { return symbol(sym.INT); }
 "float"     { return symbol(sym.FLOAT); }

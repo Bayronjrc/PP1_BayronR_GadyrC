@@ -8,61 +8,62 @@ package main.java.parser;
 /** CUP generated class containing symbol constants. */
 public class sym {
   /* terminals */
-  public static final int DIVIDE = 24;
-  public static final int POW = 26;
-  public static final int LTE = 30;
-  public static final int LBRACKET = 45;
-  public static final int LIT_INT = 48;
-  public static final int INCREMENT = 27;
-  public static final int CHAR = 13;
-  public static final int LIT_FLOAT = 49;
-  public static final int CASE = 54;
-  public static final int LPAREN = 38;
-  public static final int INT = 10;
+  public static final int DIVIDE = 25;
+  public static final int POW = 27;
+  public static final int LTE = 31;
+  public static final int LBRACKET = 46;
+  public static final int LIT_INT = 49;
+  public static final int INCREMENT = 28;
+  public static final int CHAR = 14;
+  public static final int LIT_FLOAT = 50;
+  public static final int CASE = 55;
+  public static final int LPAREN = 39;
+  public static final int CONTINUE = 9;
+  public static final int INT = 11;
   public static final int FOR = 7;
-  public static final int MINUS = 22;
-  public static final int DECREMENT = 28;
-  public static final int WRITE = 17;
-  public static final int RPAREN = 39;
-  public static final int NOT = 37;
-  public static final int AND = 35;
-  public static final int LT = 29;
-  public static final int OR = 36;
-  public static final int COMMA = 43;
-  public static final int BOOL = 12;
-  public static final int PLUS = 21;
-  public static final int ASSIGN = 44;
-  public static final int MAIN = 18;
+  public static final int MINUS = 23;
+  public static final int DECREMENT = 29;
+  public static final int WRITE = 18;
+  public static final int RPAREN = 40;
+  public static final int NOT = 38;
+  public static final int AND = 36;
+  public static final int LT = 30;
+  public static final int OR = 37;
+  public static final int COMMA = 44;
+  public static final int BOOL = 13;
+  public static final int PLUS = 22;
+  public static final int ASSIGN = 45;
+  public static final int MAIN = 19;
   public static final int IF = 2;
-  public static final int ID = 47;
+  public static final int ID = 48;
   public static final int EOF = 0;
-  public static final int RETURN = 9;
-  public static final int RBRACKET = 46;
-  public static final int TRUE = 19;
+  public static final int RETURN = 10;
+  public static final int RBRACKET = 47;
+  public static final int TRUE = 20;
   public static final int error = 1;
-  public static final int LIT_STRING = 52;
-  public static final int LBLOCK = 40;
-  public static final int LIT_CHAR = 51;
-  public static final int MOD = 25;
-  public static final int NEQ = 34;
+  public static final int LIT_STRING = 53;
+  public static final int LBLOCK = 41;
+  public static final int LIT_CHAR = 52;
+  public static final int MOD = 26;
+  public static final int NEQ = 35;
   public static final int BREAK = 8;
-  public static final int VOID = 15;
-  public static final int EQ = 33;
-  public static final int GTE = 32;
-  public static final int SWITCH = 53;
-  public static final int RBLOCK = 41;
-  public static final int TIMES = 23;
-  public static final int COLON = 56;
+  public static final int VOID = 16;
+  public static final int EQ = 34;
+  public static final int GTE = 33;
+  public static final int SWITCH = 54;
+  public static final int RBLOCK = 42;
+  public static final int TIMES = 24;
+  public static final int COLON = 57;
   public static final int ELSE = 4;
-  public static final int READ = 16;
+  public static final int READ = 17;
   public static final int WHILE = 6;
-  public static final int DEFAULT = 55;
-  public static final int FLOAT = 11;
-  public static final int LIT_BOOL = 50;
-  public static final int QUESTION = 42;
-  public static final int STRING = 14;
-  public static final int FALSE = 20;
-  public static final int GT = 31;
+  public static final int DEFAULT = 56;
+  public static final int FLOAT = 12;
+  public static final int LIT_BOOL = 51;
+  public static final int QUESTION = 43;
+  public static final int STRING = 15;
+  public static final int FALSE = 21;
+  public static final int GT = 32;
   public static final int ELIF = 3;
   public static final int DO = 5;
   public static final String[] terminalNames = new String[] {
@@ -75,6 +76,7 @@ public class sym {
   "WHILE",
   "FOR",
   "BREAK",
+  "CONTINUE",
   "RETURN",
   "INT",
   "FLOAT",

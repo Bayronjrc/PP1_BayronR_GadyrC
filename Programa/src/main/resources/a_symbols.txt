@@ -1,9 +1,10 @@
 ===== TABLA DE VARIABLES =====
-Lexema: suma, Tipo: ID, Linea: 2, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: suma, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: a, Tipo: ID, Linea: 3, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: a, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: b, Tipo: ID, Linea: 3, Columna: 16, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: b, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: test, Tipo: ID, Linea: 6, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: test, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: x, Tipo: ID, Linea: 7, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: x, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: test, Tipo: ID, Linea: 23, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: test, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: i, Tipo: ID, Linea: 17, Columna: 28, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: i, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: fibonnaci, Tipo: ID, Linea: 12, Columna: 28, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: fibonnaci, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: j, Tipo: ID, Linea: 17, Columna: 31, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: j, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: matrix, Tipo: ID, Linea: 17, Columna: 21, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: matrix, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: n, Tipo: ID, Linea: 5, Columna: 46, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: n, Variable: Si, Inicializada: No, Utilizada: No
 
 ===== TABLA DE FUNCIONES =====
 
