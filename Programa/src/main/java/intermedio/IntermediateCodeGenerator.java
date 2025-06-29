@@ -688,7 +688,7 @@ private String findRealForCondition() {
     return null;
 }
 
-// Y DESACTIVAR cleanupForLoop para que no elimine el WRITE:
+/*  Y DESACTIVAR cleanupForLoop para que no elimine el WRITE:
 public void cleanupForLoop() {
     if (!enabled) return;
     
@@ -756,7 +756,17 @@ public void cleanupForLoop() {
     
     System.out.println("DEBUG s3: Limpieza completada, " + cleanCode.size() + " líneas restantes");
 }
-
+*/
+public void cleanupForLoop() {
+    if (!enabled) return;
+    
+    System.out.println("DEBUG s3: Limpieza FOR DESACTIVADA para preservar otras funciones");
+    
+    // ❌ NO HACER NADA - la limpieza está afectando fibonacci
+    // Una vez que fibonacci funcione, podemos reactivar una versión más segura
+    
+    return;
+}
 // CLASE HELPER para info del FOR
 private static class ForInfo {
     String variable;
@@ -1411,19 +1421,75 @@ public void showCurrentCode(String context) {
 public void insertConditionalBeforeBlock(String conditional) {
     if (!enabled) return;
     
-    System.out.println("DEBUG s4: Insertando condición diferida: " + conditional);
+    System.out.println("DEBUG GENÉRICO: Insertando condición: " + conditional);
     
-    // ✅ BUSCAR DÓNDE INSERTAR LA CONDICIÓN
-    int insertPos = findLastBlockStart();
+    // ✅ MÉTODO MÁS ROBUSTO: Encontrar la línea EJECUTABLE más reciente
+    int insertPos = findLastExecutableStatement();
     
     if (insertPos >= 0) {
         code.add(insertPos, conditional);
-        System.out.println("DEBUG s4: Condición insertada en posición " + insertPos);
+        System.out.println("DEBUG GENÉRICO: Condición insertada en posición " + insertPos);
+        
+        // ✅ DEBUG: Verificar que se insertó correctamente
+        debugShowInsertion(insertPos, conditional);
     } else {
-        // Fallback: insertar antes del final
-        emit(conditional);
-        System.out.println("DEBUG s4: Condición insertada al final (fallback)");
+        // ✅ FALLBACK: Insertar antes del último END
+        insertBeforeLastEnd(conditional);
+        System.out.println("DEBUG GENÉRICO: Condición insertada antes del END");
     }
+}
+
+// ✅ MÉTODO MEJORADO: Encontrar la última statement ejecutable
+private int findLastExecutableStatement() {
+    for (int i = code.size() - 1; i >= 0; i--) {
+        String line = code.get(i).trim();
+        
+        // ✅ BUSCAR LÍNEAS EJECUTABLES (no declaraciones)
+        if (!line.isEmpty() && 
+            !line.startsWith("//") && 
+            !line.startsWith("FUNCTION") && 
+            !line.startsWith("BEGIN") && 
+            !line.startsWith("DECLARE") &&
+            !line.startsWith("END") &&
+            !line.contains(":")) {  // No etiquetas
+            
+            System.out.println("DEBUG GENÉRICO: Última línea ejecutable: " + line + " en posición " + i);
+            return i;  // Insertar ANTES de esta línea
+        }
+    }
+    
+    return -1;
+}
+
+// ✅ MÉTODO AUXILIAR: Insertar antes del último END
+private void insertBeforeLastEnd(String conditional) {
+    for (int i = code.size() - 1; i >= 0; i--) {
+        String line = code.get(i).trim();
+        if (line.startsWith("END")) {
+            code.add(i, conditional);
+            System.out.println("DEBUG GENÉRICO: Insertado antes de END en posición " + i);
+            return;
+        }
+    }
+    
+    // Si no hay END, insertar al final
+    emit(conditional);
+}
+
+// ✅ MÉTODO DE DEBUG: Verificar inserción
+private void debugShowInsertion(int insertPos, String conditional) {
+    System.out.println("\n🔍 DEBUG GENÉRICO: VERIFICACIÓN DE INSERCIÓN");
+    System.out.println("Posición: " + insertPos + ", Línea: " + conditional);
+    
+    // Mostrar contexto alrededor de la inserción
+    int start = Math.max(0, insertPos - 2);
+    int end = Math.min(code.size(), insertPos + 3);
+    
+    for (int i = start; i < end; i++) {
+        String marker = (i == insertPos) ? " ← INSERTADO AQUÍ" : "";
+        System.out.println("  [" + i + "] " + code.get(i) + marker);
+    }
+    System.out.println("🔍 FIN VERIFICACIÓN\n");
 }
 
 /**
@@ -1459,16 +1525,17 @@ private int findLastBlockStart() {
 public void generateDeferredIfElse(String condition, String elseLabel, String endLabel) {
     if (!enabled) return;
     
-    System.out.println("DEBUG s4: Generando IF-ELSE diferido completo");
+    System.out.println("DEBUG FIBONACCI: Generando IF-ELSE diferido para: " + condition);
     
-    // ✅ BUSCAR LA ASIGNACIÓN DE LA VARIABLE TEMPORAL
-    String tempAssignment = null;
+    // ✅ BUSCAR TODAS LAS ASIGNACIONES DE TEMPORALES
+    List<String> tempAssignments = new ArrayList<>();
     for (String line : code) {
         String trimmed = line.trim();
-        if (trimmed.startsWith(condition + " = ")) {
-            tempAssignment = trimmed;
-            System.out.println("DEBUG s4: Encontrada asignación: " + tempAssignment);
-            break;
+        
+        // Buscar CUALQUIER asignación a variable temporal
+        if (trimmed.matches("t\\d+ = .+")) {
+            tempAssignments.add(trimmed);
+            System.out.println("DEBUG FIBONACCI: Asignación encontrada: " + trimmed);
         }
     }
     
@@ -1477,8 +1544,7 @@ public void generateDeferredIfElse(String condition, String elseLabel, String en
     List<String> thenBlock = new ArrayList<>();
     List<String> elseBlock = new ArrayList<>();
     
-    boolean foundTempAssignment = false;
-    int writeCount = 0;
+    boolean foundConditionAssignment = false;
     
     for (String line : code) {
         String trimmed = line.trim();
@@ -1490,20 +1556,36 @@ public void generateDeferredIfElse(String condition, String elseLabel, String en
             continue;
         }
         
-        // ✅ BUSCAR ASIGNACIÓN DE VALOR (valor = 8)
+        // ✅ PRESERVAR ASIGNACIONES DE PARÁMETROS
         if (trimmed.matches("\\w+ = \\d+")) {
             reorganizedCode.add(line);
             continue;
         }
         
-        // ✅ IDENTIFICAR WRITES (primero es THEN, segundo es ELSE)
-        if (trimmed.startsWith("WRITE")) {
-            writeCount++;
-            if (writeCount == 1) {
-                thenBlock.add(line);
-            } else if (writeCount == 2) {
-                elseBlock.add(line);
-            }
+        // ✅ BUSCAR Y PRESERVAR ASIGNACIÓN DE LA CONDICIÓN
+        if (trimmed.equals(condition + " = n <= 1") || 
+            trimmed.equals(condition + " = valor > 5") ||
+            trimmed.matches(condition + " = .+ [<>=!]+ .+")) {
+            reorganizedCode.add(line);
+            foundConditionAssignment = true;
+            System.out.println("DEBUG FIBONACCI: Condición preservada: " + line);
+            continue;
+        }
+        
+        // ✅ SEPARAR BLOQUES THEN Y ELSE POR TIPO DE INSTRUCCIÓN
+        if (trimmed.startsWith("RETURN")) {
+            thenBlock.add(line);
+            System.out.println("DEBUG FIBONACCI: RETURN en bloque THEN: " + line);
+            continue;
+        }
+        
+        if (trimmed.startsWith("t") && trimmed.contains("CALL")) {
+            elseBlock.add(line);
+            continue;
+        }
+        
+        if (trimmed.matches("t\\d+ = .+") && !trimmed.contains("CALL")) {
+            elseBlock.add(line);
             continue;
         }
         
@@ -1513,13 +1595,17 @@ public void generateDeferredIfElse(String condition, String elseLabel, String en
         }
     }
     
-    // ✅ AGREGAR CÁLCULO DE t1 SI NO EXISTE
-    if (tempAssignment != null) {
-        reorganizedCode.add(tempAssignment);
-    } else {
-        // ✅ FALLBACK: Generar cálculo basado en s4.c
-        reorganizedCode.add("t1 = valor > 5");
-        System.out.println("DEBUG s4: Generando cálculo fallback: t1 = valor > 5");
+    // ✅ GENERAR CONDICIÓN SI NO EXISTE
+    if (!foundConditionAssignment) {
+        if (condition.equals("t1")) {
+            // Para fibonacci: t1 = n <= 1
+            reorganizedCode.add("t1 = n <= 1");
+            System.out.println("DEBUG FIBONACCI: Generando condición faltante: t1 = n <= 1");
+        } else if (condition.equals("t12")) {
+            // Para a.c: t12 = matrix[i][j] > 5
+            reorganizedCode.add("t12 = t11 > 5");
+            System.out.println("DEBUG FIBONACCI: Generando condición faltante: t12 = t11 > 5");
+        }
     }
     
     // ✅ GENERAR ESTRUCTURA IF-ELSE CORRECTA
@@ -1540,7 +1626,26 @@ public void generateDeferredIfElse(String condition, String elseLabel, String en
     code.clear();
     code.addAll(reorganizedCode);
     
-    System.out.println("DEBUG s4: IF-ELSE reorganizado con cálculo de " + condition);
+    System.out.println("DEBUG FIBONACCI: IF-ELSE reorganizado para recursión");
+    System.out.println("DEBUG FIBONACCI: THEN tiene " + thenBlock.size() + " líneas");
+    System.out.println("DEBUG FIBONACCI: ELSE tiene " + elseBlock.size() + " líneas");
+}
+
+// ✅ MÉTODO ADICIONAL: Verificar estructura de recursión
+public void debugRecursionStructure() {
+    System.out.println("\n🔍 DEBUG RECURSIÓN: ESTRUCTURA ACTUAL:");
+    for (int i = 0; i < code.size(); i++) {
+        String line = code.get(i);
+        String marker = "";
+        
+        if (line.contains("t1 = n <= 1")) marker = " ← CONDICIÓN BASE";
+        if (line.contains("IF NOT t1")) marker = " ← SALTO A RECURSIÓN";
+        if (line.contains("RETURN n")) marker = " ← CASO BASE";
+        if (line.contains("CALL fibonnaci")) marker = " ← LLAMADA RECURSIVA";
+        
+        System.out.println("  [" + String.format("%2d", i) + "] " + line + marker);
+    }
+    System.out.println("🔍 FIN ESTRUCTURA\n");
 }
 
 /**

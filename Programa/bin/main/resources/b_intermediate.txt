@@ -7,38 +7,99 @@
   2: // Archivo: src/main/resources/b_intermediate.txt
   3: 
   4: FUNCTION factorial RETURNS INT
-  5: i = 0
-  6: L11:
-  7: t_cond = i < 3
-  8: IF NOT t_cond GOTO L12
-  9: WRITE i
- 10: t_inc = i + 1
- 11: i = t_inc
- 12: GOTO L11
- 13: L12:
- 14: BEGIN
- 15: DECLARE n INT
+  5: BEGIN
+  6: DECLARE n INT
+  7: t1 = n <= 1
+  8: IF NOT t1 GOTO L1
+  9: RETURN 1
+ 10: L1:
+ 11: t2 = n - 1
+ 12: PARAM t2
+ 13: t3 = CALL factorial 1
+ 14: t4 = n * t3
+ 15: RETURN t4
  16: END factorial
  17: FUNCTION testLopps RETURNS VOID
  18: BEGIN
  19: DECLARE x INT
- 20: DECLARE option INT
- 21: END testLopps
- 22: FUNCTION testArrays RETURNS VOID
- 23: BEGIN
- 24: DECLARE i INT
- 25: DECLARE j INT
- 26: END testArrays
- 27: FUNCTION main RETURNS VOID
- 28: BEGIN
- 29: CALL testLopps 0
- 30: CALL testArrays 0
- 31: END main
- 32: 
+ 20: x = 10
+ 21: L2:
+ 22: WRITE x
+ 23: t5 = x - 1
+ 24: x = t5
+ 25: t6 = x == 5
+ 26: IF NOT t6 GOTO L4
+ 27: GOTO L2
+ 28: L4:
+ 29: t7 = x == 2
+ 30: IF NOT t7 GOTO L5
+ 31: GOTO L3
+ 32: L5:
+ 33: t8 = x > 0
+ 34: IF t8 GOTO L2
+ 35: L3:
+ 36: DECLARE option INT
+ 37: option = 3
+ 38: WRITE 100
+ 39: WRITE 200
+ 40: WRITE 300
+ 41: WRITE 999
+ 42: t_case = option == 1
+ 43: IF t_case GOTO L6
+ 44: t_case = option == 2
+ 45: IF t_case GOTO L7
+ 46: t_case = option == 3
+ 47: IF t_case GOTO L8
+ 48: GOTO L9
+ 49: L6:
+ 50: GOTO L10
+ 51: L7:
+ 52: GOTO L10
+ 53: L8:
+ 54: GOTO L10
+ 55: L9:
+ 56: L10:
+ 57: END testLopps
+ 58: FUNCTION testArrays RETURNS VOID
+ 59: BEGIN
+ 60: DECLARE i INT
+ 61: i = 0
+ 62: i = 0
+ 63: t9 = i < 3
+ 64: i = i + 1
+ 65: DECLARE j INT
+ 66: j = 0
+ 67: j = 0
+ 68: t10 = j < 3
+ 69: j = j + 1
+ 70: arr[j][i] = j
+ 71: L13:
+ 72: t_cond = k <= 2
+ 73: IF NOT t_cond GOTO L14
+ 74: WRITE k
+ 75: t_inc = k + 1
+ 76: k = t_inc
+ 77: GOTO L13
+ 78: L14:
+ 79: L11:
+ 80: t_cond = k <= 2
+ 81: IF NOT t_cond GOTO L12
+ 82: WRITE k
+ 83: t_inc = k + 1
+ 84: k = t_inc
+ 85: GOTO L11
+ 86: L12:
+ 87: END testArrays
+ 88: FUNCTION main RETURNS VOID
+ 89: BEGIN
+ 90: CALL testLopps 0
+ 91: CALL testArrays 0
+ 92: END main
+ 93: 
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 32
-// Temporales: 8
+// Líneas: 93
+// Temporales: 10
 // Etiquetas: 0
 // ========================================

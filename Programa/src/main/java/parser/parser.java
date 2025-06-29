@@ -3368,7 +3368,6 @@ class CUP$parser$actions {
                  
                  // ✅ GENERAR ESTRUCTURA COMPLETA CON INSERCIÓN INTELIGENTE
                  parser.getCodeGenerator().generateDeferredIfElse(conditionCode, elseLabel, endLabel);
-                 
                  System.out.println("DEBUG s4: IF-ELSE diferido generado");
              }
           

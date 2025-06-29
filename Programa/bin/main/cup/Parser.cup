@@ -1546,7 +1546,6 @@ if_stmt ::= IF LPAREN exp:e RPAREN LBLOCK block:then_block RBLOCK
                  
                  // ✅ GENERAR ESTRUCTURA COMPLETA CON INSERCIÓN INTELIGENTE
                  parser.getCodeGenerator().generateDeferredIfElse(conditionCode, elseLabel, endLabel);
-                 
                  System.out.println("DEBUG s4: IF-ELSE diferido generado");
              }
           :}

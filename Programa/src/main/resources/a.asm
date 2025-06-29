@@ -37,6 +37,7 @@
     k_var: .word 0
     n_var: .word 0
     matrix_element_var: .word 0
+    t1_var: .word 0
     t2_var: .word 0
     t3_var: .word 0
 
@@ -54,6 +55,21 @@ fibonnaci:
 
     # Inicio de función
     # DECLARE n INT
+    # t1 = n <= 1
+    lw $t1, n_var
+    li $t2, 1
+    sle $t0, $t1, $t2
+    sw $t0, t1_var
+
+    # IF NOT t1 GOTO L1
+    lw $t0, t1_var
+    beq $t0, $zero, L1
+
+    # RETURN n
+    lw $v0, n_var
+    # Valor de retorno en $v0
+    j exit_fibonnaci
+
 L1:
     # t2 = n - 1
     lw $t1, n_var

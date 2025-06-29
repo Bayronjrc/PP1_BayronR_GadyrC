@@ -1,16 +1,26 @@
 ===== ANÁLISIS SEMÁNTICO =====
-Alcances procesados total: 4
+Alcances procesados total: 5
 Alcances activos: 1
-Errores semánticos: 0
+Errores semánticos: 7
 Advertencias: 0
 
-===== INFORMACIÓN DE ALCANCES =====
-Alcance 1: Scope[global, nivel=0, tipo=GLOBAL, simbolos=3]
-  - Símbolos locales: 3
-  - Variables: 0, Funciones: 3
+===== ERRORES SEMÁNTICOS =====
+Array 'arr' no declarado en línea 47
+Operación relacional '>' requiere operandos numéricos o char en línea 47
+Array 'arr' no declarado en línea 48
+Tipos incompatibles: esperado 'INT', encontrado 'ERROR' en línea 48
+Argumento 1 de funcion 'factorial' tiene tipo incorrecto en lonea 48
+Array 'arr' no declarado en línea 48
+Array 'arr' no declarado en línea 50
 
-===== ALCANCE: Scope[global, nivel=0, tipo=GLOBAL, simbolos=3] =====
-Lexema: test, Tipo: ID, Tipo Variable: VOID, Linea: 8, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: Si
-Lexema: fibonnaci, Tipo: ID, Tipo Variable: INT, Linea: 1, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Parametros: [INT], Utilizada: Si
-Lexema: main, Tipo: ID, Tipo Variable: VOID, Linea: 22, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: No
+===== INFORMACIÓN DE ALCANCES =====
+Alcance 1: Scope[global, nivel=0, tipo=GLOBAL, simbolos=4]
+  - Símbolos locales: 4
+  - Variables: 0, Funciones: 4
+
+===== ALCANCE: Scope[global, nivel=0, tipo=GLOBAL, simbolos=4] =====
+Lexema: main, Tipo: ID, Tipo Variable: VOID, Linea: 55, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: No
+Lexema: testArrays, Tipo: ID, Tipo Variable: VOID, Linea: 41, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: Si
+Lexema: testLopps, Tipo: ID, Tipo Variable: VOID, Linea: 8, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: Si
+Lexema: factorial, Tipo: ID, Tipo Variable: INT, Linea: 1, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Parametros: [INT], Utilizada: Si
 
