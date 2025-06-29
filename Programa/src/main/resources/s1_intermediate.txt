@@ -1,0 +1,32 @@
+// ========================================
+// CÓDIGO INTERMEDIO DE TRES DIRECCIONES
+// Generado automáticamente
+// ========================================
+
+  1: // Código Intermedio Generado
+  2: // Archivo: src/main/resources/s1_intermediate.txt
+  3: 
+  4: FUNCTION sumarDos RETURNS INT
+  5: BEGIN
+  6: DECLARE x INT
+  7: t1 = x + 2
+  8: DECLARE resultado INT
+  9: resultado = t1
+ 10: RETURN resultado
+ 11: END sumarDos
+ 12: FUNCTION main RETURNS VOID
+ 13: BEGIN
+ 14: PARAM 10
+ 15: t2 = CALL sumarDos 1
+ 16: DECLARE num INT
+ 17: num = t2
+ 18: WRITE num
+ 19: END main
+ 20: 
+
+// ========================================
+// ESTADÍSTICAS
+// Líneas: 20
+// Temporales: 2
+// Etiquetas: 0
+// ========================================

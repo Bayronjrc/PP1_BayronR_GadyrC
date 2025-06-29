@@ -1,0 +1,30 @@
+===== TABLA DE VARIABLES =====
+Lexema: contador, Tipo: ID, Linea: 6, Columna: 15, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: contador, Variable: Si, Inicializada: No, Utilizada: No
+
+===== TABLA DE FUNCIONES =====
+
+===== TABLA DE CONSTANTES =====
+
+===== TABLA DE PALABRAS RESERVADAS =====
+Lexema: void, Tipo: VOID, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: read, Tipo: READ, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: bool, Tipo: BOOL, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: string, Tipo: STRING, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: break, Tipo: BREAK, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: for, Tipo: FOR, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: false, Tipo: FALSE, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: main, Tipo: MAIN, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: elif, Tipo: ELIF, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: do, Tipo: DO, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: while, Tipo: WHILE, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: float, Tipo: FLOAT, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: int, Tipo: INT, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: switch, Tipo: SWITCH, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: default, Tipo: DEFAULT, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: else, Tipo: ELSE, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: char, Tipo: CHAR, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: true, Tipo: TRUE, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: if, Tipo: IF, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: write, Tipo: WRITE, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: return, Tipo: RETURN, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)
+Lexema: case, Tipo: CASE, Linea: 0, Columna: 0, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0)

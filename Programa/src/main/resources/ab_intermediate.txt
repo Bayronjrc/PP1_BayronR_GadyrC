@@ -1,0 +1,31 @@
+// ========================================
+// CÓDIGO INTERMEDIO DE TRES DIRECCIONES
+// Generado automáticamente
+// ========================================
+
+  1: // Código Intermedio Generado
+  2: // Archivo: src/main/resources/ab_intermediate.txt
+  3: 
+  4: FUNCTION main RETURNS VOID
+  5: BEGIN
+  6: DECLARE a INT
+  7: a = 10
+  8: DECLARE b INT
+  9: b = 5
+ 10: t1 = a + b
+ 11: DECLARE suma INT
+ 12: suma = t1
+ 13: t2 = a - b
+ 14: DECLARE resta INT
+ 15: resta = t2
+ 16: WRITE suma
+ 17: WRITE resta
+ 18: END main
+ 19: 
+
+// ========================================
+// ESTADÍSTICAS
+// Líneas: 19
+// Temporales: 2
+// Etiquetas: 0
+// ========================================

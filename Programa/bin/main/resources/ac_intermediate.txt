@@ -1,0 +1,28 @@
+// ========================================
+// CÓDIGO INTERMEDIO DE TRES DIRECCIONES
+// Generado automáticamente
+// ========================================
+
+  1: // Código Intermedio Generado
+  2: // Archivo: src/main/resources/ac_intermediate.txt
+  3: 
+  4: FUNCTION main RETURNS VOID
+  5: BEGIN
+  6: DECLARE x INT
+  7: x = 10
+  8: t1 = x > 5
+  9: WRITE 1
+ 10: IF NOT t1 GOTO L1
+ 11: WRITE 0
+ 12: GOTO L2
+ 13: L1:
+ 14: L2:
+ 15: END main
+ 16: 
+
+// ========================================
+// ESTADÍSTICAS
+// Líneas: 16
+// Temporales: 1
+// Etiquetas: 0
+// ========================================

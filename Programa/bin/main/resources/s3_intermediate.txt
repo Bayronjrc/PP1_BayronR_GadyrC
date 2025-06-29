@@ -1,0 +1,28 @@
+// ========================================
+// CÓDIGO INTERMEDIO DE TRES DIRECCIONES
+// Generado automáticamente
+// ========================================
+
+  1: // Código Intermedio Generado
+  2: // Archivo: src/main/resources/s3_intermediate.txt
+  3: FUNCTION main RETURNS VOID
+  4: BEGIN
+  5: DECLARE k INT
+  6: k = 1
+  7: L1:
+  8: t_cond = k <= 3
+  9: IF NOT t_cond GOTO L2
+ 10: WRITE k
+ 11: t_inc = k + 1
+ 12: k = t_inc
+ 13: GOTO L1
+ 14: L2:
+ 15: END main
+ 16: 
+
+// ========================================
+// ESTADÍSTICAS
+// Líneas: 16
+// Temporales: 1
+// Etiquetas: 0
+// ========================================

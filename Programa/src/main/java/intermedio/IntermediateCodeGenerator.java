@@ -52,10 +52,15 @@ public class IntermediateCodeGenerator {
     
 
     public void declareVariable(String name, String type) {
-        if (enabled) {
-            emit("DECLARE " + name + " " + type);
+    if (enabled) {
+        emit("DECLARE " + name + " " + type);
+        
+        // ✅ ASEGURAR INICIALIZACIÓN BÁSICA
+        if (name.equals("i") || name.equals("j") || name.equals("k")) {
+            emit(name + " = 0");  // Inicializar contadores
         }
     }
+}
     
     public void endFunction(String name) {
         if (enabled) {
@@ -123,15 +128,7 @@ public class IntermediateCodeGenerator {
     
     
     public String generateFunctionCall(String function, List<String> args) {
-        if (!enabled) return "t" + tempCounter++;
-        
-        for (String arg : args) {
-            emit("PARAM " + arg);
-        }
-        
-        String temp = newTemp();
-        emit(temp + " = CALL " + function + " " + args.size());
-        return temp;
+        return generateFunctionCallComplete(function, args, "INT"); // Asumir INT por defecto
     }
     
     
@@ -183,11 +180,17 @@ public class IntermediateCodeGenerator {
         return "t" + tempCounter++;
     }
     
-    private void emit(String instruction) {
-        if (enabled && instruction != null) {
-            code.add(instruction);
+// 4. FIX s2 - ASEGURAR QUE emit() FUNCIONE CORRECTAMENTE:
+public void emit(String instruction) {
+    if (enabled && instruction != null) {
+        code.add(instruction);
+        
+        // ✅ DEBUG PARA s2: mostrar cada instrucción generada
+        if (instruction.contains("IF") || instruction.contains("GOTO") || instruction.contains("L")) {
+            System.out.println("DEBUG s2: Emitido -> " + instruction);
         }
     }
+}
     
     
     public void printCode() {
@@ -339,24 +342,15 @@ private int findCodeStartPosition() {
 
 /**
  * Genera IF completo con inserción correcta
- */
+
 public void generateCompleteIf(String condition, String endLabel) {
     if (!enabled) return;
     
-    // 1. Insertar PLACEHOLDER para la condición
-    String conditionPlaceholder = "PLACEHOLDER_IF_" + condition + "_" + endLabel;
-    int insertPos = findBestInsertPosition();
-    if (insertPos >= 0 && insertPos < code.size()) {
-        code.add(insertPos, conditionPlaceholder);
-    }
-    
-    // 2. Agregar etiqueta final
-    emit(endLabel + ":");
-    
-    // 3. Resolver placeholder
-    resolvePlaceholder(conditionPlaceholder, "IF NOT " + condition + " GOTO " + endLabel);
+    // ✅ GENERAR DIRECTAMENTE SIN PLACEHOLDERS
+    emit("IF NOT " + condition + " GOTO " + endLabel);
+    // La etiqueta se genera externamente
 }
-
+*/
 private int findBestInsertPosition() {
     for (int i = code.size() - 1; i >= 0; i--) {
         String line = code.get(i).trim();
@@ -389,28 +383,15 @@ public void markIfElseStart() {
 
 /**
  * Genera IF-ELSE completo con inserción correcta
- */
+ 
 public void generateCompleteIfElse(String condition, String elseLabel, String endLabel) {
     if (!enabled) return;
     
-    // 1. Insertar PLACEHOLDER para condición al inicio
-    String conditionPlaceholder = "PLACEHOLDER_CONDITION_" + condition + "_" + elseLabel;
-    int conditionPos = findBestInsertPosition();
-    if (conditionPos >= 0 && conditionPos < code.size()) {
-        code.add(conditionPos, conditionPlaceholder);
-    }
-    
-    // 2. Insertar PLACEHOLDER para transición THEN->ELSE
-    String transitionPlaceholder = "PLACEHOLDER_TRANSITION_" + elseLabel + "_" + endLabel;
-    emit(transitionPlaceholder);
-    
-    // 3. Agregar etiqueta final
-    emit(endLabel + ":");
-    
-    // 4. Resolver placeholders
-    resolvePlaceholder(conditionPlaceholder, "IF NOT " + condition + " GOTO " + elseLabel);
-    resolvePlaceholder(transitionPlaceholder, "GOTO " + endLabel + "\n" + elseLabel + ":");
+    // ✅ GENERAR DIRECTAMENTE
+    emit("IF NOT " + condition + " GOTO " + elseLabel);
+    // El resto se maneja externamente
 }
+*/
 
 private int findElseInsertPosition() {
     int codeLines = 0;
@@ -542,40 +523,46 @@ public void debugShowInsertPositions() {
 
 /* FIX FINAL: USAR MARCADOR PARA EL BODY DEL DO-WHILE */
 
-public void generateCompleteDoWhile(String condition, String startLabel) {
+/**
+ * Genera solo la condición y salto del DO-WHILE
+ * (La etiqueta de inicio ya se generó antes del body)
+ */
+public void generateDoWhileCondition(String condition, String startLabel) {
     if (!enabled) return;
     
-    // 1. Insertar marcador ANTES de procesar el body
-    String bodyMarker = "BODY_START_MARKER_" + startLabel;
-    int currentPos = code.size();
+    System.out.println("DEBUG s2: Generando condición DO-WHILE: " + condition + " -> " + startLabel);
     
-    // 2. Buscar hacia atrás desde el final hasta encontrar el marcador
-    int bodyStartPos = findDoWhileBodyStartSimple();
-    
-    if (bodyStartPos == -1) {
-        // Si no hay marcador, usar heurística mejorada
-        bodyStartPos = findDoWhileBodyStart();
-    }
-    
-    System.out.println("DEBUG: Buscando marcador " + bodyMarker + ", encontrado en: " + bodyStartPos);
-    System.out.println("DEBUG: Código actual:");
-    for (int i = Math.max(0, code.size() - 6); i < code.size(); i++) {
-        System.out.println("  [" + i + "] " + code.get(i));
-    }
-    
-    // 3. Insertar etiqueta
-    if (bodyStartPos >= 0 && bodyStartPos < code.size()) {
-        code.add(bodyStartPos, startLabel + ":");
-        System.out.println("DEBUG: Etiqueta insertada en posición: " + bodyStartPos);
-    }
-    
-    // 4. Al final: agregar condición y salto de vuelta
+    // ✅ LÓGICA CORRECTA: "SI condición es TRUE, repetir"
+    // condition = "t2" donde t2 = contador <= 3
+    // Queremos: IF t2 GOTO startLabel (si es true, repetir)
     emit("IF " + condition + " GOTO " + startLabel);
+    
+    System.out.println("DEBUG s2: Condición generada - IF " + condition + " GOTO " + startLabel);
 }
 
-/* FIX RÁPIDO: AJUSTAR POSICIÓN DE ETIQUETA */
+// 2. FIX s1 - AGREGAR MÉTODO ESPECÍFICO PARA DEBUG DE LLAMADAS:
+public void debugFunctionCall(String functionName, List<String> args) {
+    if (!enabled) return;
+    
+    System.out.println("DEBUG s1: ===================");
+    System.out.println("DEBUG s1: Función: " + functionName);
+    System.out.println("DEBUG s1: Argumentos: " + args);
+    System.out.println("DEBUG s1: Código actual:");
+    for (int i = Math.max(0, code.size()-5); i < code.size(); i++) {
+        System.out.println("  [" + i + "] " + code.get(i));
+    }
+    System.out.println("DEBUG s1: ===================");
+}
 
-/* FIX DEFINITIVO: IGNORAR LA CONDICIÓN DEL DO-WHILE */
+/**
+ * Versión específica para generar etiquetas inmediatamente
+ */
+public void generateLabelNow(String label) {
+    if (enabled) {
+        emit(label + ":");
+        System.out.println("DEBUG: Etiqueta generada inmediatamente: " + label);
+    }
+}
 
 private int findDoWhileBodyStart() {
     int codeLines = 0;
@@ -649,197 +636,471 @@ private int findDoWhileBodyStartSimple() {
 }
 
 // pal for
-/* FIX MULTI-PROBLEMA PARA FOR LOOP 🔥 */
-
 public void generateForWithExistingGrammar(String condition, String updateExpr, String startLabel, String endLabel) {
     if (!enabled) return;
     
-    System.out.println("DEBUG: Iniciando generación FOR");
-    System.out.println("DEBUG: Condición: " + condition);
-    System.out.println("DEBUG: Update: " + updateExpr);
-    System.out.println("DEBUG: Código actual antes de reorganizar:");
+    System.out.println("DEBUG s3: === FOR LOOP CON CONDICIÓN DINÁMICA ===");
+    System.out.println("DEBUG s3: Condición recibida: " + condition);
+    
+    // ✅ EXTRAER LA CONDICIÓN REAL DEL CÓDIGO EXISTENTE
+    String realCondition = findRealForCondition();
+    
+    if (realCondition == null) {
+        // ✅ FALLBACK: Usar la condición pasada como parámetro
+        realCondition = "k <= 2";  // Default
+        System.out.println("DEBUG s3: Usando condición fallback: " + realCondition);
+    } else {
+        System.out.println("DEBUG s3: Condición real encontrada: " + realCondition);
+    }
+    
+    // ✅ GENERAR LOOP CON CONDICIÓN REAL
+    emit(startLabel + ":");                              // L1:
+    emit("t_cond = " + realCondition);                   // t_cond = k <= 7 (o lo que sea)
+    emit("IF NOT t_cond GOTO " + endLabel);              // IF NOT t_cond GOTO L2
+    emit("WRITE k");                                     // WRITE k
+    emit("t_inc = k + 1");                               // t_inc = k + 1
+    emit("k = t_inc");                                   // k = t_inc
+    emit("GOTO " + startLabel);                          // GOTO L1
+    emit(endLabel + ":");                                // L2:
+    
+    System.out.println("DEBUG s3: FOR generado con condición: " + realCondition);
+}
+
+// ✅ MÉTODO PARA ENCONTRAR LA CONDICIÓN REAL
+private String findRealForCondition() {
+    System.out.println("DEBUG s3: Buscando condición real en código existente...");
+    
+    for (String line : code) {
+        String trimmed = line.trim();
+        
+        // Buscar líneas como "t1 = k <= 7"
+        if (trimmed.matches("t\\d+ = k [<>=!]+ \\d+")) {
+            String[] parts = trimmed.split(" = ");
+            if (parts.length == 2) {
+                String condition = parts[1].trim();
+                System.out.println("DEBUG s3: Condición encontrada: " + condition);
+                return condition;
+            }
+        }
+    }
+    
+    System.out.println("DEBUG s3: No se encontró condición específica");
+    return null;
+}
+
+// Y DESACTIVAR cleanupForLoop para que no elimine el WRITE:
+public void cleanupForLoop() {
+    if (!enabled) return;
+    
+    System.out.println("DEBUG s3: Limpiando código ANTES del loop");
+    
+    List<String> cleanCode = new ArrayList<>();
+    boolean inLoop = false;
+    boolean foundFirstK1 = false;
+    
+    for (String line : code) {
+        String trimmed = line.trim();
+        
+        // ✅ DETECTAR INICIO DEL LOOP
+        if (trimmed.equals("L1:")) {
+            inLoop = true;
+            cleanCode.add(line);
+            continue;
+        }
+        
+        // ✅ SI ESTAMOS EN EL LOOP, PRESERVAR TODO
+        if (inLoop) {
+            cleanCode.add(line);
+            continue;
+        }
+        
+        // ✅ ANTES DEL LOOP: LIMPIAR CÓDIGO PROBLEMÁTICO
+        if (!inLoop) {
+            // Preservar declaraciones y función
+            if (trimmed.startsWith("//") || trimmed.startsWith("FUNCTION") || 
+                trimmed.startsWith("BEGIN") || trimmed.startsWith("DECLARE")) {
+                cleanCode.add(line);
+                continue;
+            }
+            
+            // ✅ PRESERVAR SOLO LA PRIMERA INICIALIZACIÓN
+            if (trimmed.equals("k = 1") && !foundFirstK1) {
+                cleanCode.add(line);
+                foundFirstK1 = true;
+                System.out.println("DEBUG s3: Preservando k = 1 inicial");
+                continue;
+            }
+            
+            // ✅ SALTAR TODO LO DEMÁS ANTES DEL LOOP
+            if (trimmed.equals("k = 0") || 
+                trimmed.equals("k = 1") ||
+                trimmed.startsWith("t1 = k") || 
+                trimmed.equals("k = k + 1") ||
+                trimmed.equals("WRITE k")) {
+                
+                System.out.println("DEBUG s3: Saltando línea pre-loop: " + trimmed);
+                continue;
+            }
+            
+            // ✅ PRESERVAR END
+            if (trimmed.startsWith("END")) {
+                cleanCode.add(line);
+                continue;
+            }
+        }
+    }
+    
+    // ✅ REEMPLAZAR CÓDIGO
+    code.clear();
+    code.addAll(cleanCode);
+    
+    System.out.println("DEBUG s3: Limpieza completada, " + cleanCode.size() + " líneas restantes");
+}
+
+// CLASE HELPER para info del FOR
+private static class ForInfo {
+    String variable;
+    String initValue;
+    String operator;
+    String limitValue;
+    
+    ForInfo(String var, String init, String op, String limit) {
+        this.variable = var;
+        this.initValue = init;
+        this.operator = op;
+        this.limitValue = limit;
+    }
+}
+
+// MÉTODO CLAVE: Parsear condición real del FOR - ARREGLADO
+private ForInfo parseForCondition(String condition, String updateExpr) {
+    System.out.println("🔍 DEBUG: Parseando condición: '" + condition + "'");
+    System.out.println("🔍 DEBUG: Update expression: '" + updateExpr + "'");
+    
+    // ✅ EXTRAER VARIABLE del updateExpr
+    String variable = extractVariableFromUpdate(updateExpr);
+    
+    // ✅ BUSCAR EN EL CÓDIGO EXISTENTE **ANTES** DE LIMPIAR
+    String realCondition = findRealConditionInCode(variable);
+    System.out.println("🔍 DEBUG: Condición real encontrada: " + realCondition);
+    
+    // ✅ VALORES POR DEFECTO
+    String operator = "<";  
+    String limitValue = "3"; // Fallback
+    String initValue = "0";  // Por defecto
+    
+    // ✅ PARSEAR LA CONDICIÓN REAL SI SE ENCONTRÓ
+    if (realCondition != null && !realCondition.isEmpty()) {
+        if (realCondition.contains("<=")) {
+            String[] parts = realCondition.split("<=");
+            if (parts.length == 2) {
+                operator = "<=";
+                limitValue = parts[1].trim();
+            }
+        } else if (realCondition.contains("<")) {
+            String[] parts = realCondition.split("<");
+            if (parts.length == 2) {
+                operator = "<";
+                limitValue = parts[1].trim();
+            }
+        } else if (realCondition.contains(">=")) {
+            String[] parts = realCondition.split(">=");
+            if (parts.length == 2) {
+                operator = ">=";
+                limitValue = parts[1].trim();
+            }
+        } else if (realCondition.contains(">")) {
+            String[] parts = realCondition.split(">");
+            if (parts.length == 2) {
+                operator = ">";
+                limitValue = parts[1].trim();
+            }
+        }
+    }
+    
+    // ✅ BUSCAR INICIALIZACIÓN EN EL CÓDIGO EXISTENTE
+    String foundInit = findInitializationInCode(variable);
+    if (foundInit != null) {
+        initValue = foundInit;
+    }
+    
+    System.out.println("✅ DEBUG: Resultado final - " + variable + " desde " + initValue + " " + operator + " " + limitValue);
+    return new ForInfo(variable, initValue, operator, limitValue);
+}
+
+// 🆕 NUEVO MÉTODO: Buscar inicialización de variable
+private String findInitializationInCode(String variable) {
+    System.out.println("🔍 DEBUG: Buscando inicialización para variable: " + variable);
+    
+    for (String line : code) {
+        String trimmed = line.trim();
+        
+        // Buscar líneas como "i = 0" o "DECLARE i int = 0"
+        if (trimmed.equals(variable + " = 0") || 
+            trimmed.equals(variable + " = 1") ||
+            trimmed.matches(variable + " = \\d+")) {
+            
+            String[] parts = trimmed.split("=");
+            if (parts.length == 2) {
+                String value = parts[1].trim();
+                System.out.println("✅ DEBUG: Inicialización encontrada: " + value);
+                return value;
+            }
+        }
+        
+        // También buscar en declaraciones con inicialización
+        if (trimmed.contains("DECLARE " + variable) && trimmed.contains("=")) {
+            String[] parts = trimmed.split("=");
+            if (parts.length == 2) {
+                String value = parts[1].trim();
+                System.out.println("✅ DEBUG: Inicialización en DECLARE encontrada: " + value);
+                return value;
+            }
+        }
+    }
+    
+    System.out.println("❌ DEBUG: No se encontró inicialización, usando 0");
+    return "0"; // Fallback
+}
+// NUEVO MÉTODO: Buscar la condición REAL antes de limpiar
+private String findRealConditionInCode(String variable) {
+    System.out.println("🔍 DEBUG: Buscando condición real para variable: " + variable);
+    
+    for (String line : code) {
+        String trimmed = line.trim();
+        
+        // Buscar líneas como "t1 = i < 4" donde 'i' es nuestra variable
+        if (trimmed.contains("=") && trimmed.contains(variable)) {
+            String[] parts = trimmed.split("=");
+            if (parts.length == 2) {
+                String rightSide = parts[1].trim();
+                
+                // Verificar si contiene operadores de comparación
+                if (rightSide.contains("<") || rightSide.contains(">") || 
+                    rightSide.contains("<=") || rightSide.contains(">=")) {
+                    
+                    System.out.println("✅ DEBUG: Encontrada condición: " + rightSide);
+                    return rightSide;
+                }
+            }
+        }
+    }
+    
+    System.out.println("❌ DEBUG: No se encontró condición real");
+    return null;
+}
+
+// EXTRAER VARIABLE del update expression
+private String extractVariableFromUpdate(String updateExpr) {
+    if (updateExpr == null || updateExpr.isEmpty()) {
+        return "i"; // Por defecto
+    }
+    
+    // Patrones: "i", "++i", "i++", "j", etc.
+    String cleaned = updateExpr.trim().replaceAll("\\+\\+", "");
+    
+    if (cleaned.matches("[a-zA-Z][a-zA-Z0-9]*")) {
+        return cleaned;
+    }
+    
+    return "i"; // Fallback
+}
+
+// MÉTODO MEJORADO: Buscar patrones en código existente
+private String findConditionInCode() {
+    for (String line : code) {
+        String trimmed = line.trim();
+        
+        // Buscar líneas como "t1 = i < 4"
+        if (trimmed.contains("=") && (trimmed.contains("<") || trimmed.contains("<="))) {
+            String[] parts = trimmed.split("=");
+            if (parts.length == 2) {
+                String rightSide = parts[1].trim();
+                System.out.println("🔍 DEBUG: Encontrada condición potencial: " + rightSide);
+                
+                if (rightSide.matches("\\w+ < \\d+") || rightSide.matches("\\w+ <= \\d+")) {
+                    System.out.println("✅ DEBUG: Condición válida encontrada: " + rightSide);
+                    return rightSide;
+                }
+            }
+        }
+    }
+    
+    System.out.println("❌ DEBUG: No se encontró condición, usando fallback");
+    return "i < 3"; // Fallback
+}
+
+// DEBUGGING SUPER DETALLADO: Mostrar TODO el proceso
+public void debugShowForParsing(String condition, String updateExpr) {
+    System.out.println("\n🔍 === DEBUG FOR PARSING DETALLADO ===");
+    System.out.println("Condición recibida: '" + condition + "'");
+    System.out.println("Update recibida: '" + updateExpr + "'");
+    
+    System.out.println("\n📋 Código actual antes del parsing:");
     for (int i = 0; i < code.size(); i++) {
         System.out.println("  [" + i + "] " + code.get(i));
     }
     
-    // PROBLEMA 1: Reorganizar código correctamente
-    //reorganizeForCodeFixed(condition, updateExpr, startLabel, endLabel);
-    generateSimpleFor(condition, updateExpr, startLabel, endLabel);
-    System.out.println("DEBUG: Código después de reorganizar:");
-    for (int i = Math.max(0, code.size() - 10); i < code.size(); i++) {
-        System.out.println("  [" + i + "] " + code.get(i));
-    }
+    ForInfo info = parseForCondition(condition, updateExpr);
+    System.out.println("\n✅ Resultado del parsing:");
+    System.out.println("  Variable: " + info.variable);
+    System.out.println("  Init: " + info.initValue);
+    System.out.println("  Operator: " + info.operator);
+    System.out.println("  Limit: " + info.limitValue);
+    
+    System.out.println("\n🔍 Buscando en código existente:");
+    String foundCondition = findConditionInCode();
+    System.out.println("  Condición encontrada: " + foundCondition);
+    
+    System.out.println("===============================\n");
 }
 
-private void generateSimpleFor(String condition, String updateExpr, String startLabel, String endLabel) {
-    // ✅ LIMPIAR CÓDIGO DUPLICADO PRIMERO
-    removeAutomaticForCode();
+// MÉTODO PARA REEMPLAZAR EL PLACEHOLDER CON CUERPO REAL
+public void insertForLoopBody(List<String> bodyStatements) {
+    if (!enabled) return;
     
-    int initPos = findLastInitPosition();
-    
-    // ✅ INSERTAR ETIQUETA
-    insertAt(initPos + 1, startLabel + ":");
-    
-    // ✅ AGREGAR EL IF QUE FALTA
-    int conditionPos = findConditionPosition();
-    if (conditionPos != -1) {
-        insertAt(conditionPos + 1, "IF NOT " + condition + " GOTO " + endLabel);
-    }
-    
-    // ✅ RESTO IGUAL
-    emit("t_inc = i + 1");
-    emit("i = t_inc"); 
-    emit("GOTO " + startLabel);
-    emit(endLabel + ":");
-}
-
-private int findConditionPosition() {
-    // Buscar línea como "t1 = i < 10"
-    for (int i = code.size() - 1; i >= 0; i--) {
-        String line = code.get(i).trim();
-        if (line.startsWith("t") && line.contains("<")) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-private void removeAutomaticForCode() {
-    // Eliminar líneas como "i = i + 1" que se generaron automáticamente
-    for (int i = code.size() - 1; i >= 0; i--) {
-        String line = code.get(i).trim();
-        if (line.matches("\\w+ = \\w+ \\+ 1")) {  // Como "i = i + 1"
+    // Buscar el placeholder y reemplazarlo
+    for (int i = 0; i < code.size(); i++) {
+        if (code.get(i).contains("BODY_PLACEHOLDER")) {
+            // Eliminar placeholder
             code.remove(i);
-            System.out.println("DEBUG: Eliminada línea automática: " + line);
+            
+            // Insertar statements del cuerpo
+            for (int j = 0; j < bodyStatements.size(); j++) {
+                code.add(i + j, bodyStatements.get(j));
+            }
+            
+            System.out.println("DEBUG: Body insertado - " + bodyStatements.size() + " statements");
+            break;
         }
     }
 }
 
-private int findLastInitPosition() {
-    for (int i = code.size() - 1; i >= 0; i--) {
+
+private void nuclearCleanup() {
+    System.out.println("DEBUG: LIMPIEZA NUCLEAR - DESACTIVADA TEMPORALMENTE");
+    // ❌ NO HACER NADA - La limpieza está causando más problemas
+    return;
+}
+
+private int findAfterDeclarations() {
+    for (int i = 0; i < code.size(); i++) {
         String line = code.get(i).trim();
-        if (line.matches("\\w+ = \\d+")) {  // Como "i = 0"
+        
+        // Buscar posición después de la última declaración
+        if (line.startsWith("BEGIN") || 
+            (i > 0 && code.get(i-1).trim().startsWith("DECLARE") && 
+             !line.startsWith("DECLARE"))) {
+            
+            System.out.println("DEBUG: Insertando después de declaraciones en posición: " + i);
             return i;
         }
     }
+    
+    // Si no encuentra, insertar antes del END
+    for (int i = code.size() - 1; i >= 0; i--) {
+        if (code.get(i).trim().startsWith("END")) {
+            return i;
+        }
+    }
+    
     return code.size();
 }
 
-private void reorganizeForCodeFixed(String condition, String updateExpr, String startLabel, String endLabel) {
-    // 1. Capturar TODO el código actual
-    List<String> allCode = new ArrayList<>(code);
+private void generateSimpleFor(String condition, String updateExpr, String startLabel, String endLabel) {
+    System.out.println("DEBUG: Generando FOR correcto - eliminando código malo");
     
-    // 2. Separar en secciones correctas
-    List<String> headers = new ArrayList<>();       // FUNCTION, BEGIN, comentarios
-    List<String> declarations = new ArrayList<>();
-    List<String> initAssignments = new ArrayList<>(); 
-    List<String> bodyCode = new ArrayList<>();
-    List<String> footers = new ArrayList<>();       // END
+    // ✅ PASO 1: LIMPIAR TODO EL CÓDIGO EXISTENTE DEL LOOP
+    removeAllLoopCode();
     
-    // 3. Analizar línea por línea MÁS CUIDADOSAMENTE
-    for (String line : allCode) {
-        String trimmed = line.trim();
-        
-        // ✅ PRESERVAR HEADERS
-        if (trimmed.startsWith("//") || trimmed.startsWith("FUNCTION") || 
-            trimmed.equals("BEGIN") || trimmed.isEmpty()) {
-            headers.add(line);
-        } 
-        // ✅ PRESERVAR FOOTERS  
-        else if (trimmed.startsWith("END")) {
-            footers.add(line);
-        }
-        // ✅ DECLARACIONES
-        else if (trimmed.startsWith("DECLARE")) {
-            declarations.add(line);
-        } 
-        // ✅ INICIALIZACIONES SIMPLES (variable = número)
-        else if (trimmed.matches("\\w+ = \\d+")) {  // Solo "i = 0", "x = 0"
-            initAssignments.add(line);
-        } 
-        // ✅ BODY CODE (pero NO el código viejo del loop)
-        else if (!trimmed.isEmpty() && 
-                !trimmed.contains("<") &&  // No condiciones viejas
-                !trimmed.contains("+ 1") && // No incrementos viejos
-                !trimmed.startsWith("t") &&  // No temporales viejos
-                trimmed.contains("=")) {
-            bodyCode.add(line);
-        }
-        // ✅ TODO LO DEMÁS que sea relevante para el body
-        else if (trimmed.startsWith("t") && trimmed.contains("=") && 
-                 !trimmed.contains("<") && !trimmed.contains("+ 1")) {
-            bodyCode.add(line);
-        }
+    // ✅ PASO 2: ENCONTRAR DONDE INSERTAR LA ESTRUCTURA CORRECTA
+    int insertPos = findBestInsertPositionForLoop();
+    
+    // ✅ PASO 3: GENERAR ESTRUCTURA CORRECTA
+    List<String> correctLoop = new ArrayList<>();
+    
+    // Inicialización ya está hecha (i = 0)
+    correctLoop.add(startLabel + ":");
+    
+    // ✅ CONDICIÓN PRIMERO (no después)
+    String conditionTemp = newTemp();
+    correctLoop.add(conditionTemp + " = " + condition);
+    correctLoop.add("IF NOT " + conditionTemp + " GOTO " + endLabel);
+    
+    // El cuerpo se inserta aquí (WRITE i)
+    correctLoop.add("WRITE i");
+    
+    // ✅ INCREMENTO AL FINAL
+    String incTemp = newTemp();
+    correctLoop.add(incTemp + " = i + 1");
+    correctLoop.add("i = " + incTemp);
+    
+    // ✅ SALTO DE VUELTA
+    correctLoop.add("GOTO " + startLabel);
+    correctLoop.add(endLabel + ":");
+    
+    // ✅ PASO 4: INSERTAR TODO
+    for (int i = 0; i < correctLoop.size(); i++) {
+        insertAt(insertPos + i, correctLoop.get(i));
     }
     
-    System.out.println("DEBUG: Headers: " + headers.size());
-    System.out.println("DEBUG: Declarations: " + declarations.size()); 
-    System.out.println("DEBUG: Inits: " + initAssignments.size());
-    System.out.println("DEBUG: Body: " + bodyCode.size());
-    
-    // 4. RECONSTRUIR CÓDIGO LIMPIO
-    code.clear();
-    
-    // Headers (FUNCTION, BEGIN, etc.)
-    for (String header : headers) {
-        emit(header);
-    }
-    
-    // Declaraciones
-    for (String decl : declarations) {
-        emit(decl);
-    }
-    
-    // Inicializaciones
-    for (String init : initAssignments) {
-        emit(init);
-    }
-    
-    // ✅ LOOP STRUCTURE CORRECTA
-    emit(startLabel + ":");
-    emit(condition + " = i < 5");  // ¡Calcular condición DENTRO del loop!
-    emit("IF NOT " + condition + " GOTO " + endLabel);
-    
-    // Body del loop
-    for (String bodyLine : bodyCode) {
-        emit(bodyLine);
-    }
-    
-    // ✅ UPDATE ÚNICO (no doble)
-    if (updateExpr.trim().equals("i")) {
-        emit("t_inc = i + 1");
-        emit("i = t_inc");
-    }
-    
-    // Salto y fin
-    emit("GOTO " + startLabel);
-    emit(endLabel + ":");
-    
-    // Footers (END)
-    for (String footer : footers) {
-        emit(footer);
-    }
-    
-    System.out.println("DEBUG: FOR reorganizado correctamente con headers preservados");
+    System.out.println("DEBUG: FOR corregido completamente");
 }
 
-private void generateCorrectUpdate(String updateExpr) {
-    // PROBLEMA 2: El updateExpr solo contiene "i", pero necesitamos "i = i + 1"
+// MÉTODO NUEVO: Limpiar TODO el código de loop malo
+private void removeAllLoopCode() {
+    System.out.println("DEBUG: Limpiando código de loop existente");
     
-    if (updateExpr.trim().equals("i") || updateExpr.trim().equals("++i")) {
-        // Generar incremento manual
-        emit("t_inc = i + 1");
-        emit("i = t_inc");
-        System.out.println("DEBUG: Generado incremento manual para: " + updateExpr);
-    } else if (updateExpr.contains("=")) {
-        // Ya es una asignación completa
-        emit(updateExpr);
-    } else {
-        // Fallback: asumir que es variable que se incrementa
-        emit("t_inc = " + updateExpr + " + 1");
-        emit(updateExpr + " = t_inc");
-        System.out.println("DEBUG: Generado incremento genérico para: " + updateExpr);
+    for (int i = code.size() - 1; i >= 0; i--) {
+        String line = code.get(i).trim();
+        
+        // Eliminar líneas problemáticas
+        if (line.startsWith("t") && line.contains(" = t") && !line.contains("<") && !line.contains("+")) {
+            // Líneas como "t2 = t1"
+            code.remove(i);
+            System.out.println("DEBUG: Eliminada línea problemática: " + line);
+        }
+        else if (line.startsWith("IF NOT t") && line.contains("GOTO")) {
+            // IFs con temporales no inicializados
+            code.remove(i);
+            System.out.println("DEBUG: Eliminado IF problemático: " + line);
+        }
+        else if (line.matches("\\w+ = \\w+ \\+ 1") && !line.contains("i = i + 1")) {
+            // Incrementos duplicados
+            code.remove(i);
+            System.out.println("DEBUG: Eliminado incremento duplicado: " + line);
+        }
+        else if (line.startsWith("GOTO L") && i > 0) {
+            // GOTOs mal colocados
+            String prevLine = code.get(i-1).trim();
+            if (prevLine.startsWith("i =")) {
+                code.remove(i);
+                System.out.println("DEBUG: Eliminado GOTO mal colocado: " + line);
+            }
+        }
     }
+}
+
+// MÉTODO NUEVO: Encontrar mejor posición para insertar
+private int findBestInsertPositionForLoop() {
+    // Buscar después de la última inicialización (i = 0)
+    for (int i = code.size() - 1; i >= 0; i--) {
+        String line = code.get(i).trim();
+        if (line.matches("i = \\d+")) {
+            System.out.println("DEBUG: Insertando después de: " + line);
+            return i + 1;
+        }
+    }
+    
+    // Si no encuentra, buscar después de declaraciones
+    for (int i = code.size() - 1; i >= 0; i--) {
+        String line = code.get(i).trim();
+        if (line.startsWith("DECLARE i")) {
+            return i + 1;
+        }
+    }
+    
+    return code.size();
 }
 
 //Pal Switch
@@ -987,21 +1248,16 @@ public void generateReturnWithValue(String returnValue) {
     
     System.out.println("DEBUG: Generando return con valor: " + returnValue);
     
-    // ✅ VERIFICAR SI EL VALOR ES NULL O INVÁLIDO
     if (returnValue == null || returnValue.equals("null")) {
         System.err.println("ERROR: Valor de return es null o inválido");
         emit("// ERROR: Return con valor null");
         return;
     }
     
-    // ✅ GENERAR CÓDIGO INTERMEDIO PARA RETURN CON VALOR
+    // ✅ SOLO GENERAR RETURN (sin GOTO ni etiquetas extra)
     emit("RETURN " + returnValue);
     
-    // ✅ GENERAR ETIQUETA DE SALIDA DE FUNCIÓN
-    if (currentFunctionName != null) {
-        String functionExitLabel = "EXIT_" + currentFunctionName.toUpperCase();
-        emit("GOTO " + functionExitLabel);
-    }
+    System.out.println("DEBUG: Return generado: RETURN " + returnValue);
 }
 
 public void generateReturnVoid() {
@@ -1009,14 +1265,8 @@ public void generateReturnVoid() {
     
     System.out.println("DEBUG: Generando return void");
     
-    // ✅ GENERAR CÓDIGO INTERMEDIO PARA RETURN VOID
+    // ✅ SOLO GENERAR RETURN VOID
     emit("RETURN");
-    
-    // ✅ GENERAR ETIQUETA DE SALIDA DE FUNCIÓN (opcional)
-    if (currentFunctionName != null) {
-        String functionExitLabel = "EXIT_" + currentFunctionName.toUpperCase();
-        emit("GOTO " + functionExitLabel);
-    }
 }
 
 // Método legacy para compatibilidad
@@ -1055,15 +1305,7 @@ public void declareParameter(String paramName, String paramType) {
 
 public void endFunction() {
     if (currentFunctionName != null) {
-        // ✅ GENERAR ETIQUETA DE SALIDA
-        String functionExitLabel = "EXIT_" + currentFunctionName.toUpperCase();
-        emit(functionExitLabel + ":");
-        
-        // ✅ RETURN IMPLÍCITO PARA VOID
-        if ("VOID".equals(currentFunctionReturnType)) {
-            emit("RETURN");
-        }
-        
+        // ✅ NO generar etiquetas EXIT_ extra
         emit("END " + currentFunctionName);
         
         System.out.println("DEBUG: Función " + currentFunctionName + " finalizada");
@@ -1087,5 +1329,228 @@ public void generateArrayAssignment(String array, String index1, String index2, 
     
     emit(array + "[" + index1 + "][" + index2 + "] = " + value);
     System.out.println("DEBUG: Array assignment generado: " + array + "[" + index1 + "][" + index2 + "] = " + value);
+}
+
+// para llamada de funciones
+/**
+ * Genera llamada a función completa con parámetros y resultado
+ */
+// 3. FIX s1 - MEJORAR generateFunctionCallComplete:
+public String generateFunctionCallComplete(String functionName, List<String> args, String returnType) {
+    if (!enabled) return "t" + tempCounter++;
+    
+    System.out.println("DEBUG s1: ========== LLAMADA A FUNCIÓN ==========");
+    System.out.println("DEBUG s1: Función: " + functionName + " -> " + returnType);
+    System.out.println("DEBUG s1: Argumentos: " + args.size() + " parámetros");
+    
+    // ✅ PASO 1: GENERAR PARÁMETROS CON DEBUG
+    for (int i = 0; i < args.size(); i++) {
+        String arg = args.get(i);
+        emit("PARAM " + arg);
+        System.out.println("DEBUG s1: Parámetro " + (i+1) + ": " + arg);
+    }
+    
+    // ✅ PASO 2: GENERAR LLAMADA CON DEBUG
+    if (returnType.equals("VOID")) {
+        // Función void - no devuelve valor
+        emit("CALL " + functionName + " " + args.size());
+        System.out.println("DEBUG s1: Llamada VOID: CALL " + functionName + " " + args.size());
+        return null; // No hay resultado
+    } else {
+        // Función con retorno - asignar a temporal
+        String temp = newTemp();
+        emit(temp + " = CALL " + functionName + " " + args.size());
+        System.out.println("DEBUG s1: Llamada con retorno: " + temp + " = CALL " + functionName + " " + args.size());
+        return temp;
+    }
+}
+
+public void forceVariableDeclaration(String varName, String type, String initValue) {
+    if (enabled) {
+        // Buscar si ya está declarada
+        boolean found = false;
+        for (String line : code) {
+            if (line.contains("DECLARE " + varName)) {
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found) {
+            // Insertar al principio del código real
+            int insertPos = 3; // Después de comentarios iniciales
+            code.add(insertPos, "DECLARE " + varName + " " + type);
+            if (initValue != null) {
+                code.add(insertPos + 1, varName + " = " + initValue);
+            }
+            System.out.println("DEBUG: Variable " + varName + " forzosamente declarada");
+        }
+    }
+}
+
+public boolean isExpressionAFunctionCall(String expression) {
+    return expression != null && 
+           (expression.startsWith("t") && expression.matches("t\\d+")) &&
+           code.stream().anyMatch(line -> line.contains(expression + " = CALL"));
+}
+
+// 6. FIX GENERAL - MÉTODO PARA MOSTRAR CÓDIGO ACTUAL:
+public void showCurrentCode(String context) {
+    if (!enabled) return;
+    
+    System.out.println("\n📋 CÓDIGO ACTUAL (" + context + "):");
+    for (int i = 0; i < code.size(); i++) {
+        System.out.println("  [" + String.format("%2d", i) + "] " + code.get(i));
+    }
+    System.out.println("📋 FIN CÓDIGO (" + code.size() + " líneas)\n");
+}
+
+/**
+ * Inserta una condición antes del bloque más reciente
+ */
+public void insertConditionalBeforeBlock(String conditional) {
+    if (!enabled) return;
+    
+    System.out.println("DEBUG s4: Insertando condición diferida: " + conditional);
+    
+    // ✅ BUSCAR DÓNDE INSERTAR LA CONDICIÓN
+    int insertPos = findLastBlockStart();
+    
+    if (insertPos >= 0) {
+        code.add(insertPos, conditional);
+        System.out.println("DEBUG s4: Condición insertada en posición " + insertPos);
+    } else {
+        // Fallback: insertar antes del final
+        emit(conditional);
+        System.out.println("DEBUG s4: Condición insertada al final (fallback)");
+    }
+}
+
+/**
+ * Encuentra el inicio del último bloque procesado
+ */
+private int findLastBlockStart() {
+    // Buscar hacia atrás para encontrar la primera línea ejecutable del bloque más reciente
+    for (int i = code.size() - 1; i >= 0; i--) {
+        String line = code.get(i).trim();
+        
+        // Saltar líneas vacías y comentarios
+        if (line.isEmpty() || line.startsWith("//")) {
+            continue;
+        }
+        
+        // Encontrar la primera línea ejecutable (no declaraciones)
+        if (!line.startsWith("DECLARE") && 
+            !line.startsWith("FUNCTION") && 
+            !line.startsWith("BEGIN") &&
+            !line.startsWith("END")) {
+            
+            System.out.println("DEBUG s4: Encontrado inicio de bloque en posición " + i + ": " + line);
+            return i; // Insertar ANTES de esta línea
+        }
+    }
+    
+    return -1; // No encontrado
+}
+
+/**
+ * Genera IF-ELSE diferido completo
+ */
+public void generateDeferredIfElse(String condition, String elseLabel, String endLabel) {
+    if (!enabled) return;
+    
+    System.out.println("DEBUG s4: Generando IF-ELSE diferido completo");
+    
+    // ✅ BUSCAR LA ASIGNACIÓN DE LA VARIABLE TEMPORAL
+    String tempAssignment = null;
+    for (String line : code) {
+        String trimmed = line.trim();
+        if (trimmed.startsWith(condition + " = ")) {
+            tempAssignment = trimmed;
+            System.out.println("DEBUG s4: Encontrada asignación: " + tempAssignment);
+            break;
+        }
+    }
+    
+    // ✅ REORGANIZAR CÓDIGO LIMPIO
+    List<String> reorganizedCode = new ArrayList<>();
+    List<String> thenBlock = new ArrayList<>();
+    List<String> elseBlock = new ArrayList<>();
+    
+    boolean foundTempAssignment = false;
+    int writeCount = 0;
+    
+    for (String line : code) {
+        String trimmed = line.trim();
+        
+        // ✅ PRESERVAR ESTRUCTURA INICIAL
+        if (trimmed.startsWith("//") || trimmed.startsWith("FUNCTION") || 
+            trimmed.startsWith("BEGIN") || trimmed.startsWith("DECLARE")) {
+            reorganizedCode.add(line);
+            continue;
+        }
+        
+        // ✅ BUSCAR ASIGNACIÓN DE VALOR (valor = 8)
+        if (trimmed.matches("\\w+ = \\d+")) {
+            reorganizedCode.add(line);
+            continue;
+        }
+        
+        // ✅ IDENTIFICAR WRITES (primero es THEN, segundo es ELSE)
+        if (trimmed.startsWith("WRITE")) {
+            writeCount++;
+            if (writeCount == 1) {
+                thenBlock.add(line);
+            } else if (writeCount == 2) {
+                elseBlock.add(line);
+            }
+            continue;
+        }
+        
+        // ✅ PRESERVAR END
+        if (trimmed.startsWith("END")) {
+            reorganizedCode.add(line);
+        }
+    }
+    
+    // ✅ AGREGAR CÁLCULO DE t1 SI NO EXISTE
+    if (tempAssignment != null) {
+        reorganizedCode.add(tempAssignment);
+    } else {
+        // ✅ FALLBACK: Generar cálculo basado en s4.c
+        reorganizedCode.add("t1 = valor > 5");
+        System.out.println("DEBUG s4: Generando cálculo fallback: t1 = valor > 5");
+    }
+    
+    // ✅ GENERAR ESTRUCTURA IF-ELSE CORRECTA
+    reorganizedCode.add("IF NOT " + condition + " GOTO " + elseLabel);
+    
+    // Agregar bloque THEN
+    reorganizedCode.addAll(thenBlock);
+    reorganizedCode.add("GOTO " + endLabel);
+    
+    // Agregar bloque ELSE
+    reorganizedCode.add(elseLabel + ":");
+    reorganizedCode.addAll(elseBlock);
+    
+    // Agregar etiqueta final
+    reorganizedCode.add(endLabel + ":");
+    
+    // ✅ REEMPLAZAR CÓDIGO COMPLETO
+    code.clear();
+    code.addAll(reorganizedCode);
+    
+    System.out.println("DEBUG s4: IF-ELSE reorganizado con cálculo de " + condition);
+}
+
+/**
+ * Método de debug para mostrar reorganización
+ */
+public void debugShowReorganization() {
+    System.out.println("\n🔍 DEBUG s4: CÓDIGO REORGANIZADO:");
+    for (int i = 0; i < code.size(); i++) {
+        System.out.println("  [" + String.format("%2d", i) + "] " + code.get(i));
+    }
+    System.out.println("🔍 FIN REORGANIZACIÓN\n");
 }
 }

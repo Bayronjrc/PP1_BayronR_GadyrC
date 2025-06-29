@@ -7,93 +7,38 @@
   2: // Archivo: src/main/resources/b_intermediate.txt
   3: 
   4: FUNCTION factorial RETURNS INT
-  5: BEGIN
-  6: DECLARE n INT
-  7: t1 = n <= 1
-  8: RETURN 1
-  9: IF NOT t1 GOTO L1
- 10: GOTO EXIT_FACTORIAL
- 11: L1:
- 12: t2 = n - 1
- 13: RETURN t2
- 14: GOTO EXIT_FACTORIAL
- 15: EXIT_FACTORIAL:
+  5: i = 0
+  6: L11:
+  7: t_cond = i < 3
+  8: IF NOT t_cond GOTO L12
+  9: WRITE i
+ 10: t_inc = i + 1
+ 11: i = t_inc
+ 12: GOTO L11
+ 13: L12:
+ 14: BEGIN
+ 15: DECLARE n INT
  16: END factorial
  17: FUNCTION testLopps RETURNS VOID
  18: BEGIN
  19: DECLARE x INT
- 20: x = 10
- 21: WRITE x
- 22: t3 = x - 1
- 23: x = t3
- 24: t4 = x == 5
- 25: IF NOT t4 GOTO L4
- 26: GOTO L2
- 27: L4:
- 28: t5 = x == 2
- 29: L2:
- 30: IF NOT t5 GOTO L5
- 31: GOTO L3
- 32: L5:
- 33: t6 = x > 0
- 34: IF t6 GOTO L2
- 35: DECLARE option INT
- 36: option = 3
- 37: WRITE 100
- 38: WRITE 200
- 39: WRITE 300
- 40: WRITE 999
- 41: t_case = option == 1
- 42: IF t_case GOTO L6
- 43: t_case = option == 2
- 44: IF t_case GOTO L7
- 45: t_case = option == 3
- 46: IF t_case GOTO L8
- 47: GOTO L9
- 48: L6:
- 49: GOTO L10
- 50: L7:
- 51: GOTO L10
- 52: L8:
- 53: GOTO L10
- 54: L9:
- 55: L10:
- 56: EXIT_TESTLOPPS:
- 57: RETURN
- 58: END testLopps
- 59: FUNCTION testArrays RETURNS VOID
- 60: BEGIN
- 61: DECLARE i INT
- 62: i = 0
- 63: t7 = i < 3
- 64: DECLARE j INT
- 65: j = 0
- 66: L11:
- 67: L13:
- 68: t8 = j < 3
- 69: IF NOT 5 GOTO L12
- 70: IF NOT i GOTO L14
- 71: arr[j][i] = j
- 72: i = t_inc
- 73: GOTO L13
- 74: L14:
- 75: t_inc = i + 1
- 76: i = t_inc
- 77: GOTO L11
- 78: L12:
- 79: EXIT_TESTARRAYS:
- 80: RETURN
- 81: END testArrays
- 82: FUNCTION main RETURNS VOID
- 83: BEGIN
- 84: t9 = CALL testLopps 0
- 85: t10 = CALL testArrays 0
- 86: END main
- 87: 
+ 20: DECLARE option INT
+ 21: END testLopps
+ 22: FUNCTION testArrays RETURNS VOID
+ 23: BEGIN
+ 24: DECLARE i INT
+ 25: DECLARE j INT
+ 26: END testArrays
+ 27: FUNCTION main RETURNS VOID
+ 28: BEGIN
+ 29: CALL testLopps 0
+ 30: CALL testArrays 0
+ 31: END main
+ 32: 
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 87
-// Temporales: 10
+// Líneas: 32
+// Temporales: 8
 // Etiquetas: 0
 // ========================================

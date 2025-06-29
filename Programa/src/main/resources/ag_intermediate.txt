@@ -1,0 +1,30 @@
+// ========================================
+// CÓDIGO INTERMEDIO DE TRES DIRECCIONES
+// Generado automáticamente
+// ========================================
+
+  1: // Código Intermedio Generado
+  2: // Archivo: src/main/resources/ag_intermediate.txt
+  3: 
+  4: FUNCTION main RETURNS VOID
+  5: BEGIN
+  6: DECLARE i INT
+  7: i = 0
+  8: L1:
+  9: DECLARE valor INT
+ 10: valor = i
+ 11: WRITE valor
+ 12: t1 = i + 1
+ 13: i = t1
+ 14: t2 = i < 3
+ 15: IF t2 GOTO L1
+ 16: L2:
+ 17: END main
+ 18: 
+
+// ========================================
+// ESTADÍSTICAS
+// Líneas: 18
+// Temporales: 2
+// Etiquetas: 0
+// ========================================

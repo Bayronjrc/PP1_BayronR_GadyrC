@@ -749,14 +749,16 @@ decl_var ::= tipo:t ID:id ASSIGN exp:e QUESTION
                       String expKey = parser.popCodeKey();
                       String expCode = parser.getCodeValue(expKey);
                       
-                      // ✅ SI ESTAMOS EN SWITCH, DIFERIR LA INICIALIZACIÓN
+                      // ✅ FIX s1: VERIFICAR SI ES UNA LLAMADA A FUNCIÓN
+                      System.out.println("DEBUG s1: Expresión para " + id + " = " + expCode + " (tipo: " + e + ")");
+                      
                       if (parser.isInSwitchContext()) {
                           parser.deferSwitchCode(id.toString() + " = " + expCode);
                           System.out.println("DEBUG: Inicialización diferida para switch: " + id + " = " + expCode);
                       } else {
-                          // Generar normalmente
-                          System.out.println("DEBUG: Inicializando variable " + id + " con " + expCode);
+                          // ✅ GENERAR ASIGNACIÓN NORMAL
                           parser.getCodeGenerator().generateAssignment(id.toString(), expCode);
+                          System.out.println("DEBUG s1: Variable " + id + " inicializada con " + expCode);
                       }
                   }
               }
@@ -850,33 +852,81 @@ literal ::= LIT_INT:val
          ;
 
 /* Llamadas a funciones con verificación semántica */
+/* Llamadas a funciones con verificación semántica Y GENERACIÓN DE CÓDIGO */
 llamada_fun ::= ID:id LPAREN arg_list:args RPAREN
               {: 
-                 // VALIDACIÓN COMPLETA: Verificar función y argumentos
+                 System.out.println("DEBUG s1: ========== LLAMADA A FUNCIÓN ==========");
+                 System.out.println("DEBUG s1: Función: " + id);
+                 if (args != null) {
+                     List<String> argTypes = (List<String>) args;
+                     System.out.println("DEBUG s1: Número de argumentos: " + argTypes.size());
+                     for (int i = 0; i < argTypes.size(); i++) {
+                         System.out.println("DEBUG s1: Argumento " + (i+1) + ": " + argTypes.get(i));
+                     }
+                 }
+                 
+                 // 1. VALIDACIÓN SEMÁNTICA
                  if (parser.getSemanticTable() != null) {
-                     // TODO: Extraer tipos reales de arg_list
-                     List<String> argTypes = new ArrayList<String>(); // Implementar extracción
+                     // ✅ EXTRAER TIPOS REALES
+                     List<String> argTypes = new ArrayList<String>();
+                     if (args != null) {
+                         List<String> argList = (List<String>) args;
+                         for (String arg : argList) {
+                             argTypes.add(arg);  // Los tipos ya están en la lista
+                         }
+                     }
+                     
+                     System.out.println("DEBUG s1: Tipos para validación: " + argTypes);
                      String returnType = parser.getSemanticTable().checkFunctionCall(
                          id.toString(), argTypes, idleft
                      );
                      
                      if (returnType == null) {
                          RESULT = "ERROR";
+                         System.out.println("DEBUG s1: Validación FALLÓ");
                      } else {
                          RESULT = returnType;
+                         System.out.println("DEBUG s1: Validación OK -> " + returnType);
                      }
                  } else {
                      RESULT = "ERROR";
                  }
 
+                 // 2. GENERACIÓN DE CÓDIGO INTERMEDIO SOLO SI ES VÁLIDO
                  if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
-                    List<String> argTypes = new ArrayList<String>();
-                    String code = parser.getCodeGenerator().generateFunctionCall(id.toString(), argTypes);
+                     // ✅ RECUPERAR ARGUMENTOS DEL STACK (en orden inverso)
+                     List<String> argCodes = new ArrayList<String>();
+                     if (args != null) {
+                         List<String> argList = (List<String>) args;
+                         
+                         // Para cada argumento, pop del stack
+                         for (int i = argList.size() - 1; i >= 0; i--) {
+                             String argKey = parser.popCodeKey();
+                             String argCode = parser.getCodeValue(argKey);
+                             argCodes.add(0, argCode);  // Insertar al principio para mantener orden
+                             System.out.println("DEBUG s1: Argumento " + i + " código: " + argCode);
+                         }
+                     }
+                     
+                     // ✅ GENERAR CÓDIGO DE LLAMADA COMPLETA
+                     String tempResult = parser.getCodeGenerator().generateFunctionCallComplete(
+                         id.toString(), argCodes, RESULT
+                     );
+                     
+                     // ✅ GUARDAR RESULTADO PARA USO POSTERIOR
+                     String resultKey = parser.saveCodeValue(RESULT, tempResult);
+                     parser.pushCodeKey(resultKey);
+                     
+                     System.out.println("DEBUG s1: Resultado guardado: " + tempResult + " con clave " + resultKey);
                  }
+                 
+                 System.out.println("DEBUG s1: ========================================");
               :}
               | ID:id LPAREN RPAREN
               {: 
-                 // VALIDACIÓN COMPLETA: Función sin argumentos
+                 System.out.println("DEBUG s1: Función sin argumentos: " + id);
+                 
+                 // FUNCIÓN SIN ARGUMENTOS (igual que antes)
                  if (parser.getSemanticTable() != null) {
                      List<String> noArgs = new ArrayList<String>();
                      String returnType = parser.getSemanticTable().checkFunctionCall(
@@ -891,10 +941,16 @@ llamada_fun ::= ID:id LPAREN arg_list:args RPAREN
                  } else {
                      RESULT = "ERROR";
                  }
+                 
                  if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
-                    List<String> noArgs = new ArrayList<String>();
-                    String code = parser.getCodeGenerator().generateFunctionCall(id.toString(), noArgs);
-                }
+                     List<String> noArgs = new ArrayList<String>();
+                     String tempResult = parser.getCodeGenerator().generateFunctionCallComplete(
+                         id.toString(), noArgs, RESULT
+                     );
+                     
+                     String resultKey = parser.saveCodeValue(RESULT, tempResult);
+                     parser.pushCodeKey(resultKey);
+                 }
               :}
               ;
 
@@ -1397,13 +1453,43 @@ atom_arit ::= ID:id
             :}
             | literal:l {: RESULT = l; :}
             | arr_access:a {: RESULT = a; :}
-            | llamada_fun:f {: RESULT = f; :}
+            | llamada_fun:f 
+            {: 
+                RESULT = f; 
+                // ✅ DEBUG s1: Verificar que la llamada se procesó
+                System.out.println("DEBUG s1: Llamada a función procesada en atom_arit: " + f);
+            :}
             | LPAREN exp:e RPAREN {: RESULT = e; :}
             ;
 
 /* Lista de argumentos */
-arg_list ::= exp
-           | exp COMMA arg_list
+arg_list ::= exp:e
+           {: 
+              // ✅ CREAR LISTA CON UN ARGUMENTO - SIN DUPLICAR
+              List<String> argList = new ArrayList<String>();
+              if (e != null) {
+                  argList.add(e.toString());
+                  System.out.println("DEBUG s1: Argumento único agregado: " + e.toString());
+              }
+              RESULT = argList;
+              System.out.println("DEBUG s1: Lista final con " + argList.size() + " argumentos: " + argList);
+           :}
+           | arg_list:list COMMA exp:e
+           {: 
+              // ✅ AGREGAR ARGUMENTO A LISTA EXISTENTE (ORDEN CORRECTO)
+              List<String> argList = new ArrayList<String>();
+              if (list != null) {
+                  List<String> existingList = (List<String>) list;
+                  argList.addAll(existingList);  // ✅ PRIMERO los existentes
+                  System.out.println("DEBUG s1: Argumentos existentes: " + existingList.size());
+              }
+              if (e != null) {
+                  argList.add(e.toString());  // ✅ DESPUÉS el nuevo
+                  System.out.println("DEBUG s1: Nuevo argumento agregado: " + e.toString());
+              }
+              RESULT = argList;
+              System.out.println("DEBUG s1: Lista total con " + argList.size() + " argumentos: " + argList);
+           :}
            ;
 
 /* Estructuras de control */
@@ -1427,18 +1513,17 @@ if_stmt ::= IF LPAREN exp:e RPAREN LBLOCK block:then_block RBLOCK
                  RESULT = "VOID";
              }
              
+             // ✅ FIX s4: GENERAR IF SIMPLE CON LÓGICA DIFERIDA
              if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
-                 // Recuperar condición
                  String conditionKey = parser.popCodeKey();
                  String conditionCode = parser.getCodeValue(conditionKey);
-                 
-                 // Generar etiqueta
                  String endLabel = parser.generateLabel();
                  
-                 // ✅ GENERAR CON INSERCIÓN INTELIGENTE
-                 parser.getCodeGenerator().generateCompleteIf(conditionCode, endLabel);
+                 // ✅ INSERTAR CONDICIÓN AL PRINCIPIO DEL CÓDIGO THEN
+                 parser.getCodeGenerator().insertConditionalBeforeBlock("IF NOT " + conditionCode + " GOTO " + endLabel);
+                 parser.getCodeGenerator().emit(endLabel + ":");
                  
-                 System.out.println("DEBUG: IF simple - condición: " + conditionCode + " -> " + endLabel);
+                 System.out.println("DEBUG s4: IF simple - condición diferida: " + conditionCode);
              }
           :}
           
@@ -1452,34 +1537,38 @@ if_stmt ::= IF LPAREN exp:e RPAREN LBLOCK block:then_block RBLOCK
                  RESULT = "VOID";
              }
              
+             // ✅ FIX s4: GENERAR IF-ELSE CON LÓGICA DIFERIDA
              if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
-                 // Recuperar condición
                  String conditionKey = parser.popCodeKey();
                  String conditionCode = parser.getCodeValue(conditionKey);
-                 
-                 // Generar etiquetas
                  String elseLabel = parser.generateLabel();
                  String endLabel = parser.generateLabel();
                  
-                 // ✅ GENERAR CON INSERCIÓN INTELIGENTE
-                 parser.getCodeGenerator().generateCompleteIfElse(conditionCode, elseLabel, endLabel);
+                 // ✅ GENERAR ESTRUCTURA COMPLETA CON INSERCIÓN INTELIGENTE
+                 parser.getCodeGenerator().generateDeferredIfElse(conditionCode, elseLabel, endLabel);
                  
-                 System.out.println("DEBUG: IF-ELSE - condición: " + conditionCode);
+                 System.out.println("DEBUG s4: IF-ELSE diferido generado");
              }
           :}
           ;
 
 
 /* Estructura do-while con scope semántico*/
-do_while ::= DO LBLOCK 
+/* Estructura do-while con scope semántico ARREGLADA */
+do_while ::= DO 
            {: 
-              // ✅ GENERAR ETIQUETAS PARA ESTE LOOP
+              // ✅ GENERAR ETIQUETA DE INICIO INMEDIATAMENTE
               String startLabel = parser.generateLabel();
               String endLabel = parser.generateLabel();
               parser.pushLoopLabels(startLabel, endLabel);
-              System.out.println("DEBUG: DO-WHILE iniciado - start: " + startLabel + ", end: " + endLabel);
+              
+              // ✅ GENERAR LA ETIQUETA DE INICIO AHORA (antes del body)
+              if (parser.codeGenerationEnabled) {
+                  parser.getCodeGenerator().generateLabel(startLabel);
+                  System.out.println("DEBUG: DO-WHILE iniciado - etiqueta: " + startLabel);
+              }
            :}
-           block:body RBLOCK WHILE LPAREN exp:condition RPAREN QUESTION
+           LBLOCK block:body RBLOCK WHILE LPAREN exp:condition RPAREN QUESTION
            {: 
               // 1. VALIDACIÓN SEMÁNTICA
               if (!condition.equals("BOOL")) {
@@ -1489,20 +1578,26 @@ do_while ::= DO LBLOCK
                   RESULT = "VOID";
               }
               
-              // 2. GENERACIÓN DE CÓDIGO
+              // 2. ✅ FIX s2: CORREGIR LÓGICA DE CONDICIÓN
               if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
-                  // Recuperar condición
+                  // Recuperar condición del stack
                   String conditionKey = parser.popCodeKey();
                   String conditionCode = parser.getCodeValue(conditionKey);
                   
                   // ✅ USAR ETIQUETAS DEL STACK
                   String[] labels = parser.peekLoopLabels();
                   String startLabel = labels[0];
+                  String endLabel = labels[1];
                   
-                  // ✅ GENERAR DO-WHILE CON ETIQUETAS
-                  parser.getCodeGenerator().generateCompleteDoWhile(conditionCode, startLabel);
+                  // ✅ LÓGICA CORRECTA: "MIENTRAS la condición sea TRUE, repetir"
+                  // Si conditionCode = "contador <= 3", queremos:
+                  // IF (contador <= 3) GOTO startLabel
+                  parser.getCodeGenerator().emit("IF " + conditionCode + " GOTO " + startLabel);
                   
-                  System.out.println("DEBUG: DO-WHILE - condición: " + conditionCode + " -> " + startLabel);
+                  // ✅ GENERAR ETIQUETA DE SALIDA
+                  parser.getCodeGenerator().generateLabel(endLabel);
+                  
+                  System.out.println("DEBUG s2: DO-WHILE - condición TRUE repite: " + conditionCode + " -> " + startLabel);
               }
               
               // ✅ POP DEL STACK AL TERMINAR
@@ -1547,6 +1642,8 @@ for_stmt ::= FOR LPAREN decl_var:init exp:condition QUESTION exp:update RPAREN L
                   parser.getCodeGenerator().generateForWithExistingGrammar(conditionCode, updateCode, startLabel, endLabel);
                   
                   System.out.println("DEBUG: FOR - condición: " + conditionCode + ", update: " + updateCode);
+                  parser.getCodeGenerator().cleanupForLoop();
+
               }
               
               // ✅ POP DEL STACK AL TERMINAR

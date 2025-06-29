@@ -1,0 +1,22 @@
+// ========================================
+// CÓDIGO INTERMEDIO DE TRES DIRECCIONES
+// Generado automáticamente
+// ========================================
+
+  1: // Código Intermedio Generado
+  2: // Archivo: src/main/resources/af_intermediate.txt
+  3: 
+  4: FUNCTION main RETURNS VOID
+  5: BEGIN
+  6: DECLARE valor INT
+  7: valor = 3
+  8: WRITE valor
+  9: END main
+ 10: 
+
+// ========================================
+// ESTADÍSTICAS
+// Líneas: 10
+// Temporales: 0
+// Etiquetas: 0
+// ========================================

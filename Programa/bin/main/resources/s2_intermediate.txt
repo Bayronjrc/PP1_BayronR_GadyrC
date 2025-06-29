@@ -1,0 +1,28 @@
+// ========================================
+// CÓDIGO INTERMEDIO DE TRES DIRECCIONES
+// Generado automáticamente
+// ========================================
+
+  1: // Código Intermedio Generado
+  2: // Archivo: src/main/resources/s2_intermediate.txt
+  3: 
+  4: FUNCTION main RETURNS VOID
+  5: BEGIN
+  6: DECLARE contador INT
+  7: contador = 1
+  8: L1:
+  9: WRITE contador
+ 10: t1 = contador + 1
+ 11: contador = t1
+ 12: t2 = contador <= 6
+ 13: IF t2 GOTO L1
+ 14: L2:
+ 15: END main
+ 16: 
+
+// ========================================
+// ESTADÍSTICAS
+// Líneas: 16
+// Temporales: 2
+// Etiquetas: 0
+// ========================================

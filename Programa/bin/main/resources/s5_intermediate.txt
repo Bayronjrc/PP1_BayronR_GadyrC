@@ -1,0 +1,34 @@
+// ========================================
+// CÓDIGO INTERMEDIO DE TRES DIRECCIONES
+// Generado automáticamente
+// ========================================
+
+  1: // Código Intermedio Generado
+  2: // Archivo: src/main/resources/s5_intermediate.txt
+  3: 
+  4: FUNCTION multiplicar RETURNS INT
+  5: BEGIN
+  6: DECLARE a INT
+  7: DECLARE b INT
+  8: t1 = a * b
+  9: DECLARE temp INT
+ 10: temp = t1
+ 11: RETURN temp
+ 12: END multiplicar
+ 13: FUNCTION main RETURNS VOID
+ 14: BEGIN
+ 15: PARAM 4
+ 16: PARAM 3
+ 17: t2 = CALL multiplicar 2
+ 18: DECLARE resultado INT
+ 19: resultado = t2
+ 20: WRITE resultado
+ 21: END main
+ 22: 
+
+// ========================================
+// ESTADÍSTICAS
+// Líneas: 22
+// Temporales: 2
+// Etiquetas: 0
+// ========================================

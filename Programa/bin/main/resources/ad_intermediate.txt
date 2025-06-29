@@ -1,0 +1,33 @@
+// ========================================
+// CÓDIGO INTERMEDIO DE TRES DIRECCIONES
+// Generado automáticamente
+// ========================================
+
+  1: // Código Intermedio Generado
+  2: // Archivo: src/main/resources/ad_intermediate.txt
+  3: 
+  4: FUNCTION main RETURNS VOID
+  5: i = 0
+  6: L1:
+  7: t_cond = i < 7
+  8: IF NOT t_cond GOTO L2
+  9: WRITE i
+ 10: t_inc = i + 1
+ 11: i = t_inc
+ 12: GOTO L1
+ 13: L2:
+ 14: BEGIN
+ 15: DECLARE i INT
+ 16: i = 0
+ 17: t1 = i < 7
+ 18: i = i + 1
+ 19: WRITE i
+ 20: END main
+ 21: 
+
+// ========================================
+// ESTADÍSTICAS
+// Líneas: 21
+// Temporales: 1
+// Etiquetas: 0
+// ========================================

@@ -6,6 +6,7 @@ import main.java.parser.parser;
 import main.java.parser.sym;
 import main.java.symbol.SymbolTable;
 import main.java.symbol.SymbolInfo;
+import main.java.mips.MipsGenerator;
 import main.java.intermedio.IntermediateCodeGenerator;
 import java_cup.runtime.Symbol;
 
@@ -21,14 +22,14 @@ public class Main {
     public static void main(String[] args) {
         try {
             if (args.length < 1 || args.length > 2) {
-                printUsage();
+                printUsageUpdated();
                 return;
             }
             
             String sourceFile = args[0];
             String mode = args.length > 1 ? args[1].toLowerCase() : "semantic";
             
-            System.out.println("=== COMPILADOR - PROYECTO 2 ===");
+            System.out.println("=== COMPILADOR - PROYECTO 3 ===");
             System.out.println("Autores: Bayron Rodríguez & Gadir Calderón");
             System.out.println("Archivo: " + sourceFile);
             System.out.println("Modo: " + mode.toUpperCase());
@@ -41,6 +42,7 @@ public class Main {
                 return;
             }
             
+            // En tu método main(), el switch debería ser:
             switch (mode) {
                 case "semantic":
                     runSemanticOnly(sourceFile);
@@ -48,12 +50,18 @@ public class Main {
                 case "code":
                     runCodeGenerationPass(sourceFile);
                     break;
+                case "mips":           // ← ESTE CASE DEBE EXISTIR
+                    runMipsGeneration(sourceFile);
+                    break;
                 case "both":
                     runBothSeparately(sourceFile);
                     break;
                 case "full":
-                default:
                     runFullAnalysis(sourceFile);
+                    break;
+                case "complete":
+                default:
+                    runCompleteCompilation(sourceFile);
                     break;
             }
             
@@ -63,18 +71,23 @@ public class Main {
         }
     }
     
-    private static void printUsage() {
-        System.out.println("=== COMPILADOR - PROYECTO 2 ===");
-        System.out.println("Uso: java Main <archivo_fuente> [modo]");
-        System.out.println();
-        System.out.println("Modos disponibles:");
-        System.out.println("  semantic  - Solo análisis semántico (TU CUP ORIGINAL)");
-        System.out.println("  code      - Solo generación de código intermedio");
-        System.out.println("  both      - Ambos en pasadas separadas");
-        System.out.println("  full      - Análisis completo en una pasada");
-        System.out.println();
-        System.out.println("Recomendación: Usa 'semantic' para preservar tu análisis original");
-    }
+    private static void printUsageUpdated() {
+    System.out.println("=== COMPILADOR - PROYECTO 3 ===");
+    System.out.println("Uso: java Main <archivo_fuente> [modo]");
+    System.out.println();
+    System.out.println("Modos disponibles:");
+    System.out.println("  semantic  - Solo análisis semántico");
+    System.out.println("  code      - Solo generación de código intermedio");
+    System.out.println("  mips      - Código intermedio + MIPS");
+    System.out.println("  both      - Semántico + código por separado");
+    System.out.println("  full      - Análisis completo en una pasada");
+    System.out.println("  complete  - Compilación completa (DEFAULT)");
+    System.out.println();
+    System.out.println("Ejemplos:");
+    System.out.println("  java Main programa.txt           # Compilación completa");
+    System.out.println("  java Main programa.txt mips      # Solo generar MIPS");
+    System.out.println("  java Main programa.txt semantic  # Solo análisis semántico");
+}
     
     /**
      * MODO 1: Solo análisis semántico
@@ -294,7 +307,87 @@ public class Main {
         
         codeGen.addComment("Fin del código generado");
     }
-    
+    // === GENERACIÓN DE CÓDIGO MIPS ===
+    /**
+ * NUEVO MODO: Generación de código MIPS
+ */
+    private static void runMipsGeneration(String sourceFile) throws Exception {
+        System.out.println("=== MODO: GENERACIÓN CÓDIGO MIPS ===");
+        System.out.println();
+        
+        // Paso 1: Generar código intermedio COMPLETO (usando análisis full)
+        String intermediateFile = getIntermediateFile(sourceFile);
+        System.out.println("Paso 1: Generando código intermedio completo...");
+        
+        // Usar runFullAnalysis en lugar de runCodeGenerationPass para obtener código completo
+        runFullAnalysis(sourceFile);
+        
+        // Verificar que el archivo de código intermedio existe y tiene contenido útil
+        File intermFile = new File(intermediateFile);
+        if (!intermFile.exists()) {
+            System.err.println("ERROR: No se generó código intermedio");
+            return;
+        }
+        
+        // Paso 2: Generar código MIPS desde el intermedio
+        String mipsFile = getMipsFile(sourceFile);
+        System.out.println("\nPaso 2: Generando código MIPS...");
+        
+        MipsGenerator mipsGen = new MipsGenerator();
+        mipsGen.generateFromFile(intermediateFile, mipsFile);
+        mipsGen.printStatistics();
+        
+        System.out.println();
+        System.out.println("✓ Código MIPS generado exitosamente");
+        System.out.println("📁 Archivos generados:");
+        System.out.println("  - " + intermediateFile + " (código intermedio)");
+        System.out.println("  - " + mipsFile + " (código MIPS)");
+        System.out.println();
+        System.out.println("💡 Para probar:");
+        System.out.println("  1. Abrir QtSpim");
+        System.out.println("  2. Cargar archivo: " + mipsFile);
+        System.out.println("  3. Ejecutar (F10)");
+    }
+
+    /**
+ * MODO COMPLETO: Análisis + Código Intermedio + MIPS
+ */
+    private static void runCompleteCompilation(String sourceFile) throws Exception {
+        System.out.println("=== MODO: COMPILACIÓN COMPLETA ===");
+        System.out.println("Análisis semántico + Código intermedio + Código MIPS");
+        System.out.println();
+        
+        // Paso 1: Análisis completo (semántico + intermedio)
+        System.out.println("--- PASO 1: ANÁLISIS Y CÓDIGO INTERMEDIO ---");
+        runFullAnalysis(sourceFile);
+        
+        // Paso 2: Generar MIPS solo si no hubo errores
+        System.out.println("\n--- PASO 2: GENERACIÓN CÓDIGO MIPS ---");
+        String intermediateFile = getIntermediateFile(sourceFile);
+        String mipsFile = getMipsFile(sourceFile);
+        
+        // Verificar que existe el archivo intermedio
+        File intermFile = new File(intermediateFile);
+        if (!intermFile.exists()) {
+            System.err.println("ERROR: No se pudo generar código MIPS - código intermedio no disponible");
+            return;
+        }
+        
+        MipsGenerator mipsGen = new MipsGenerator();
+        mipsGen.generateFromFile(intermediateFile, mipsFile);
+        mipsGen.printStatistics();
+        
+        System.out.println();
+        System.out.println("🎉 COMPILACIÓN COMPLETA EXITOSA");
+        System.out.println("📁 Archivos generados:");
+        System.out.println("  - " + getTokenFile(sourceFile) + " (tokens)");
+        System.out.println("  - " + getSymbolFile(sourceFile) + " (símbolos)");
+        System.out.println("  - semantic_analysis.txt (análisis semántico)");
+        System.out.println("  - " + intermediateFile + " (código intermedio)");
+        System.out.println("  - " + mipsFile + " (código MIPS)");
+        System.out.println();
+        System.out.println("🚀 Listo para ejecutar en QtSpim: " + mipsFile);
+    }
     // === MÉTODOS HELPER ===
     
     private static String getTokenFile(String sourceFile) {
@@ -307,6 +400,10 @@ public class Main {
     
     private static String getIntermediateFile(String sourceFile) {
         return sourceFile.substring(0, sourceFile.lastIndexOf('.')) + "_intermediate.txt";
+    }
+
+    private static String getMipsFile(String sourceFile) {
+        return sourceFile.substring(0, sourceFile.lastIndexOf('.')) + ".asm";
     }
     
     /**

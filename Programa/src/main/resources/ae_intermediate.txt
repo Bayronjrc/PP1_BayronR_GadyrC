@@ -1,0 +1,32 @@
+// ========================================
+// CÓDIGO INTERMEDIO DE TRES DIRECCIONES
+// Generado automáticamente
+// ========================================
+
+  1: // Código Intermedio Generado
+  2: // Archivo: src/main/resources/ae_intermediate.txt
+  3: 
+  4: FUNCTION suma RETURNS INT
+  5: BEGIN
+  6: DECLARE a INT
+  7: DECLARE b INT
+  8: t1 = a * b
+  9: RETURN t1
+ 10: END suma
+ 11: FUNCTION main RETURNS VOID
+ 12: BEGIN
+ 13: PARAM 4
+ 14: PARAM 5
+ 15: t2 = CALL suma 2
+ 16: DECLARE resultado INT
+ 17: resultado = t2
+ 18: WRITE resultado
+ 19: END main
+ 20: 
+
+// ========================================
+// ESTADÍSTICAS
+// Líneas: 20
+// Temporales: 2
+// Etiquetas: 0
+// ========================================
