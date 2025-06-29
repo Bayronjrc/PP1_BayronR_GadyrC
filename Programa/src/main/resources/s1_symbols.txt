@@ -1,8 +1,18 @@
 ===== TABLA DE VARIABLES =====
-Lexema: sumarDos, Tipo: ID, Linea: 7, Columna: 15, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: sumarDos, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: resultado, Tipo: ID, Linea: 3, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: resultado, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: num, Tipo: ID, Linea: 8, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: num, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: x, Tipo: ID, Linea: 2, Columna: 21, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: x, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: suma, Tipo: ID, Linea: 20, Columna: 22, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: suma, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: a, Tipo: ID, Linea: 2, Columna: 21, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: a, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: b, Tipo: ID, Linea: 2, Columna: 25, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: b, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: temp, Tipo: ID, Linea: 11, Columna: 31, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: temp, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: resultado, Tipo: ID, Linea: 13, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: resultado, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: factorial, Tipo: ID, Linea: 23, Columna: 22, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: factorial, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: i, Tipo: ID, Linea: 28, Columna: 17, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: i, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: n, Tipo: ID, Linea: 12, Columna: 21, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: n, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: resultado1, Tipo: ID, Linea: 21, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: resultado1, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: resultado2, Tipo: ID, Linea: 24, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: resultado2, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: recurse, Tipo: ID, Linea: 12, Columna: 25, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: recurse, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: x, Tipo: ID, Linea: 20, Columna: 29, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: x, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: y, Tipo: ID, Linea: 20, Columna: 32, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: y, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: testBasico, Tipo: ID, Linea: 33, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: testBasico, Variable: Si, Inicializada: No, Utilizada: No
 
 ===== TABLA DE FUNCIONES =====
 
