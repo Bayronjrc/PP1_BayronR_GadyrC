@@ -396,6 +396,41 @@ public class MipsGenerator {
         mipsCode.append(".text\n");
         mipsCode.append(".globl main\n\n");
         
+        boolean hasMain = false;
+        
+        // Verificar si hay función main
+        for (String line : intermediateCode) {
+            if (line.startsWith("FUNCTION main")) {
+                hasMain = true;
+                break;
+            }
+        }
+        
+        // Si no hay main, crear una que llame a la primera función
+        if (!hasMain) {
+            mipsCode.append("main:\n");
+            mipsCode.append("    # Función main generada automáticamente\n");
+            
+            // Buscar la primera función para llamarla
+            String firstFunction = null;
+            for (String line : intermediateCode) {
+                if (line.startsWith("FUNCTION ")) {
+                    String[] parts = line.split("\\s+");
+                    if (parts.length >= 2) {
+                        firstFunction = parts[1];
+                        break;
+                    }
+                }
+            }
+            
+            if (firstFunction != null) {
+                mipsCode.append("    jal ").append(firstFunction).append("\n");
+            }
+            
+            mipsCode.append("    li $v0, 10\n");
+            mipsCode.append("    syscall\n\n");
+        }
+        
         for (String line : intermediateCode) {
             processInstruction(line);
         }
@@ -602,6 +637,7 @@ public class MipsGenerator {
         if (parts.length >= 2) {
             String functionName = parts[1];
             
+            // ✅ IMPORTANTE: Generar etiqueta de salida
             mipsCode.append("\n# Epílogo estándar ").append(functionName).append("\n");
             mipsCode.append("exit_").append(functionName).append(":\n");
             
@@ -691,7 +727,6 @@ public class MipsGenerator {
     private void evaluateExpression(String expr, String targetReg) {
         expr = expr.trim();
         
-        // ✅ NUEVO: Operador exponenciación
         if (expr.contains(" ** ")) {
             String[] operands = expr.split(" \\*\\* ");
             if (operands.length == 2) {
@@ -706,7 +741,6 @@ public class MipsGenerator {
             }
         }
         
-        // ✅ NUEVO: Operador AND lógico
         if (expr.contains(" && ")) {
             String[] operands = expr.split(" && ");
             if (operands.length == 2) {
@@ -718,7 +752,6 @@ public class MipsGenerator {
             }
         }
         
-        // ✅ NUEVO: Operador OR lógico
         if (expr.contains(" || ")) {
             String[] operands = expr.split(" \\|\\| ");
             if (operands.length == 2) {
@@ -787,7 +820,14 @@ public class MipsGenerator {
             if (operands.length == 2) {
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
-                mipsCode.append("    sle ").append(targetReg).append(", $t1, $t2\n");
+                mipsCode.append("    # ").append(operands[0]).append(" <= ").append(operands[1]).append("\n");
+                mipsCode.append("    sub $t3, $t2, $t1    # t2 - t1\n");
+                mipsCode.append("    bgez $t3, set_true_le\n");
+                mipsCode.append("    li ").append(targetReg).append(", 0\n");
+                mipsCode.append("    j end_le\n");
+                mipsCode.append("set_true_le:\n");
+                mipsCode.append("    li ").append(targetReg).append(", 1\n");
+                mipsCode.append("end_le:\n");
                 return;
             }
         }
@@ -797,7 +837,14 @@ public class MipsGenerator {
             if (operands.length == 2) {
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
-                mipsCode.append("    sge ").append(targetReg).append(", $t1, $t2\n");
+                mipsCode.append("    # ").append(operands[0]).append(" >= ").append(operands[1]).append("\n");
+                mipsCode.append("    sub $t3, $t1, $t2    # t1 - t2\n");
+                mipsCode.append("    bgez $t3, set_true_ge\n");
+                mipsCode.append("    li ").append(targetReg).append(", 0\n");
+                mipsCode.append("    j end_ge\n");
+                mipsCode.append("set_true_ge:\n");
+                mipsCode.append("    li ").append(targetReg).append(", 1\n");
+                mipsCode.append("end_ge:\n");
                 return;
             }
         }
@@ -807,7 +854,14 @@ public class MipsGenerator {
             if (operands.length == 2) {
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
-                mipsCode.append("    slt ").append(targetReg).append(", $t1, $t2\n");
+                mipsCode.append("    # ").append(operands[0]).append(" < ").append(operands[1]).append("\n");
+                mipsCode.append("    sub $t3, $t1, $t2    # t1 - t2\n");
+                mipsCode.append("    bltz $t3, set_true_lt\n");
+                mipsCode.append("    li ").append(targetReg).append(", 0\n");
+                mipsCode.append("    j end_lt\n");
+                mipsCode.append("set_true_lt:\n");
+                mipsCode.append("    li ").append(targetReg).append(", 1\n");
+                mipsCode.append("end_lt:\n");
                 return;
             }
         }
@@ -817,7 +871,14 @@ public class MipsGenerator {
             if (operands.length == 2) {
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
-                mipsCode.append("    sgt ").append(targetReg).append(", $t1, $t2\n");
+                mipsCode.append("    # ").append(operands[0]).append(" > ").append(operands[1]).append("\n");
+                mipsCode.append("    sub $t3, $t2, $t1    # t2 - t1\n");
+                mipsCode.append("    bltz $t3, set_true_gt\n");
+                mipsCode.append("    li ").append(targetReg).append(", 0\n");
+                mipsCode.append("    j end_gt\n");
+                mipsCode.append("set_true_gt:\n");
+                mipsCode.append("    li ").append(targetReg).append(", 1\n");
+                mipsCode.append("end_gt:\n");
                 return;
             }
         }
@@ -827,7 +888,14 @@ public class MipsGenerator {
             if (operands.length == 2) {
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
-                mipsCode.append("    seq ").append(targetReg).append(", $t1, $t2\n");
+                mipsCode.append("    # ").append(operands[0]).append(" == ").append(operands[1]).append("\n");
+                mipsCode.append("    sub $t3, $t1, $t2    # t1 - t2\n");
+                mipsCode.append("    beq $t3, $zero, set_true_eq\n");
+                mipsCode.append("    li ").append(targetReg).append(", 0\n");
+                mipsCode.append("    j end_eq\n");
+                mipsCode.append("set_true_eq:\n");
+                mipsCode.append("    li ").append(targetReg).append(", 1\n");
+                mipsCode.append("end_eq:\n");
                 return;
             }
         }
@@ -837,7 +905,26 @@ public class MipsGenerator {
             if (operands.length == 2) {
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
-                mipsCode.append("    sne ").append(targetReg).append(", $t1, $t2\n");
+                mipsCode.append("    # ").append(operands[0]).append(" != ").append(operands[1]).append("\n");
+                mipsCode.append("    sub $t3, $t1, $t2    # t1 - t2\n");
+                mipsCode.append("    bne $t3, $zero, set_true_ne\n");
+                mipsCode.append("    li ").append(targetReg).append(", 0\n");
+                mipsCode.append("    j end_ne\n");
+                mipsCode.append("set_true_ne:\n");
+                mipsCode.append("    li ").append(targetReg).append(", 1\n");
+                mipsCode.append("end_ne:\n");
+                return;
+            }
+        }
+        
+        // ✅ CORREGIR: Multiplicación compatible
+        if (expr.contains(" * ")) {
+            String[] operands = expr.split(" \\* ");
+            if (operands.length == 2) {
+                loadOperand(operands[0].trim(), "$t1");
+                loadOperand(operands[1].trim(), "$t2");
+                mipsCode.append("    mult $t1, $t2\n");
+                mipsCode.append("    mflo ").append(targetReg).append("\n");
                 return;
             }
         }
@@ -848,7 +935,6 @@ public class MipsGenerator {
     private void loadOperand(String operand, String register) {
         operand = operand.trim();
         
-        // ✅ NUEVO: Manejar strings literales (con comillas)
         if (operand.startsWith("\"") && operand.endsWith("\"")) {
             String stringLabel = handleStringLiteral(operand);
             mipsCode.append("    la ").append(register).append(", ").append(stringLabel).append("\n");
@@ -856,7 +942,6 @@ public class MipsGenerator {
             return;
         }
         
-        // ✅ NUEVO: Detectar y manejar strings sin comillas
         if (isLikelyStringLiteral(operand)) {
             String quotedString = "\"" + operand + "\"";
             String stringLabel = handleStringLiteral(quotedString);
@@ -865,9 +950,7 @@ public class MipsGenerator {
             return;
         }
         
-        // ... resto del método loadOperand() sin cambios ...
         
-        // ✅ NUEVO: Manejar caracteres literales CON COMILLAS
         if (operand.startsWith("'") && operand.endsWith("'") && operand.length() == 3) {
             char ch = operand.charAt(1);
             int asciiValue = (int) ch;
@@ -876,18 +959,19 @@ public class MipsGenerator {
             return;
         }
         
-        // ✅ MEJORADO: Números (enteros y flotantes)
         if (isNumber(operand)) {
             if (operand.contains(".")) {
+                // ✅ CAMBIO: Multiplicar por 100 en lugar de 1000
                 try {
                     float floatVal = Float.parseFloat(operand);
-                    int intRepresentation = (int) (floatVal * 1000);
-                    mipsCode.append("    li ").append(register).append(", ").append(intRepresentation).append("    # Float ").append(operand).append(" como entero\n");
+                    int intRepresentation = (int) (floatVal * 100); // ✅ 100 en lugar de 1000
+                    mipsCode.append("    li ").append(register).append(", ").append(intRepresentation).append("    # Float ").append(operand).append(" (*100)\n");
                     System.out.println("DEBUG: Float " + operand + " convertido a " + intRepresentation);
                 } catch (NumberFormatException e) {
                     mipsCode.append("    li ").append(register).append(", 0    # Error parsing float ").append(operand).append("\n");
                 }
             } else {
+                // Entero normal
                 mipsCode.append("    li ").append(register).append(", ").append(operand).append("\n");
                 System.out.println("DEBUG: Entero " + operand + " cargado en " + register);
             }
@@ -1164,12 +1248,28 @@ public class MipsGenerator {
         String value = line.substring(6).trim();
         
         mipsCode.append("    # ").append(line).append("\n");
-        loadOperand(value, "$a0");
-        mipsCode.append("    jal print_int\n");
+        
+        // ✅ NUEVO: Detectar si la variable contiene un flotante
+        if (isFloatVariable(value)) {
+            loadOperand(value, "$a0");
+            mipsCode.append("    jal print_float_decimal\n");
+        } else {
+            loadOperand(value, "$a0");
+            mipsCode.append("    jal print_int\n");
+        }
+        
         mipsCode.append("    la $a0, nl\n");
         mipsCode.append("    jal print_string\n\n");
     }
     
+    private boolean isFloatVariable(String varName) {
+        // Detectar por nombre de variable (fl, float, z en algunos casos)
+        return varName.startsWith("fl") || 
+            varName.startsWith("t") && varName.contains("_") || // temporales de operaciones flotantes
+            varName.equals("z") || // basado en tu código intermedio
+            varName.contains("float");
+    }
+
     private void processFunctionCall(String line) {
         mipsCode.append("    # ").append(line).append("\n");
         
@@ -1237,7 +1337,6 @@ public class MipsGenerator {
         mipsCode.append("\n");
     }
     
-
     private void generateSystemFunctions() {
         mipsCode.append("# ========================================\n");
         mipsCode.append("# FUNCIONES DEL SISTEMA\n");
@@ -1262,21 +1361,114 @@ public class MipsGenerator {
         mipsCode.append("    li $v0, 6\n");
         mipsCode.append("    syscall\n");
         mipsCode.append("    jr $ra\n\n");
+        
+        mipsCode.append("print_float_decimal:\n");
+        mipsCode.append("    # $a0 contiene el flotante multiplicado por 100\n");
+        mipsCode.append("    # Guardar $a0 en el stack para uso posterior\n");
+        mipsCode.append("    addi $sp, $sp, -4\n");
+        mipsCode.append("    sw $a0, 0($sp)\n");
+        mipsCode.append("    \n");
+        mipsCode.append("    # Verificar si es negativo\n");
+        mipsCode.append("    bgez $a0, positive_float\n");
+        mipsCode.append("    \n");
+        mipsCode.append("    # Imprimir signo negativo\n");
+        mipsCode.append("    li $v0, 11\n");
+        mipsCode.append("    li $a0, 45    # ASCII de '-'\n");
+        mipsCode.append("    syscall\n");
+        mipsCode.append("    \n");
+        mipsCode.append("    # Convertir a positivo\n");
+        mipsCode.append("    lw $a0, 0($sp)   # Recargar valor original\n");
+        mipsCode.append("    sub $a0, $zero, $a0\n");
+        mipsCode.append("    \n");
+        mipsCode.append("positive_float:\n");
+        mipsCode.append("    # Dividir por 100 para separar parte entera y decimal\n");
+        mipsCode.append("    li $t1, 100\n");
+        mipsCode.append("    div $a0, $t1\n");
+        mipsCode.append("    mflo $t2        # Parte entera\n");
+        mipsCode.append("    mfhi $t3        # Resto (parte decimal * 100)\n");
+        mipsCode.append("    \n");
+        mipsCode.append("    # Imprimir parte entera\n");
+        mipsCode.append("    move $a0, $t2\n");
+        mipsCode.append("    li $v0, 1\n");
+        mipsCode.append("    syscall\n");
+        mipsCode.append("    \n");
+        mipsCode.append("    # Imprimir punto decimal\n");
+        mipsCode.append("    li $v0, 11\n");
+        mipsCode.append("    li $a0, 46    # ASCII de '.'\n");
+        mipsCode.append("    syscall\n");
+        mipsCode.append("    \n");
+        mipsCode.append("    # Imprimir parte decimal\n");
+        mipsCode.append("    # Si es menor que 10, agregar un 0 adelante\n");
+        mipsCode.append("    bge $t3, 10, print_decimal\n");
+        mipsCode.append("    li $v0, 11\n");
+        mipsCode.append("    li $a0, 48    # ASCII de '0'\n");
+        mipsCode.append("    syscall\n");
+        mipsCode.append("    \n");
+        mipsCode.append("print_decimal:\n");
+        mipsCode.append("    move $a0, $t3\n");
+        mipsCode.append("    li $v0, 1\n");
+        mipsCode.append("    syscall\n");
+        mipsCode.append("    \n");
+        mipsCode.append("    # Restaurar stack\n");
+        mipsCode.append("    addi $sp, $sp, 4\n");
+        mipsCode.append("    jr $ra\n\n");
+        
+        // Función de potencia compatible
         mipsCode.append("power_function:\n");
-        mipsCode.append("    # $a0 = base, $a1 = exponente\n");
-        mipsCode.append("    # Retorna $v0 = base^exponente\n");
-        mipsCode.append("    li $v0, 1        # resultado = 1\n");
+        mipsCode.append("    li $v0, 1\n");
         mipsCode.append("    beq $a1, $zero, power_done\n");
         mipsCode.append("    blt $a1, $zero, power_negative\n");
         mipsCode.append("power_loop:\n");
-        mipsCode.append("    mul $v0, $v0, $a0\n");
+        mipsCode.append("    mult $v0, $a0\n");
+        mipsCode.append("    mflo $v0\n");
         mipsCode.append("    addi $a1, $a1, -1\n");
         mipsCode.append("    bne $a1, $zero, power_loop\n");
         mipsCode.append("power_done:\n");
         mipsCode.append("    jr $ra\n");
         mipsCode.append("power_negative:\n");
-        mipsCode.append("    # Para exponentes negativos, retornar 0 (simplificación)\n");
         mipsCode.append("    li $v0, 0\n");
+        mipsCode.append("    jr $ra\n\n");
+    }
+
+    private void generateFloatPrintFunction() {
+        mipsCode.append("print_float_as_decimal:\n");
+        mipsCode.append("    # $a0 contiene el entero (flotante * 1000)\n");
+        mipsCode.append("    # Dividir por 1000 e imprimir parte entera y decimal\n");
+        mipsCode.append("    \n");
+        mipsCode.append("    # Verificar si es negativo\n");
+        mipsCode.append("    bgez $a0, positive_float\n");
+        mipsCode.append("    \n");
+        mipsCode.append("    # Imprimir signo negativo\n");
+        mipsCode.append("    li $v0, 11\n");
+        mipsCode.append("    li $a0, 45    # ASCII de '-'\n");
+        mipsCode.append("    syscall\n");
+        mipsCode.append("    \n");
+        mipsCode.append("    # Convertir a positivo\n");
+        mipsCode.append("    lw $a0, 0($sp)   # Recargar valor original\n");
+        mipsCode.append("    sub $a0, $zero, $a0\n");
+        mipsCode.append("    \n");
+        mipsCode.append("positive_float:\n");
+        mipsCode.append("    # Dividir por 1000\n");
+        mipsCode.append("    li $t1, 1000\n");
+        mipsCode.append("    div $a0, $t1\n");
+        mipsCode.append("    mflo $t2        # Parte entera\n");
+        mipsCode.append("    mfhi $t3        # Resto (parte decimal * 1000)\n");
+        mipsCode.append("    \n");
+        mipsCode.append("    # Imprimir parte entera\n");
+        mipsCode.append("    move $a0, $t2\n");
+        mipsCode.append("    li $v0, 1\n");
+        mipsCode.append("    syscall\n");
+        mipsCode.append("    \n");
+        mipsCode.append("    # Imprimir punto decimal\n");
+        mipsCode.append("    li $v0, 11\n");
+        mipsCode.append("    li $a0, 46    # ASCII de '.'\n");
+        mipsCode.append("    syscall\n");
+        mipsCode.append("    \n");
+        mipsCode.append("    # Imprimir parte decimal (hasta 3 dígitos)\n");
+        mipsCode.append("    move $a0, $t3\n");
+        mipsCode.append("    li $v0, 1\n");
+        mipsCode.append("    syscall\n");
+        mipsCode.append("    \n");
         mipsCode.append("    jr $ra\n\n");
     }
     
