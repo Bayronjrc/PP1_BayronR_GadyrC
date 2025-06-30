@@ -1,14 +1,9 @@
-int simple ʃ int x ʅ \
-    return x ?
+float mi ʃ int dif, char otra ʅ \
+    return dif + 1 ? 
 /
 
-void testSimple ʃ ʅ \
-    int a | 5 ?
-    int b | simple ʃ a ʅ ? 
-    write ʃ a ʅ ?
-    write ʃ b ʅ ? 
-/
-
-void main ʃ ʅ \
-    testSimple ʃ ʅ ?
+void testWeirdNames ʃ ʅ \
+    int x22 | 5 ?
+    float result | mi ʃ x22, 'A' ʅ ?
+    write ʃ result ʅ ? 
 /

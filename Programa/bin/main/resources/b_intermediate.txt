@@ -92,13 +92,14 @@
  87: END testArrays
  88: FUNCTION main RETURNS VOID
  89: BEGIN
- 90: CALL testArrays 0
- 91: END main
- 92: 
+ 90: CALL testLopps 0
+ 91: CALL testArrays 0
+ 92: END main
+ 93: 
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 92
+// Líneas: 93
 // Temporales: 10
 // Etiquetas: 0
 // ========================================

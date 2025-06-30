@@ -21,129 +21,117 @@
     sol_const:    .word 0    # sol = false
 
     # Variables del programa
-    a_var: .word 0
-    b_var: .word 0
-    x_var: .word 0
+    dif_var: .word 0
+    otra_var: .word 0
+    result_var: .word 0
+    A_var: .word 0
+    x22_var: .word 0
     t1_var: .word 0
+    t2_var: .word 0
 
 .text
 .globl main
 
-    # // Código Intermedio Generado
-    # // Archivo: src/main/resources/ac_intermediate.txt
-simple:
-    # 🚀 UNIVERSAL: Prólogo para simple
-    addi $sp, $sp, -8
-    sw $ra, 4($sp)
-    sw $fp, 0($sp)
-    move $fp, $sp
-    # Reservar espacio para variables locales
-    addi $sp, $sp, -16
-
-    # 🚀 UNIVERSAL: Guardar parámetros de simple
-    sw $a0, -4($fp)   # x local
-    sw $a0, x_var     # x global
-
-    # Inicio de función
-    # DECLARE x INT
-    # RETURN x
-    lw $v0, -4($fp)   # x local
-    # Valor de retorno en $v0
-    j exit_simple
-
-
-# 🚀 UNIVERSAL: Epílogo para simple
-exit_simple:
-    # Limpiar variables locales
-    addi $sp, $sp, 16    # Liberar espacio de variables locales
-    # Restaurar frame pointer y return address
-    move $sp, $fp
-    lw $fp, 0($sp)
-    lw $ra, 4($sp)
-    addi $sp, $sp, 8
-    jr $ra
-
-testSimple:
-    # 🚀 UNIVERSAL: Prólogo para testSimple
-    addi $sp, $sp, -8
-    sw $ra, 4($sp)
-    sw $fp, 0($sp)
-    move $fp, $sp
-    # Reservar espacio para variables locales
-    addi $sp, $sp, -16
-
-    # Función sin parámetros o no detectados
-
-    # Inicio de función
-    # DECLARE a INT
-    # a = 5
-    li $t0, 5
-    sw $t0, a_var
-
-    # PARAM a
-    lw $a0, a_var
-    # ✅ UNIVERSAL: Parámetro a cargado en $a0
-
-    # t1 = CALL simple 1
-    jal simple
-    sw $v0, t1_var
-
-    # DECLARE b INT
-    # b = t1
-    lw $t0, t1_var
-    sw $t0, b_var
-
-    # WRITE a
-    lw $a0, a_var
-    jal print_int
-    la $a0, nl
-    jal print_string
-
-    # WRITE b
-    lw $a0, b_var
-    jal print_int
-    la $a0, nl
-    jal print_string
-
-
-# 🚀 UNIVERSAL: Epílogo para testSimple
-exit_testSimple:
-    # Limpiar variables locales
-    addi $sp, $sp, 16    # Liberar espacio de variables locales
-    # Restaurar frame pointer y return address
-    move $sp, $fp
-    lw $fp, 0($sp)
-    lw $ra, 4($sp)
-    addi $sp, $sp, 8
-    jr $ra
-
 main:
-    # 🚀 UNIVERSAL: Prólogo para main
-    addi $sp, $sp, -8
-    sw $ra, 4($sp)
-    sw $fp, 0($sp)
-    move $fp, $sp
-    # Reservar espacio para variables locales
-    addi $sp, $sp, -16
-
-    # Función sin parámetros o no detectados
-
-    # Inicio de función
-    # CALL testSimple 0
-    jal testSimple
-
-
-# 🚀 UNIVERSAL: Epílogo para main
-exit_main:
-    # Limpiar variables locales
-    addi $sp, $sp, 16    # Liberar espacio de variables locales
-    # Restaurar frame pointer y return address
-    move $sp, $fp
-    lw $fp, 0($sp)
-    lw $ra, 4($sp)
-    addi $sp, $sp, 8
+    # Función main generada automáticamente
+    jal mi
     li $v0, 10
     syscall
+
+    # // Código Intermedio Generado
+    # // Archivo: src/main/resources/ac_intermediate.txt
+mi:
+    # 🚀 UNIVERSAL: Prólogo para mi
+    addi $sp, $sp, -8
+    sw $ra, 4($sp)
+    sw $fp, 0($sp)
+    move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # 🚀 UNIVERSAL: Guardar parámetros de mi
+    sw $a0, -4($fp)   # dif local
+    sw $a0, dif_var     # dif global
+    sw $a1, -8($fp)   # otra local
+    sw $a1, otra_var     # otra global
+
+    # Inicio de función
+    # DECLARE dif INT
+    # DECLARE otra CHAR
+    # t1 = dif + 1
+    lw $t1, -4($fp)   # dif local
+    li $t2, 1
+    add $t0, $t1, $t2
+    sw $t0, t1_var
+
+    # RETURN t1
+    lw $v0, t1_var
+    # Valor de retorno en $v0
+    j exit_mi
+
+
+# 🚀 UNIVERSAL: Epílogo para mi
+exit_mi:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
+    move $sp, $fp
+    lw $fp, 0($sp)
+    lw $ra, 4($sp)
+    addi $sp, $sp, 8
+    jr $ra
+
+testWeirdNames:
+    # 🚀 UNIVERSAL: Prólogo para testWeirdNames
+    addi $sp, $sp, -8
+    sw $ra, 4($sp)
+    sw $fp, 0($sp)
+    move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función sin parámetros o no detectados
+
+    # Inicio de función
+    # DECLARE x22 INT
+    # x22 = 5
+    li $t0, 5
+    sw $t0, x22_var
+
+    # PARAM x22
+    lw $a0, x22_var
+    # ✅ UNIVERSAL: Parámetro x22 cargado en $a0
+
+    # PARAM A
+    lw $a1, A_var
+    # ✅ UNIVERSAL: Parámetro A cargado en $a1
+
+    # t2 = CALL mi 2
+    jal mi
+    sw $v0, t2_var
+
+    # DECLARE result FLOAT
+    # result = t2
+    lw $t0, t2_var
+    sw $t0, result_var
+
+    # WRITE result
+    lw $a0, result_var
+    jal print_float_decimal
+    la $a0, nl
+    jal print_string
+
+
+# 🚀 UNIVERSAL: Epílogo para testWeirdNames
+exit_testWeirdNames:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
+    move $sp, $fp
+    lw $fp, 0($sp)
+    lw $ra, 4($sp)
+    addi $sp, $sp, 8
+    jr $ra
 
 
 # Salida del programa

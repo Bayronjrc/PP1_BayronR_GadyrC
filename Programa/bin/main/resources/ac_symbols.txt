@@ -1,9 +1,10 @@
 ===== TABLA DE VARIABLES =====
-Lexema: a, Tipo: ID, Linea: 8, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: a, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: b, Tipo: ID, Linea: 9, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: b, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: x, Tipo: ID, Linea: 2, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: x, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: simple, Tipo: ID, Linea: 7, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: simple, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: testSimple, Tipo: ID, Linea: 13, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: testSimple, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: dif, Tipo: ID, Linea: 2, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: dif, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: otra, Tipo: ID, Linea: 1, Columna: 26, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: otra, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: result, Tipo: ID, Linea: 8, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: result, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: x22, Tipo: ID, Linea: 7, Columna: 25, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: x22, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: mi, Tipo: ID, Linea: 7, Columna: 20, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: mi, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: testWeirdNames, Tipo: ID, Linea: 5, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: testWeirdNames, Variable: Si, Inicializada: No, Utilizada: No
 
 ===== TABLA DE FUNCIONES =====
 

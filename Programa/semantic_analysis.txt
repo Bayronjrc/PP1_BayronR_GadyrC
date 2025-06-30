@@ -1,16 +1,8 @@
 ===== ANÁLISIS SEMÁNTICO =====
 Alcances procesados total: 4
 Alcances activos: 1
-Errores semánticos: 1
-Advertencias: 3
-
-===== ERRORES SEMÁNTICOS =====
-Variable 'otra' ya declarada en este alcance en linea 2
-
-===== ADVERTENCIAS =====
-Variable 'dif' declarada pero no utilizada en línea 1
-Variable 'otra' declarada pero no utilizada en línea 1
-Variable 'str' declarada pero no utilizada en línea 3
+Errores semánticos: 0
+Advertencias: 0
 
 ===== INFORMACIÓN DE ALCANCES =====
 Alcance 1: Scope[global, nivel=0, tipo=GLOBAL, simbolos=3]
@@ -18,7 +10,7 @@ Alcance 1: Scope[global, nivel=0, tipo=GLOBAL, simbolos=3]
   - Variables: 0, Funciones: 3
 
 ===== ALCANCE: Scope[global, nivel=0, tipo=GLOBAL, simbolos=3] =====
-Lexema: mi, Tipo: ID, Tipo Variable: INT, Linea: 1, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Parametros: [INT, CHAR], Utilizada: No
-Lexema: main, Tipo: ID, Tipo Variable: VOID, Linea: 28, Columna: 7, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: No
-Lexema: miOtraFun, Tipo: ID, Tipo Variable: BOOL, Linea: 23, Columna: 7, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: No
+Lexema: test, Tipo: ID, Tipo Variable: VOID, Linea: 8, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: Si
+Lexema: fibonnaci, Tipo: ID, Tipo Variable: INT, Linea: 1, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Parametros: [INT], Utilizada: Si
+Lexema: main, Tipo: ID, Tipo Variable: VOID, Linea: 22, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: No
 

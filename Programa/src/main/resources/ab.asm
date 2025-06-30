@@ -1,6 +1,6 @@
 # ========================================
-# CÓDIGO MIPS GENERADO AUTOMÁTICAMENTE
-# Compilador - Proyecto 3
+# CÓDIGO MIPS UNIVERSAL - SIN HARDCODEO
+# Funciona con cualquier nombre de función
 # Autores: Bayron Rodríguez & Gadir Calderón
 # ========================================
 
@@ -21,20 +21,23 @@
     sol_const:    .word 0    # sol = false
 
     # Variables del programa
+    t4_var: .word 0
     a_var: .word 0
     b_var: .word 0
     arbol_var: .word 0
+    resultado_var: .word 0
     planta_var: .word 0
     t1_var: .word 0
     t2_var: .word 0
+    t3_var: .word 0
 
 .text
 .globl main
 
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/ab_intermediate.txt
-main:
-    # Prólogo estándar main
+suma:
+    # 🚀 UNIVERSAL: Prólogo para suma
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -42,11 +45,53 @@ main:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # 🚀 UNIVERSAL: Guardar parámetros de suma
+    sw $a0, -4($fp)   # a local
+    sw $a0, a_var     # a global
+    sw $a1, -8($fp)   # b local
+    sw $a1, b_var     # b global
+
+    # Inicio de función
+    # DECLARE a INT
+    # DECLARE b INT
+    # t1 = a + b
+    lw $t1, -4($fp)   # a local
+    lw $t2, -8($fp)   # b local
+    add $t0, $t1, $t2
+    sw $t0, t1_var
+
+    # DECLARE resultado INT
+    # resultado = t1
+    lw $t0, t1_var
+    sw $t0, resultado_var
+
+    # RETURN resultado
+    lw $v0, resultado_var
+    # Valor de retorno en $v0
+    j exit_suma
+
+
+# 🚀 UNIVERSAL: Epílogo para suma
+exit_suma:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
+    move $sp, $fp
+    lw $fp, 0($sp)
+    lw $ra, 4($sp)
+    addi $sp, $sp, 8
+    jr $ra
+
+main:
+    # 🚀 UNIVERSAL: Prólogo para main
+    addi $sp, $sp, -8
+    sw $ra, 4($sp)
+    sw $fp, 0($sp)
+    move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función sin parámetros o no detectados
 
     # Inicio de función
     # DECLARE a INT
@@ -59,26 +104,26 @@ main:
     li $t0, 5
     sw $t0, b_var
 
-    # t1 = a + b
+    # t2 = a + b
     lw $t1, a_var
     lw $t2, b_var
     add $t0, $t1, $t2
-    sw $t0, t1_var
+    sw $t0, t2_var
 
     # DECLARE arbol INT
-    # arbol = t1
-    lw $t0, t1_var
+    # arbol = t2
+    lw $t0, t2_var
     sw $t0, arbol_var
 
-    # t2 = a - b
+    # t3 = a - b
     lw $t1, a_var
     lw $t2, b_var
     sub $t0, $t1, $t2
-    sw $t0, t2_var
+    sw $t0, t3_var
 
     # DECLARE planta INT
-    # planta = t2
-    lw $t0, t2_var
+    # planta = t3
+    lw $t0, t3_var
     sw $t0, planta_var
 
     # WRITE arbol
@@ -93,8 +138,26 @@ main:
     la $a0, nl
     jal print_string
 
+    # PARAM 32
+    li $a0, 32
+    # ✅ UNIVERSAL: Parámetro 32 cargado en $a0
 
-# Epílogo estándar main
+    # PARAM 44
+    li $a1, 44
+    # ✅ UNIVERSAL: Parámetro 44 cargado en $a1
+
+    # t4 = CALL suma 2
+    jal suma
+    sw $v0, t4_var
+
+    # WRITE t4
+    lw $a0, t4_var
+    jal print_int
+    la $a0, nl
+    jal print_string
+
+
+# 🚀 UNIVERSAL: Epílogo para main
 exit_main:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -137,67 +200,33 @@ read_float:
 
 print_float_decimal:
     # $a0 contiene el flotante multiplicado por 100
-    # Guardar $a0 en el stack para uso posterior
     addi $sp, $sp, -4
     sw $a0, 0($sp)
-    
-    # Verificar si es negativo
     bgez $a0, positive_float
-    
-    # Imprimir signo negativo
     li $v0, 11
     li $a0, 45    # ASCII de '-'
     syscall
-    
-    # Convertir a positivo
-    lw $a0, 0($sp)   # Recargar valor original
+    lw $a0, 0($sp)
     sub $a0, $zero, $a0
-    
 positive_float:
-    # Dividir por 100 para separar parte entera y decimal
     li $t1, 100
     div $a0, $t1
-    mflo $t2        # Parte entera
-    mfhi $t3        # Resto (parte decimal * 100)
-    
-    # Imprimir parte entera
+    mflo $t2
+    mfhi $t3
     move $a0, $t2
     li $v0, 1
     syscall
-    
-    # Imprimir punto decimal
     li $v0, 11
     li $a0, 46    # ASCII de '.'
     syscall
-    
-    # Imprimir parte decimal
-    # Si es menor que 10, agregar un 0 adelante
     bge $t3, 10, print_decimal
     li $v0, 11
     li $a0, 48    # ASCII de '0'
     syscall
-    
 print_decimal:
     move $a0, $t3
     li $v0, 1
     syscall
-    
-    # Restaurar stack
     addi $sp, $sp, 4
-    jr $ra
-
-power_function:
-    li $v0, 1
-    beq $a1, $zero, power_done
-    blt $a1, $zero, power_negative
-power_loop:
-    mult $v0, $a0
-    mflo $v0
-    addi $a1, $a1, -1
-    bne $a1, $zero, power_loop
-power_done:
-    jr $ra
-power_negative:
-    li $v0, 0
     jr $ra
 

@@ -262,8 +262,12 @@ Token: MAIN, Lexema: MAIN, Línea: 55, Columna: 6, Tabla: PALABRAS_RESERVADAS
 Token: LPAREN, Lexema: LPAREN, Línea: 55, Columna: 11, Tabla: N/A
 Token: RPAREN, Lexema: RPAREN, Línea: 55, Columna: 13, Tabla: N/A
 Token: LBLOCK, Lexema: LBLOCK, Línea: 55, Columna: 15, Tabla: N/A
-Token: ID, Lexema: testArrays, Línea: 56, Columna: 5, Tabla: VARIABLES
-Token: LPAREN, Lexema: LPAREN, Línea: 56, Columna: 16, Tabla: N/A
-Token: RPAREN, Lexema: RPAREN, Línea: 56, Columna: 18, Tabla: N/A
-Token: QUESTION, Lexema: QUESTION, Línea: 56, Columna: 20, Tabla: N/A
-Token: RBLOCK, Lexema: RBLOCK, Línea: 57, Columna: 1, Tabla: N/A
+Token: ID, Lexema: testLopps, Línea: 56, Columna: 5, Tabla: VARIABLES
+Token: LPAREN, Lexema: LPAREN, Línea: 56, Columna: 15, Tabla: N/A
+Token: RPAREN, Lexema: RPAREN, Línea: 56, Columna: 17, Tabla: N/A
+Token: QUESTION, Lexema: QUESTION, Línea: 56, Columna: 19, Tabla: N/A
+Token: ID, Lexema: testArrays, Línea: 57, Columna: 5, Tabla: VARIABLES
+Token: LPAREN, Lexema: LPAREN, Línea: 57, Columna: 16, Tabla: N/A
+Token: RPAREN, Lexema: RPAREN, Línea: 57, Columna: 18, Tabla: N/A
+Token: QUESTION, Lexema: QUESTION, Línea: 57, Columna: 20, Tabla: N/A
+Token: RBLOCK, Lexema: RBLOCK, Línea: 58, Columna: 1, Tabla: N/A

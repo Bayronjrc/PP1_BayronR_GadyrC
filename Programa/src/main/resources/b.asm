@@ -1,6 +1,6 @@
 # ========================================
-# CÓDIGO MIPS GENERADO AUTOMÁTICAMENTE
-# Compilador - Proyecto 3
+# CÓDIGO MIPS UNIVERSAL - SIN HARDCODEO
+# Funciona con cualquier nombre de función
 # Autores: Bayron Rodríguez & Gadir Calderón
 # ========================================
 
@@ -9,9 +9,16 @@
     nl:           .asciiz "\n"
     prompt_int:   .asciiz "Ingrese un entero: "
     prompt_float: .asciiz "Ingrese un float: "
+    prompt_string: .asciiz "Ingrese texto: "
     result_msg:   .asciiz "Resultado: "
     true_str:     .asciiz "true"
     false_str:    .asciiz "false"
+
+    # Constantes booleanas del lenguaje
+    true_const:   .word 1
+    false_const:  .word 0
+    luna_const:   .word 1    # luna = true
+    sol_const:    .word 0    # sol = false
 
     # Variables del programa
     t4_var: .word 0
@@ -21,20 +28,15 @@
     t7_var: .word 0
     t8_var: .word 0
     t9_var: .word 0
-    t10_var: .word 0
-    contador_var: .word 0
-    t_cond_var: .word 0
-    arr_element_var: .word 0
-    t_inc_var: .word 0
-    a_var: .word 0
-    b_var: .word 0
-    temp_var: .word 0
-    resultado_var: .word 0
     i_var: .word 0
     j_var: .word 0
     k_var: .word 0
+    arrji_var: .word 0
     n_var: .word 0
+    t10_var: .word 0
+    t_cond_var: .word 0
     x_var: .word 0
+    t_inc_var: .word 0
     t1_var: .word 0
     t2_var: .word 0
     t3_var: .word 0
@@ -46,7 +48,7 @@
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/b_intermediate.txt
 factorial:
-    # Prólogo estándar factorial
+    # UNIVERSAL: Prólogo para factorial
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -54,8 +56,8 @@ factorial:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Guardar parámetros en stack frame local
-    sw $a0, -4($fp)   # n local (CRÍTICO para recursión)
+    # UNIVERSAL: Guardar parámetros de factorial
+    sw $a0, -4($fp)   # n local
     sw $a0, n_var     # n global
 
     # Inicio de función
@@ -63,7 +65,14 @@ factorial:
     # t1 = n <= 1
     lw $t1, -4($fp)   # n local
     li $t2, 1
-    sle $t0, $t1, $t2
+    # n <= 1
+    sub $t3, $t2, $t1    # t2 - t1
+    bgez $t3, set_true_le_1
+    li $t0, 0
+    j end_le_1
+set_true_le_1:
+    li $t0, 1
+end_le_1:
     sw $t0, t1_var
 
     # IF NOT t1 GOTO L1
@@ -84,7 +93,7 @@ L1:
 
     # PARAM t2
     lw $a0, t2_var
-    # ✅ FIXED: Parámetro t2 cargado en $a0
+    #  UNIVERSAL: Parámetro t2 cargado en $a0
 
     # t3 = CALL factorial 1
     jal factorial
@@ -93,7 +102,8 @@ L1:
     # t4 = n * t3
     lw $t1, -4($fp)   # n local
     lw $t2, t3_var
-    mul $t0, $t1, $t2
+    mult $t1, $t2
+    mflo $t0
     sw $t0, t4_var
 
     # RETURN t4
@@ -102,7 +112,7 @@ L1:
     j exit_factorial
 
 
-# Epílogo estándar factorial
+#  UNIVERSAL: Epílogo para factorial
 exit_factorial:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -114,7 +124,7 @@ exit_factorial:
     jr $ra
 
 testLopps:
-    # Prólogo estándar testLopps
+    # UNIVERSAL: Prólogo para testLopps
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -122,11 +132,7 @@ testLopps:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # Función sin parámetros o no detectados
 
     # Inicio de función
     # DECLARE x INT
@@ -154,7 +160,14 @@ L2:
     # t6 = x == 5
     lw $t1, x_var
     li $t2, 5
-    seq $t0, $t1, $t2
+    # x == 5
+    sub $t3, $t1, $t2    # t1 - t2
+    beq $t3, $zero, set_true_eq_2
+    li $t0, 0
+    j end_eq_2
+set_true_eq_2:
+    li $t0, 1
+end_eq_2:
     sw $t0, t6_var
 
     # IF NOT t6 GOTO L4
@@ -167,7 +180,14 @@ L4:
     # t7 = x == 6
     lw $t1, x_var
     li $t2, 6
-    seq $t0, $t1, $t2
+    # x == 6
+    sub $t3, $t1, $t2    # t1 - t2
+    beq $t3, $zero, set_true_eq_3
+    li $t0, 0
+    j end_eq_3
+set_true_eq_3:
+    li $t0, 1
+end_eq_3:
     sw $t0, t7_var
 
     # IF NOT t7 GOTO L5
@@ -180,7 +200,14 @@ L5:
     # t8 = x > 0
     lw $t1, x_var
     li $t2, 0
-    sgt $t0, $t1, $t2
+    # x > 0
+    sub $t3, $t2, $t1    # t2 - t1
+    bltz $t3, set_true_gt_4
+    li $t0, 0
+    j end_gt_4
+set_true_gt_4:
+    li $t0, 1
+end_gt_4:
     sw $t0, t8_var
 
     # IF t8 GOTO L2
@@ -220,7 +247,14 @@ L3:
     # t_case = option == 1
     lw $t1, option_var
     li $t2, 1
-    seq $t0, $t1, $t2
+    # option == 1
+    sub $t3, $t1, $t2    # t1 - t2
+    beq $t3, $zero, set_true_eq_5
+    li $t0, 0
+    j end_eq_5
+set_true_eq_5:
+    li $t0, 1
+end_eq_5:
     sw $t0, t_case_var
 
     # IF t_case GOTO L6
@@ -230,7 +264,14 @@ L3:
     # t_case = option == 2
     lw $t1, option_var
     li $t2, 2
-    seq $t0, $t1, $t2
+    # option == 2
+    sub $t3, $t1, $t2    # t1 - t2
+    beq $t3, $zero, set_true_eq_6
+    li $t0, 0
+    j end_eq_6
+set_true_eq_6:
+    li $t0, 1
+end_eq_6:
     sw $t0, t_case_var
 
     # IF t_case GOTO L7
@@ -240,7 +281,14 @@ L3:
     # t_case = option == 3
     lw $t1, option_var
     li $t2, 3
-    seq $t0, $t1, $t2
+    # option == 3
+    sub $t3, $t1, $t2    # t1 - t2
+    beq $t3, $zero, set_true_eq_7
+    li $t0, 0
+    j end_eq_7
+set_true_eq_7:
+    li $t0, 1
+end_eq_7:
     sw $t0, t_case_var
 
     # IF t_case GOTO L8
@@ -261,7 +309,7 @@ L8:
 L9:
 L10:
 
-# Epílogo estándar testLopps
+#  UNIVERSAL: Epílogo para testLopps
 exit_testLopps:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -273,7 +321,7 @@ exit_testLopps:
     jr $ra
 
 testArrays:
-    # Prólogo estándar testArrays
+    # UNIVERSAL: Prólogo para testArrays
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -281,11 +329,7 @@ testArrays:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # Función sin parámetros o no detectados
 
     # Inicio de función
     # DECLARE i INT
@@ -300,7 +344,14 @@ testArrays:
     # t9 = i < 3
     lw $t1, i_var
     li $t2, 3
-    slt $t0, $t1, $t2
+    # i < 3
+    sub $t3, $t1, $t2    # t1 - t2
+    bltz $t3, set_true_lt_8
+    li $t0, 0
+    j end_lt_8
+set_true_lt_8:
+    li $t0, 1
+end_lt_8:
     sw $t0, t9_var
 
     # i = i + 1
@@ -321,7 +372,14 @@ testArrays:
     # t10 = j < 3
     lw $t1, j_var
     li $t2, 3
-    slt $t0, $t1, $t2
+    # j < 3
+    sub $t3, $t1, $t2    # t1 - t2
+    bltz $t3, set_true_lt_9
+    li $t0, 0
+    j end_lt_9
+set_true_lt_9:
+    li $t0, 1
+end_lt_9:
     sw $t0, t10_var
 
     # j = j + 1
@@ -331,15 +389,21 @@ testArrays:
     sw $t0, j_var
 
     # arr[j][i] = j
-    # Array assignment: arr[j][i] = j
     lw $t0, j_var
-    sw $t0, arr_element_var
+    sw $t0, arrji_var
 
 L13:
     # t_cond = k <= 2
     lw $t1, k_var
     li $t2, 2
-    sle $t0, $t1, $t2
+    # k <= 2
+    sub $t3, $t2, $t1    # t2 - t1
+    bgez $t3, set_true_le_10
+    li $t0, 0
+    j end_le_10
+set_true_le_10:
+    li $t0, 1
+end_le_10:
     sw $t0, t_cond_var
 
     # IF NOT t_cond GOTO L14
@@ -369,7 +433,14 @@ L11:
     # t_cond = k <= 2
     lw $t1, k_var
     li $t2, 2
-    sle $t0, $t1, $t2
+    # k <= 2
+    sub $t3, $t2, $t1    # t2 - t1
+    bgez $t3, set_true_le_11
+    li $t0, 0
+    j end_le_11
+set_true_le_11:
+    li $t0, 1
+end_le_11:
     sw $t0, t_cond_var
 
     # IF NOT t_cond GOTO L12
@@ -396,7 +467,7 @@ L11:
 
 L12:
 
-# Epílogo estándar testArrays
+#  UNIVERSAL: Epílogo para testArrays
 exit_testArrays:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -408,7 +479,7 @@ exit_testArrays:
     jr $ra
 
 main:
-    # Prólogo estándar main
+    # UNIVERSAL: Prólogo para main
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -416,18 +487,17 @@ main:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # Función sin parámetros o no detectados
 
     # Inicio de función
+    # CALL testLopps 0
+    jal testLopps
+
     # CALL testArrays 0
     jal testArrays
 
 
-# Epílogo estándar main
+#  UNIVERSAL: Epílogo para main
 exit_main:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -466,5 +536,37 @@ read_int:
 read_float:
     li $v0, 6
     syscall
+    jr $ra
+
+print_float_decimal:
+    # $a0 contiene el flotante multiplicado por 100
+    addi $sp, $sp, -4
+    sw $a0, 0($sp)
+    bgez $a0, positive_float
+    li $v0, 11
+    li $a0, 45    # ASCII de '-'
+    syscall
+    lw $a0, 0($sp)
+    sub $a0, $zero, $a0
+positive_float:
+    li $t1, 100
+    div $a0, $t1
+    mflo $t2
+    mfhi $t3
+    move $a0, $t2
+    li $v0, 1
+    syscall
+    li $v0, 11
+    li $a0, 46    # ASCII de '.'
+    syscall
+    bge $t3, 10, print_decimal
+    li $v0, 11
+    li $a0, 48    # ASCII de '0'
+    syscall
+print_decimal:
+    move $a0, $t3
+    li $v0, 1
+    syscall
+    addi $sp, $sp, 4
     jr $ra
 

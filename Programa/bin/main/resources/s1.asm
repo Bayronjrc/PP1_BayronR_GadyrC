@@ -49,7 +49,7 @@
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/s1_intermediate.txt
 atun:
-    # 🚀 UNIVERSAL: Prólogo para atun
+    # UNIVERSAL: Prólogo para atun
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -57,7 +57,7 @@ atun:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # 🚀 UNIVERSAL: Guardar parámetros de atun
+    # UNIVERSAL: Guardar parámetros de atun
     sw $a0, -4($fp)   # a local
     sw $a0, a_var     # a global
     sw $a1, -8($fp)   # b local
@@ -83,7 +83,7 @@ atun:
     j exit_atun
 
 
-# 🚀 UNIVERSAL: Epílogo para atun
+#  UNIVERSAL: Epílogo para atun
 exit_atun:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -95,7 +95,7 @@ exit_atun:
     jr $ra
 
 pepe:
-    # 🚀 UNIVERSAL: Prólogo para pepe
+    # UNIVERSAL: Prólogo para pepe
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -103,7 +103,7 @@ pepe:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # 🚀 UNIVERSAL: Guardar parámetros de pepe
+    # UNIVERSAL: Guardar parámetros de pepe
     sw $a0, -4($fp)   # n local
     sw $a0, n_var     # n global
 
@@ -145,7 +145,7 @@ L1:
 
     # PARAM temp
     lw $a0, temp_var
-    # ✅ UNIVERSAL: Parámetro temp cargado en $a0
+    #  UNIVERSAL: Parámetro temp cargado en $a0
 
     # t4 = CALL pepe 1
     jal pepe
@@ -174,7 +174,7 @@ L1:
     j exit_pepe
 
 
-# 🚀 UNIVERSAL: Epílogo para pepe
+#  UNIVERSAL: Epílogo para pepe
 exit_pepe:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -186,7 +186,7 @@ exit_pepe:
     jr $ra
 
 testBasico:
-    # 🚀 UNIVERSAL: Prólogo para testBasico
+    # UNIVERSAL: Prólogo para testBasico
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -209,11 +209,11 @@ testBasico:
 
     # PARAM d
     lw $a0, d_var
-    # ✅ UNIVERSAL: Parámetro d cargado en $a0
+    #  UNIVERSAL: Parámetro d cargado en $a0
 
     # PARAM r
     lw $a1, r_var
-    # ✅ UNIVERSAL: Parámetro r cargado en $a1
+    #  UNIVERSAL: Parámetro r cargado en $a1
 
     # t6 = CALL atun 2
     jal atun
@@ -232,7 +232,7 @@ testBasico:
 
     # PARAM 5
     li $a0, 5
-    # ✅ UNIVERSAL: Parámetro 5 cargado en $a0
+    #  UNIVERSAL: Parámetro 5 cargado en $a0
 
     # t7 = CALL pepe 1
     jal pepe
@@ -321,7 +321,7 @@ end_lt_3:
 
 L3:
 
-# 🚀 UNIVERSAL: Epílogo para testBasico
+#  UNIVERSAL: Epílogo para testBasico
 exit_testBasico:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -333,7 +333,7 @@ exit_testBasico:
     jr $ra
 
 main:
-    # 🚀 UNIVERSAL: Prólogo para main
+    # UNIVERSAL: Prólogo para main
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -348,7 +348,7 @@ main:
     jal testBasico
 
 
-# 🚀 UNIVERSAL: Epílogo para main
+#  UNIVERSAL: Epílogo para main
 exit_main:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales

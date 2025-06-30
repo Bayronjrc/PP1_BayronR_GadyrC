@@ -6,31 +6,28 @@
   1: // Código Intermedio Generado
   2: // Archivo: src/main/resources/ac_intermediate.txt
   3: 
-  4: FUNCTION simple RETURNS INT
+  4: FUNCTION mi RETURNS FLOAT
   5: BEGIN
-  6: DECLARE x INT
-  7: RETURN x
-  8: END simple
-  9: FUNCTION testSimple RETURNS VOID
- 10: BEGIN
- 11: DECLARE a INT
- 12: a = 5
- 13: PARAM a
- 14: t1 = CALL simple 1
- 15: DECLARE b INT
- 16: b = t1
- 17: WRITE a
- 18: WRITE b
- 19: END testSimple
- 20: FUNCTION main RETURNS VOID
- 21: BEGIN
- 22: CALL testSimple 0
- 23: END main
- 24: 
+  6: DECLARE dif INT
+  7: DECLARE otra CHAR
+  8: t1 = dif + 1
+  9: RETURN t1
+ 10: END mi
+ 11: FUNCTION testWeirdNames RETURNS VOID
+ 12: BEGIN
+ 13: DECLARE x22 INT
+ 14: x22 = 5
+ 15: PARAM x22
+ 16: PARAM A
+ 17: t2 = CALL mi 2
+ 18: DECLARE result FLOAT
+ 19: result = t2
+ 20: WRITE result
+ 21: END testWeirdNames
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 24
-// Temporales: 1
+// Líneas: 21
+// Temporales: 2
 // Etiquetas: 0
 // ========================================

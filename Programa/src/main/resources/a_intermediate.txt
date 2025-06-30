@@ -28,19 +28,19 @@
  23: DECLARE i INT
  24: i = 0
  25: i = 0
- 26: t7 = i < 3
+ 26: t7 = i < 4
  27: i = i + 1
  28: DECLARE j INT
  29: j = 0
  30: j = 0
- 31: t8 = j < 3
+ 31: t8 = j < 4
  32: j = j + 1
  33: t9 = i + j
  34: PARAM t9
  35: t10 = CALL fibonnaci 1
  36: matrix[i][j] = t10
  37: t11 = matrix[i][j]
- 38: t12 = t11 > 5
+ 38: t12 = t11 > 6
  39: IF NOT t12 GOTO L6
  40: GOTO L5
  41: L6:

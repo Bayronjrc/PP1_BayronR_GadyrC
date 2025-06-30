@@ -6,26 +6,39 @@
   1: // Código Intermedio Generado
   2: // Archivo: src/main/resources/ab_intermediate.txt
   3: 
-  4: FUNCTION main RETURNS VOID
+  4: FUNCTION suma RETURNS INT
   5: BEGIN
   6: DECLARE a INT
-  7: a = 10
-  8: DECLARE b INT
-  9: b = 5
- 10: t1 = a + b
- 11: DECLARE arbol INT
- 12: arbol = t1
- 13: t2 = a - b
- 14: DECLARE planta INT
- 15: planta = t2
- 16: WRITE arbol
- 17: WRITE planta
- 18: END main
- 19: 
+  7: DECLARE b INT
+  8: t1 = a + b
+  9: DECLARE resultado INT
+ 10: resultado = t1
+ 11: RETURN resultado
+ 12: END suma
+ 13: FUNCTION main RETURNS VOID
+ 14: BEGIN
+ 15: DECLARE a INT
+ 16: a = 10
+ 17: DECLARE b INT
+ 18: b = 5
+ 19: t2 = a + b
+ 20: DECLARE arbol INT
+ 21: arbol = t2
+ 22: t3 = a - b
+ 23: DECLARE planta INT
+ 24: planta = t3
+ 25: WRITE arbol
+ 26: WRITE planta
+ 27: PARAM 32
+ 28: PARAM 44
+ 29: t4 = CALL suma 2
+ 30: WRITE t4
+ 31: END main
+ 32: 
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 19
-// Temporales: 2
+// Líneas: 32
+// Temporales: 4
 // Etiquetas: 0
 // ========================================

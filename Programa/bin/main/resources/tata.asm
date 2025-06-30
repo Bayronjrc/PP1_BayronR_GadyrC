@@ -87,7 +87,7 @@ main:
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/tata_intermediate.txt
 func1:
-    # 🚀 UNIVERSAL: Prólogo para func1
+    # UNIVERSAL: Prólogo para func1
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -338,7 +338,13 @@ L2:
     sw $t0, in1_var
 
     # t10 = 3.7 ** fl1
-    li $t0, 0    # ERROR: No se pudo procesar '3.7 ** fl1'
+    li $t1, 370    # Float 3.7 (*100)
+    lw $t2, fl1_var
+    # Potencia: 3.7 ** fl1
+    move $a0, $t1
+    move $a1, $t2
+    jal power_function
+    move $t0, $v0
     sw $t0, t10_var
 
     # DECLARE fl2 FLOAT

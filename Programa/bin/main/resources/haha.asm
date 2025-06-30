@@ -30,7 +30,6 @@
     t9_var: .word 0
     b1_var: .word 0
     t10_var: .word 0
-    t12_var: .word 0
     t11_var: .word 0
     t_cond_var: .word 0
     var2_var: .word 0
@@ -51,7 +50,7 @@
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/haha_intermediate.txt
 mi:
-    # 🚀 UNIVERSAL: Prólogo para mi
+    # UNIVERSAL: Prólogo para mi
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -71,14 +70,14 @@ mi:
 
     # DECLARE var2 INT
     # DECLARE str STRING
-    # DECLARE k INT
-    # k = 0
+    # DECLARE i INT
+    # i = 0
     li $t0, 0
-    sw $t0, k_var
+    sw $t0, i_var
 
-    # k = 0
+    # i = 0
     li $t0, 0
-    sw $t0, k_var
+    sw $t0, i_var
 
     # var2 = 1
     li $t0, 1
@@ -92,7 +91,13 @@ mi:
 
 L6:
     # t1 = 3 ** 4
-    li $t0, 0    # ERROR: No se pudo procesar '3 ** 4'
+    li $t1, 3
+    li $t2, 4
+    # Potencia: 3 ** 4
+    move $a0, $t1
+    move $a1, $t2
+    jal power_function
+    move $t0, $v0
     sw $t0, t1_var
 
     # t2 = 2 * t1
@@ -108,16 +113,10 @@ L6:
     add $t0, $t1, $t2
     sw $t0, t3_var
 
-    # t4 = 4 + k
-    li $t1, 4
-    lw $t2, k_var
-    add $t0, $t1, $t2
-    sw $t0, t4_var
-
-    # t5 = k < t4
-    lw $t1, k_var
-    lw $t2, t4_var
-    # k < t4
+    # t4 = i < 4
+    lw $t1, i_var
+    li $t2, 4
+    # i < 4
     sub $t3, $t1, $t2    # t1 - t2
     bltz $t3, set_true_lt_1
     li $t0, 0
@@ -125,9 +124,9 @@ L6:
 set_true_lt_1:
     li $t0, 1
 end_lt_1:
-    sw $t0, t5_var
+    sw $t0, t4_var
 
-    # t6 = var2 > 122
+    # t5 = var2 > 122
     lw $t1, var2_var
     li $t2, 122
     # var2 > 122
@@ -138,18 +137,18 @@ end_lt_1:
 set_true_gt_2:
     li $t0, 1
 end_gt_2:
-    sw $t0, t6_var
+    sw $t0, t5_var
 
-    # t7 = 34 + 35
+    # t6 = 34 + 35
     li $t1, 34
     li $t2, 35
     add $t0, $t1, $t2
-    sw $t0, t7_var
+    sw $t0, t6_var
 
-    # t8 = 12 > t7
+    # t7 = 12 > t6
     li $t1, 12
-    lw $t2, t7_var
-    # 12 > t7
+    lw $t2, t6_var
+    # 12 > t6
     sub $t3, $t2, $t1    # t2 - t1
     bltz $t3, set_true_gt_3
     li $t0, 0
@@ -157,13 +156,16 @@ end_gt_2:
 set_true_gt_3:
     li $t0, 1
 end_gt_3:
+    sw $t0, t7_var
+
+    # t8 = t5 && t7
+    lw $t1, t5_var
+    lw $t2, t7_var
+    # AND lógico
+    and $t0, $t1, $t2
     sw $t0, t8_var
 
-    # t9 = t6 && t8
-    li $t0, 0    # ERROR: No se pudo procesar 't6 && t8'
-    sw $t0, t9_var
-
-    # t10 = var == 0
+    # t9 = var == 0
     lw $t1, var_var
     li $t2, 0
     # var == 0
@@ -174,7 +176,7 @@ end_gt_3:
 set_true_eq_4:
     li $t0, 1
 end_eq_4:
-    sw $t0, t10_var
+    sw $t0, t9_var
 
 L7:
 L1:
@@ -214,13 +216,13 @@ end_le_5:
     j L1
 
 L2:
-    # RETURN 1
-    li $v0, 1
+    # RETURN 1.0
+    li $v0, 100    # Float 1.0 (*100)
     # Valor de retorno en $v0
     j exit_mi
 
 
-# 🚀 UNIVERSAL: Epílogo para mi
+#  UNIVERSAL: Epílogo para mi
 exit_mi:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -232,7 +234,7 @@ exit_mi:
     jr $ra
 
 miOtraFun:
-    # 🚀 UNIVERSAL: Prólogo para miOtraFun
+    # UNIVERSAL: Prólogo para miOtraFun
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -249,7 +251,7 @@ miOtraFun:
     j exit_miOtraFun
 
 
-# 🚀 UNIVERSAL: Epílogo para miOtraFun
+#  UNIVERSAL: Epílogo para miOtraFun
 exit_miOtraFun:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -261,7 +263,7 @@ exit_miOtraFun:
     jr $ra
 
 main:
-    # 🚀 UNIVERSAL: Prólogo para main
+    # UNIVERSAL: Prólogo para main
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -281,11 +283,11 @@ main:
     li $t0, 1
     sw $t0, i_var
 
-    # t11 = 67 + i
+    # t10 = 67 + i
     li $t1, 67
     lw $t2, i_var
     add $t0, $t1, $t2
-    sw $t0, t11_var
+    sw $t0, t10_var
 
     # DECLARE b1 BOOL
     # b1 = true
@@ -310,18 +312,18 @@ main:
     la $a0, nl
     jal print_string
 
-    # t12 = -6.7
+    # t11 = -6.7
     li $t0, -670    # Float -6.7 (*100)
-    sw $t0, t12_var
+    sw $t0, t11_var
 
-    # WRITE t12
-    lw $a0, t12_var
+    # WRITE t11
+    lw $a0, t11_var
     jal print_float_decimal
     la $a0, nl
     jal print_string
 
 
-# 🚀 UNIVERSAL: Epílogo para main
+#  UNIVERSAL: Epílogo para main
 exit_main:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales

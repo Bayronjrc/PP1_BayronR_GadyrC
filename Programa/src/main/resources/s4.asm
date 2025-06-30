@@ -66,7 +66,7 @@
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/s4_intermediate.txt
 filo:
-    # 🚀 UNIVERSAL: Prólogo para filo
+    # UNIVERSAL: Prólogo para filo
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -74,7 +74,7 @@ filo:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # 🚀 UNIVERSAL: Guardar parámetros de filo
+    # UNIVERSAL: Guardar parámetros de filo
     sw $a0, -4($fp)   # n local
     sw $a0, n_var     # n global
 
@@ -116,7 +116,7 @@ L1:
 
     # PARAM temp
     lw $a0, temp_var
-    # ✅ UNIVERSAL: Parámetro temp cargado en $a0
+    #  UNIVERSAL: Parámetro temp cargado en $a0
 
     # t3 = CALL filo 1
     jal filo
@@ -145,7 +145,7 @@ L1:
     j exit_filo
 
 
-# 🚀 UNIVERSAL: Epílogo para filo
+#  UNIVERSAL: Epílogo para filo
 exit_filo:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -157,7 +157,7 @@ exit_filo:
     jr $ra
 
 azul:
-    # 🚀 UNIVERSAL: Prólogo para azul
+    # UNIVERSAL: Prólogo para azul
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -165,7 +165,7 @@ azul:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # 🚀 UNIVERSAL: Guardar parámetros de azul
+    # UNIVERSAL: Guardar parámetros de azul
     sw $a0, -4($fp)   # n local
     sw $a0, n_var     # n global
 
@@ -218,7 +218,7 @@ L2:
 
     # PARAM temp1
     lw $a0, temp1_var
-    # ✅ UNIVERSAL: Parámetro temp1 cargado en $a0
+    #  UNIVERSAL: Parámetro temp1 cargado en $a0
 
     # t8 = CALL azul 1
     jal azul
@@ -231,7 +231,7 @@ L2:
 
     # PARAM temp2
     lw $a0, temp2_var
-    # ✅ UNIVERSAL: Parámetro temp2 cargado en $a0
+    #  UNIVERSAL: Parámetro temp2 cargado en $a0
 
     # t9 = CALL azul 1
     jal azul
@@ -259,7 +259,7 @@ L2:
     j exit_azul
 
 
-# 🚀 UNIVERSAL: Epílogo para azul
+#  UNIVERSAL: Epílogo para azul
 exit_azul:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -271,7 +271,7 @@ exit_azul:
     jr $ra
 
 pocoyo:
-    # 🚀 UNIVERSAL: Prólogo para pocoyo
+    # UNIVERSAL: Prólogo para pocoyo
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -279,7 +279,7 @@ pocoyo:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # 🚀 UNIVERSAL: Guardar parámetros de pocoyo
+    # UNIVERSAL: Guardar parámetros de pocoyo
     sw $a0, -4($fp)   # base local
     sw $a0, base_var     # base global
     sw $a1, -8($fp)   # exp local
@@ -324,11 +324,11 @@ L3:
 
     # PARAM base
     lw $a0, -4($fp)   # base local
-    # ✅ UNIVERSAL: Parámetro base cargado en $a0
+    #  UNIVERSAL: Parámetro base cargado en $a0
 
     # PARAM temp
     lw $a1, temp_var
-    # ✅ UNIVERSAL: Parámetro temp cargado en $a1
+    #  UNIVERSAL: Parámetro temp cargado en $a1
 
     # t13 = CALL pocoyo 2
     jal pocoyo
@@ -357,7 +357,7 @@ L3:
     j exit_pocoyo
 
 
-# 🚀 UNIVERSAL: Epílogo para pocoyo
+#  UNIVERSAL: Epílogo para pocoyo
 exit_pocoyo:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -369,7 +369,7 @@ exit_pocoyo:
     jr $ra
 
 mcd:
-    # 🚀 UNIVERSAL: Prólogo para mcd
+    # UNIVERSAL: Prólogo para mcd
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -377,7 +377,7 @@ mcd:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # 🚀 UNIVERSAL: Guardar parámetros de mcd
+    # UNIVERSAL: Guardar parámetros de mcd
     sw $a0, -4($fp)   # a local
     sw $a0, a_var     # a global
     sw $a1, -8($fp)   # b local
@@ -423,11 +423,11 @@ L4:
 
     # PARAM b
     lw $a0, -8($fp)   # b local
-    # ✅ UNIVERSAL: Parámetro b cargado en $a0
+    #  UNIVERSAL: Parámetro b cargado en $a0
 
     # PARAM resto
     lw $a1, resto_var
-    # ✅ UNIVERSAL: Parámetro resto cargado en $a1
+    #  UNIVERSAL: Parámetro resto cargado en $a1
 
     # t17 = CALL mcd 2
     jal mcd
@@ -444,7 +444,7 @@ L4:
     j exit_mcd
 
 
-# 🚀 UNIVERSAL: Epílogo para mcd
+#  UNIVERSAL: Epílogo para mcd
 exit_mcd:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -456,7 +456,7 @@ exit_mcd:
     jr $ra
 
 testRecursion:
-    # 🚀 UNIVERSAL: Prólogo para testRecursion
+    # UNIVERSAL: Prólogo para testRecursion
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -469,7 +469,7 @@ testRecursion:
     # Inicio de función
     # PARAM 5
     li $a0, 5
-    # ✅ UNIVERSAL: Parámetro 5 cargado en $a0
+    #  UNIVERSAL: Parámetro 5 cargado en $a0
 
     # t18 = CALL azul 1
     jal azul
@@ -488,11 +488,11 @@ testRecursion:
 
     # PARAM 2
     li $a0, 2
-    # ✅ UNIVERSAL: Parámetro 2 cargado en $a0
+    #  UNIVERSAL: Parámetro 2 cargado en $a0
 
     # PARAM 3
     li $a1, 3
-    # ✅ UNIVERSAL: Parámetro 3 cargado en $a1
+    #  UNIVERSAL: Parámetro 3 cargado en $a1
 
     # t19 = CALL pocoyo 2
     jal pocoyo
@@ -511,11 +511,11 @@ testRecursion:
 
     # PARAM 12
     li $a0, 12
-    # ✅ UNIVERSAL: Parámetro 12 cargado en $a0
+    #  UNIVERSAL: Parámetro 12 cargado en $a0
 
     # PARAM 8
     li $a1, 8
-    # ✅ UNIVERSAL: Parámetro 8 cargado en $a1
+    #  UNIVERSAL: Parámetro 8 cargado en $a1
 
     # t20 = CALL mcd 2
     jal mcd
@@ -534,7 +534,7 @@ testRecursion:
 
     # PARAM 4
     li $a0, 4
-    # ✅ UNIVERSAL: Parámetro 4 cargado en $a0
+    #  UNIVERSAL: Parámetro 4 cargado en $a0
 
     # t21 = CALL filo 1
     jal filo
@@ -552,7 +552,7 @@ testRecursion:
     jal print_string
 
 
-# 🚀 UNIVERSAL: Epílogo para testRecursion
+#  UNIVERSAL: Epílogo para testRecursion
 exit_testRecursion:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -564,7 +564,7 @@ exit_testRecursion:
     jr $ra
 
 main:
-    # 🚀 UNIVERSAL: Prólogo para main
+    # UNIVERSAL: Prólogo para main
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -579,7 +579,7 @@ main:
     jal testRecursion
 
 
-# 🚀 UNIVERSAL: Epílogo para main
+#  UNIVERSAL: Epílogo para main
 exit_main:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
