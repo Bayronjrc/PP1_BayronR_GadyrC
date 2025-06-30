@@ -52,16 +52,16 @@ suma:
     move $fp, $sp
 
     # Guardar parámetros para suma
-    sw $a0, a_var
-    sw $a1, b_var
+    sw $a1, a_var
+    sw $a2, b_var
 
     # Inicio de función
     # DECLARE a INT
     # DECLARE b INT
-    # t1 = a + b
+    # t1 = a * b
     lw $t1, a_var
     lw $t2, b_var
-    add $t0, $t1, $t2
+    mul $t0, $t1, $t2
     sw $t0, t1_var
 
     # DECLARE resultado INT
@@ -166,13 +166,13 @@ testBasico:
 
     # Inicio de función
     # DECLARE x INT
-    # x = 5
-    li $t0, 5
+    # x = 4
+    li $t0, 4
     sw $t0, x_var
 
     # DECLARE y INT
-    # y = 3
-    li $t0, 3
+    # y = 4
+    li $t0, 4
     sw $t0, y_var
 
     # PARAM x
@@ -198,9 +198,9 @@ testBasico:
     la $a0, nl
     jal print_string
 
-    # PARAM 4
-    li $a3, 4
-    # Parámetro 4 cargado en $a3
+    # PARAM 2
+    li $a3, 2
+    # Parámetro 2 cargado en $a3
 
     # t7 = CALL factorial 1
     jal factorial
@@ -217,38 +217,38 @@ testBasico:
     la $a0, nl
     jal print_string
 
-    # DECLARE i INT
-    # i = 0
+    # DECLARE k INT
+    # k = 0
     li $t0, 0
-    sw $t0, i_var
+    sw $t0, k_var
 
-    # i = 0
+    # k = 0
     li $t0, 0
-    sw $t0, i_var
+    sw $t0, k_var
 
-    # t8 = i < 3
-    lw $t1, i_var
-    li $t2, 3
+    # t8 = k < 7
+    lw $t1, k_var
+    li $t2, 7
     slt $t0, $t1, $t2
     sw $t0, t8_var
 
-    # i = i + 1
-    lw $t1, i_var
+    # k = k + 1
+    lw $t1, k_var
     li $t2, 1
     add $t0, $t1, $t2
-    sw $t0, i_var
+    sw $t0, k_var
 
-    # WRITE i
-    lw $a0, i_var
+    # WRITE k
+    lw $a0, k_var
     jal print_int
     la $a0, nl
     jal print_string
 
 L2:
-    # t_cond = k <= 2
+    # t_cond = k < 7
     lw $t1, k_var
-    li $t2, 2
-    sle $t0, $t1, $t2
+    li $t2, 7
+    slt $t0, $t1, $t2
     sw $t0, t_cond_var
 
     # IF NOT t_cond GOTO L3

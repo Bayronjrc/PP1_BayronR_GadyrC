@@ -5,24 +5,29 @@
 
   1: // Código Intermedio Generado
   2: // Archivo: src/main/resources/s3_intermediate.txt
-  3: FUNCTION main RETURNS VOID
-  4: BEGIN
-  5: DECLARE k INT
-  6: k = 1
-  7: L1:
-  8: t_cond = k <= 3
-  9: IF NOT t_cond GOTO L2
- 10: WRITE k
- 11: t_inc = k + 1
- 12: k = t_inc
- 13: GOTO L1
- 14: L2:
- 15: END main
- 16: 
+  3: 
+  4: FUNCTION main RETURNS VOID
+  5: BEGIN
+  6: DECLARE k INT
+  7: k = 0
+  8: k = 1
+  9: t1 = k <= 6
+ 10: k = k + 1
+ 11: WRITE k
+ 12: L1:
+ 13: t_cond = k <= 6
+ 14: IF NOT t_cond GOTO L2
+ 15: WRITE k
+ 16: t_inc = k + 1
+ 17: k = t_inc
+ 18: GOTO L1
+ 19: L2:
+ 20: END main
+ 21: 
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 16
+// Líneas: 21
 // Temporales: 1
 // Etiquetas: 0
 // ========================================

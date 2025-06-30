@@ -1,12 +1,12 @@
- float mi  ʃ int dif, char otra ʅ \  @sintactico  ʅ 
+ int mi  ʃ int dif, char otra ʅ \  
 	int otra? int var|0? int var2|1+2*3**4?
-	string str|"Hola $~&@/$& ʅ  mundo"?
-	for  ʃ int i|0?i<4+i?++i ʅ \  @puede dar sintactico
+	string str|"Hola_$~&@/$&_ʅ_mundo"?
+	for  ʃ int i|0?i<4+i?++i ʅ \ 
 		do \ 
 			var2 | 1? @semantico
-		 / while ʃ var2>122 ^ 12> ʃ 34+35 ʅ  ʅ ? @semantico
+		 / while ʃ var2>122 ^ 12> ʃ 34+35 ʅ  ʅ ?
 		if  ʃ var==0 ʅ \ 
-			write ʃ "entra al if" ʅ ?
+			write ʃ "entra_al_if" ʅ ?
 		 / 
 		if ʃ luna ʅ 
 		 \ 
@@ -18,7 +18,7 @@
 
 		 / 
 	 / 
-	return 1.0? @semantico
+	return 1? @semantico
   / 
 
  bool miOtraFun  ʃ  ʅ   \ 
@@ -29,7 +29,7 @@
  void main ʃ  ʅ  \ @ semantico tipo void
  	int i|1?
 	int arr[67+i][1] | -0.01?  @ semantico
-	bool b1|luna? @ P ilas papi emantico
+	bool b1|luna? @ Pilas papi emantico
 	string s1|"luna"? @ semantico
 	read ʃ s1 ʅ ? @ semantico
 	write ʃ b1 ʅ ? @ semantico

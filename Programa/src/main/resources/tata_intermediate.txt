@@ -6,96 +6,92 @@
   1: // Código Intermedio Generado
   2: // Archivo: src/main/resources/tata_intermediate.txt
   3: 
-  4: DECLARE x22 CHAR
-  5: DECLARE x23 CHAR
-  6: FUNCTION func1 RETURNS FLOAT
-  7: BEGIN
-  8: DECLARE z FLOAT
-  9: z = ERROR
- 10: DECLARE x24 CHAR
- 11: x24 = a
- 12: DECLARE miChar CHAR
- 13: miChar = !
- 14: DECLARE miChar2 CHAR
- 15: miChar2 = !
- 16: DECLARE x30 INT
- 17: x30 = ERROR
- 18: DECLARE x40 BOOL
- 19: x40 = false
- 20: DECLARE x50 CHAR[][]
- 21: // Array inicializado con matriz
- 22: DECLARE x51 STRING
- 23: x51 = Hola a todos los que est[a] haciendo un compilador nuevo\n
- 24: t1 = z > 5.6
- 25: DECLARE y INT
- 26: DECLARE ch33 CHAR
- 27: ch33 = a
- 28: DECLARE str2 STRING
- 29: str2 = sdff
- 30: // Estructura IF-ELIF-ELSE procesada
- 31: DECLARE i INT
- 32: i = 0
- 33: t2 = 4 + i
- 34: i = i + 1
- 35: WRITE i
- 36: // Estructura FOR procesada con declaracion
- 37: WRITE miChar
- 38: READ x40
- 39: RETURN 5.6
- 40: END func1
- 41: 
- 42: FUNCTION func3 RETURNS BOOL
- 43: BEGIN
- 44: DECLARE b1 STRING
- 45: b1 = hola
- 46: RETURN false
- 47: END func3
- 48: 
- 49: DECLARE b1 BOOL
- 50: DECLARE i1 INT
- 51: FUNCTION func2 RETURNS INT
- 52: BEGIN
- 53: DECLARE z INT
- 54: z = 1
- 55: RETURN 1
- 56: END func2
- 57: 
- 58: FUNCTION main RETURNS VOID
- 59: BEGIN
- 60: DECLARE miChar CHAR
- 61: miChar = !
- 62: DECLARE miChar2 CHAR
- 63: miChar2 = !
- 64: DECLARE str1 STRING
- 65: str1 = Mi string 1
- 66: DECLARE fl1 FLOAT
- 67: fl1 = 56.6
- 68: DECLARE in2 INT
- 69: in2 = 2
- 70: in2 = in2 + 1
- 71: t3 = in2 - 14
- 72: DECLARE in1 INT
- 73: in1 = ERROR
- 74: t4 = 3.7 ** fl1
- 75: DECLARE fl2 FLOAT
- 76: fl2 = ERROR
- 77: DECLARE arr INT[][]
- 78: // Array inicializado con matriz
- 79: t5 = CALL func1 0
- 80: t6 = 6.7 != 8.9
- 81: DECLARE bl0 BOOL
- 82: bl0 = t6
- 83: t7 = in1 >= fl1
- 84: t8 = CALL func2 0
- 85: DECLARE bl1 BOOL
- 86: bl1 = ERROR
- 87: RETURN bl1
- 88: END main
- 89: 
+  4: FUNCTION func1 RETURNS FLOAT
+  5: BEGIN
+  6: DECLARE x22 CHAR
+  7: DECLARE x23 CHAR
+  8: t1 = -0.01
+  9: DECLARE z FLOAT
+ 10: z = t1
+ 11: DECLARE x24 CHAR
+ 12: x24 = a
+ 13: DECLARE miChar CHAR
+ 14: miChar = !
+ 15: DECLARE miChar2 CHAR
+ 16: miChar2 = !
+ 17: t2 = -1
+ 18: DECLARE x30 INT
+ 19: x30 = t2
+ 20: DECLARE x40 BOOL
+ 21: x40 = false
+ 22: DECLARE x50 CHAR[][]
+ 23: // Array inicializado con matriz
+ 24: DECLARE x51 STRING
+ 25: x51 = Hola a todos los que est[a] haciendo un compilador nuevo\n
+ 26: t3 = z > 5.6
+ 27: DECLARE y INT
+ 28: x30 = 10
+ 29: DECLARE ch33 CHAR
+ 30: ch33 = a
+ 31: x30 = 10
+ 32: ch33 = a
+ 33: DECLARE str2 STRING
+ 34: str2 = sdff
+ 35: DECLARE i INT
+ 36: i = 0
+ 37: i = 0
+ 38: t4 = 4 + i
+ 39: t5 = i < t4
+ 40: i = i + 1
+ 41: WRITE i
+ 42: L1:
+ 43: t_cond = k <= 2
+ 44: IF NOT t_cond GOTO L2
+ 45: WRITE k
+ 46: t_inc = k + 1
+ 47: k = t_inc
+ 48: GOTO L1
+ 49: L2:
+ 50: WRITE miChar
+ 51: READ x40
+ 52: RETURN 5.6
+ 53: DECLARE b1 STRING
+ 54: b1 = hola
+ 55: RETURN false
+ 56: RETURN 1
+ 57: DECLARE str1 STRING
+ 58: str1 = Mi string 1
+ 59: DECLARE fl1 FLOAT
+ 60: fl1 = 56.6
+ 61: DECLARE in2 INT
+ 62: in2 = 2
+ 63: in2 = in2 + 1
+ 64: t6 = in2 - 14
+ 65: t7 = in2 % 7
+ 66: t8 = t7 / 15
+ 67: t9 = t6 + t8
+ 68: DECLARE in1 INT
+ 69: in1 = t9
+ 70: t10 = 3.7 ** fl1
+ 71: DECLARE fl2 FLOAT
+ 72: fl2 = 76
+ 73: DECLARE arr INT[][]
+ 74: // Array inicializado con matriz
+ 75: t11 = arr[67][67]
+ 76: t12 = -0.005
+ 77: t13 = 6.7 != 8.9
+ 78: DECLARE bl0 BOOL
+ 79: bl0 = t13
+ 80: t14 = true != false
+ 81: bl0 = t14
+ 82: t15 = in1 >= fl1
+ 83: DECLARE bl1 BOOL
+ 84: bl1 = 56
+ 85: RETURN bl1
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 89
-// Temporales: 8
+// Líneas: 85
+// Temporales: 15
 // Etiquetas: 0
 // ========================================

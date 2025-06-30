@@ -15,7 +15,7 @@ void testLopps ʃ ʅ \
             continue ?
         /
 
-        if ʃ x == 2 ʅ \
+        if ʃ x == 6 ʅ \
             break ?
         /
 

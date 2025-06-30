@@ -6,12 +6,12 @@ int fibonnaci ʃ int n ʅ \
 /
 
 void test ʃ ʅ \
-    int matrix[3][3] ?
-    for ʃ int i|0? i < 3? ++i ʅ \
-        for ʃ int j|0? j < 3 ? ++j ʅ \
+    int matrix[4][4] ?
+    for ʃ int i|0? i < 4? ++i ʅ \
+        for ʃ int j|0? j < 4 ? ++j ʅ \
             matrix[i][j] | fibonnaci ʃ i + j ʅ ?
 
-            if ʃ matrix[i][j] > 5 ʅ \
+            if ʃ matrix[i][j] > 6 ʅ \
                 break ?
             /
             write ʃ matrix[i][j] ʅ ?

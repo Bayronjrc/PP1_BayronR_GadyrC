@@ -24,6 +24,7 @@
     j_var: .word 0
     k_var: .word 0
     t_inc_var: .word 0
+    t1_var: .word 0
 
 .text
 .globl main
@@ -39,14 +40,36 @@ main:
 
     # Inicio de función
     # DECLARE k INT
+    # k = 0
+    li $t0, 0
+    sw $t0, k_var
+
     # k = 1
     li $t0, 1
     sw $t0, k_var
 
-L1:
-    # t_cond = k <= 3
+    # t1 = k <= 6
     lw $t1, k_var
-    li $t2, 3
+    li $t2, 6
+    sle $t0, $t1, $t2
+    sw $t0, t1_var
+
+    # k = k + 1
+    lw $t1, k_var
+    li $t2, 1
+    add $t0, $t1, $t2
+    sw $t0, k_var
+
+    # WRITE k
+    lw $a0, k_var
+    jal print_int
+    la $a0, nl
+    jal print_string
+
+L1:
+    # t_cond = k <= 6
+    lw $t1, k_var
+    li $t2, 6
     sle $t0, $t1, $t2
     sw $t0, t_cond_var
 

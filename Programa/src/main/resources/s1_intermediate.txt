@@ -10,7 +10,7 @@
   5: BEGIN
   6: DECLARE a INT
   7: DECLARE b INT
-  8: t1 = a + b
+  8: t1 = a * b
   9: DECLARE resultado INT
  10: resultado = t1
  11: RETURN resultado
@@ -37,28 +37,28 @@
  32: FUNCTION testBasico RETURNS VOID
  33: BEGIN
  34: DECLARE x INT
- 35: x = 5
+ 35: x = 4
  36: DECLARE y INT
- 37: y = 3
+ 37: y = 4
  38: PARAM x
  39: PARAM y
  40: t6 = CALL suma 2
  41: DECLARE resultado1 INT
  42: resultado1 = t6
  43: WRITE resultado1
- 44: PARAM 4
+ 44: PARAM 2
  45: t7 = CALL factorial 1
  46: DECLARE resultado2 INT
  47: resultado2 = t7
  48: WRITE resultado2
- 49: DECLARE i INT
- 50: i = 0
- 51: i = 0
- 52: t8 = i < 3
- 53: i = i + 1
- 54: WRITE i
+ 49: DECLARE k INT
+ 50: k = 0
+ 51: k = 0
+ 52: t8 = k < 7
+ 53: k = k + 1
+ 54: WRITE k
  55: L2:
- 56: t_cond = k <= 2
+ 56: t_cond = k < 7
  57: IF NOT t_cond GOTO L3
  58: WRITE k
  59: t_inc = k + 1

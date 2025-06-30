@@ -5,70 +5,68 @@
 
   1: // Código Intermedio Generado
   2: // Archivo: src/main/resources/haha_intermediate.txt
-  3: 
-  4: DECLARE dif INT
-  5: DECLARE otra CHAR
-  6: FUNCTION mi RETURNS FLOAT
-  7: BEGIN
-  8: DECLARE otra INT
-  9: DECLARE var INT
- 10: var = 0
- 11: t1 = 3 ** 4
- 12: t2 = 2 * t1
- 13: t3 = 1 + t2
- 14: DECLARE var2 INT
- 15: var2 = t3
- 16: DECLARE str STRING
- 17: str = Hola $~&@/$& ʅ  mundo
- 18: DECLARE i INT
- 19: i = 0
- 20: t4 = 4 + i
- 21: t5 = i < t4
- 22: i = i + 1
- 23: var2 = 1
- 24: t6 = var2 > 122
- 25: t7 = 34 + 35
- 26: t8 = 12 > t7
- 27: t9 = t6 && t8
- 28: // Estructura DO-WHILE procesada
- 29: // Condicion: BOOL
- 30: t10 = var == 0
- 31: WRITE STRING
- 32: // Estructura IF procesada
- 33: // Condicion: BOOL
- 34: WRITE INT
- 35: WRITE INT
- 36: // Estructura IF-ELSE procesada
- 37: // Estructura FOR procesada con declaracion
- 38: RETURN FLOAT
- 39: END mi
- 40: 
- 41: FUNCTION miOtraFun RETURNS BOOL
- 42: BEGIN
- 43: RETURN BOOL
- 44: END miOtraFun
- 45: 
- 46: FUNCTION main RETURNS VOID
- 47: BEGIN
- 48: DECLARE i INT
- 49: i = 1
- 50: t11 = 67 + i
- 51: t12 = -0.01
- 52: DECLARE b1 BOOL
- 53: b1 = true
- 54: DECLARE s1 STRING
- 55: s1 = luna
- 56: READ s1
- 57: WRITE BOOL
- 58: WRITE BOOL
- 59: t13 = -6.7
- 60: WRITE FLOAT
- 61: END main
- 62: 
+  3: FUNCTION mi RETURNS INT
+  4: BEGIN
+  5: DECLARE dif INT
+  6: DECLARE otra CHAR
+  7: DECLARE var INT
+  8: var = 0
+  9: DECLARE var2 INT
+ 10: DECLARE str STRING
+ 11: DECLARE i INT
+ 12: i = 0
+ 13: i = 0
+ 14: var2 = 1
+ 15: IF NOT true GOTO L6
+ 16: GOTO L7
+ 17: L6:
+ 18: t1 = 3 ** 4
+ 19: t2 = 2 * t1
+ 20: t3 = 1 + t2
+ 21: t4 = 4 + i
+ 22: t5 = i < t4
+ 23: t6 = var2 > 122
+ 24: t7 = 34 + 35
+ 25: t8 = 12 > t7
+ 26: t9 = t6 && t8
+ 27: t10 = var == 0
+ 28: L7:
+ 29: L1:
+ 30: t_cond = k <= 2
+ 31: IF NOT t_cond GOTO L2
+ 32: WRITE k
+ 33: t_inc = k + 1
+ 34: k = t_inc
+ 35: GOTO L1
+ 36: L2:
+ 37: RETURN 1
+ 38: END mi
+ 39: FUNCTION miOtraFun RETURNS BOOL
+ 40: BEGIN
+ 41: RETURN true
+ 42: END miOtraFun
+ 43: FUNCTION main RETURNS VOID
+ 44: BEGIN
+ 45: DECLARE i INT
+ 46: i = 0
+ 47: i = 1
+ 48: t11 = 67 + i
+ 49: t12 = -0.01
+ 50: DECLARE b1 BOOL
+ 51: b1 = true
+ 52: DECLARE s1 STRING
+ 53: s1 = luna
+ 54: READ s1
+ 55: WRITE b1
+ 56: WRITE true
+ 57: t13 = -6.7
+ 58: WRITE t13
+ 59: END main
+ 60: 
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 62
+// Líneas: 60
 // Temporales: 13
 // Etiquetas: 0
 // ========================================

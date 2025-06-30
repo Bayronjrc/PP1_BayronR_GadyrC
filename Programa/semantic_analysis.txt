@@ -1,17 +1,70 @@
 ===== ANÁLISIS SEMÁNTICO =====
 Alcances procesados total: 5
-Alcances activos: 1
-Errores semánticos: 0
+Alcances activos: 2
+Errores semánticos: 25
 Advertencias: 0
 
-===== INFORMACIÓN DE ALCANCES =====
-Alcance 1: Scope[global, nivel=0, tipo=GLOBAL, simbolos=4]
-  - Símbolos locales: 4
-  - Variables: 0, Funciones: 4
+===== ERRORES SEMÁNTICOS =====
+Tipos incompatibles en comparación '<=': CHAR y INT en línea 13
+Operación lógica '&&' requiere operando booleano, encontrado: ERROR en línea 13
+Tipos incompatibles en comparación '>=': CHAR y FLOAT en línea 18
+Función 'func1' esperaba retornar FLOAT pero retorna BOOL en línea 33
+Variable 'z' ya declarada en este alcance en linea 37
+Variable 'miChar' ya declarada en este alcance en linea 44
+Variable 'miChar2' ya declarada en este alcance en linea 45
+Operando derecho de '+' debe ser numérico, encontrado: ERROR en línea 50
+Tipos incompatibles: esperado 'FLOAT', encontrado 'ERROR' en línea 50
+Funcion 'func1' espera 2 argumentos, pero se proporcionaron 4 en linea 53
+Operando derecho de '*' debe ser numérico, encontrado: ERROR en línea 53
+Operando derecho de '-' debe ser numérico, encontrado: ERROR en línea 53
+Tipos incompatibles en asignacion: 'INT' no puede recibir 'ERROR' en linea 53
+Operando izquierdo de '**' debe ser numérico, encontrado: CHAR en línea 54
+Tipos incompatibles en asignacion: 'FLOAT' no puede recibir 'ERROR' en linea 54
+Funcion 'miFunc' no declarada en linea 55
+Funcion 'miFunc' no declarada en linea 55
+Funcion 'func2' no declarada en linea 58
+Operación relacional '>' requiere operandos numéricos o char en línea 58
+Operación lógica '!' requiere operando booleano, encontrado: ERROR en línea 58
+Operación lógica '&&' requiere ambos operandos booleanos, encontrado: ERROR en línea 58
+Operación lógica '||' requiere ambos operandos booleanos, encontrado: ERROR en línea 58
+Tipos incompatibles: esperado 'BOOL', encontrado 'ERROR' en línea 58
+Función 'func1' esperaba retornar FLOAT pero retorna BOOL en línea 59
+Función 'main' no encontrada
 
-===== ALCANCE: Scope[global, nivel=0, tipo=GLOBAL, simbolos=4] =====
-Lexema: suma, Tipo: ID, Tipo Variable: INT, Linea: 1, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Parametros: [INT, INT], Utilizada: Si
-Lexema: main, Tipo: ID, Tipo Variable: VOID, Linea: 32, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: No
-Lexema: testBasico, Tipo: ID, Tipo Variable: VOID, Linea: 16, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: Si
-Lexema: factorial, Tipo: ID, Tipo Variable: INT, Linea: 6, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Parametros: [INT], Utilizada: Si
+===== INFORMACIÓN DE ALCANCES =====
+Alcance 1: Scope[global, nivel=0, tipo=GLOBAL, simbolos=1]
+  - Símbolos locales: 1
+  - Variables: 0, Funciones: 1
+
+Alcance 2: Scope[func1, nivel=1, tipo=FUNCTION, simbolos=23]
+  - Símbolos locales: 23
+  - Variables: 23, Funciones: 0
+
+===== ALCANCE: Scope[global, nivel=0, tipo=GLOBAL, simbolos=1] =====
+Lexema: func1, Tipo: ID, Tipo Variable: FLOAT, Linea: 3, Columna: 8, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Parametros: [CHAR, CHAR], Utilizada: Si
+
+===== ALCANCE: Scope[func1, nivel=1, tipo=FUNCTION, simbolos=23] =====
+Lexema: arr, Tipo: ID, Tipo Variable: INT[][], Linea: 51, Columna: 6, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: No, Utilizada: Si
+Lexema: bl1, Tipo: ID, Tipo Variable: BOOL, Linea: 58, Columna: 7, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: Si
+Lexema: bl0, Tipo: ID, Tipo Variable: BOOL, Linea: 56, Columna: 7, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: Si
+Lexema: i, Tipo: ID, Tipo Variable: INT, Linea: 25, Columna: 13, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: Si
+Lexema: fl1, Tipo: ID, Tipo Variable: FLOAT, Linea: 47, Columna: 8, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: Si
+Lexema: ch33, Tipo: ID, Tipo Variable: CHAR, Linea: 16, Columna: 8, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: Si
+Lexema: in2, Tipo: ID, Tipo Variable: INT, Linea: 48, Columna: 6, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: Si
+Lexema: in1, Tipo: ID, Tipo Variable: INT, Linea: 49, Columna: 6, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: Si
+Lexema: fl2, Tipo: ID, Tipo Variable: FLOAT, Linea: 50, Columna: 8, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: No
+Lexema: b1, Tipo: ID, Tipo Variable: STRING, Linea: 32, Columna: 9, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: No
+Lexema: x50, Tipo: ID, Tipo Variable: CHAR[][], Linea: 11, Columna: 7, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: No, Utilizada: No
+Lexema: miChar2, Tipo: ID, Tipo Variable: CHAR, Linea: 8, Columna: 7, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: No
+Lexema: x30, Tipo: ID, Tipo Variable: INT, Linea: 9, Columna: 6, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: Si
+Lexema: miChar, Tipo: ID, Tipo Variable: CHAR, Linea: 7, Columna: 7, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: Si
+Lexema: x40, Tipo: ID, Tipo Variable: BOOL, Linea: 10, Columna: 7, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: Si
+Lexema: x51, Tipo: ID, Tipo Variable: STRING, Linea: 12, Columna: 9, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: No
+Lexema: str1, Tipo: ID, Tipo Variable: STRING, Linea: 46, Columna: 9, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: No
+Lexema: str2, Tipo: ID, Tipo Variable: STRING, Linea: 23, Columna: 10, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: No
+Lexema: x23, Tipo: ID, Tipo Variable: CHAR, Linea: 3, Columna: 0, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: No
+Lexema: x22, Tipo: ID, Tipo Variable: CHAR, Linea: 3, Columna: 0, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: No
+Lexema: y, Tipo: ID, Tipo Variable: INT, Linea: 14, Columna: 7, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: No, Utilizada: No
+Lexema: z, Tipo: ID, Tipo Variable: FLOAT, Linea: 5, Columna: 8, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: Si
+Lexema: x24, Tipo: ID, Tipo Variable: CHAR, Linea: 6, Columna: 7, Alcance: 1, Scope: func1, Tipo_Scope: FUNCTION, Ruta_Scope: FUNCTION:func1(1), Variable: Si, Inicializada: Si, Utilizada: Si
 

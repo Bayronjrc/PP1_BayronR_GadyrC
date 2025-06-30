@@ -14,7 +14,15 @@
     false_str:    .asciiz "false"
 
     # Variables del programa
+    a_var: .word 0
+    b_var: .word 0
+    temp_var: .word 0
+    resultado_var: .word 0
+    contador_var: .word 0
     x_var: .word 0
+    i_var: .word 0
+    j_var: .word 0
+    k_var: .word 0
     t1_var: .word 0
     t2_var: .word 0
 
@@ -42,31 +50,19 @@ main:
     slt $t0, $t1, $t2
     sw $t0, t1_var
 
-    # WRITE x
-    lw $a0, x_var
-    jal print_int
-    la $a0, nl
-    jal print_string
+    # IF NOT t1 GOTO L1
+    lw $t0, t1_var
+    beq $t0, $zero, L1
 
+    j L2
+
+L1:
     # t2 = x + 1
     lw $t1, x_var
     li $t2, 1
     add $t0, $t1, $t2
     sw $t0, t2_var
 
-    # IF NOT t1 GOTO L1
-    lw $t0, t1_var
-    beq $t0, $zero, L1
-
-    # WRITE t2
-    lw $a0, t2_var
-    jal print_int
-    la $a0, nl
-    jal print_string
-
-    j L2
-
-L1:
 L2:
 
 # Epílogo simplificado main

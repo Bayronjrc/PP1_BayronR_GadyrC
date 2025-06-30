@@ -5,25 +5,22 @@
 
   1: // Código Intermedio Generado
   2: // Archivo: src/main/resources/aa_intermediate.txt
-  3: 
-  4: FUNCTION main RETURNS VOID
-  5: BEGIN
-  6: DECLARE x INT
-  7: x = 42
-  8: t1 = x < 50
-  9: WRITE x
- 10: t2 = x + 1
- 11: IF NOT t1 GOTO L1
- 12: WRITE t2
- 13: GOTO L2
- 14: L1:
- 15: L2:
- 16: END main
- 17: 
+  3: FUNCTION main RETURNS VOID
+  4: BEGIN
+  5: DECLARE x INT
+  6: x = 42
+  7: t1 = x < 50
+  8: IF NOT t1 GOTO L1
+  9: GOTO L2
+ 10: L1:
+ 11: t2 = x + 1
+ 12: L2:
+ 13: END main
+ 14: 
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 17
+// Líneas: 14
 // Temporales: 2
 // Etiquetas: 0
 // ========================================
