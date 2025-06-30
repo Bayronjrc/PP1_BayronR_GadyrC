@@ -31,6 +31,7 @@ public class MipsGenerator {
     private Map<String, String> stringLiterals = new HashMap<>();
     private int stringCounter = 1;
     private int labelCounter = 1;
+    private Set<String> floatVariables = new HashSet<>();
 
     
     public MipsGenerator() {
@@ -46,7 +47,8 @@ public class MipsGenerator {
         this.inFunction = false;
         this.currentFunction = null;
         this.currentParamCount = 0;
-        this.labelCounter = 1;  
+        this.labelCounter = 1; 
+        this.floatVariables = new HashSet<>(); 
 
         
         initializeConstants();
@@ -173,6 +175,13 @@ public class MipsGenerator {
                     if (!declaredVariables.contains(varName)) {
                         declaredVariables.add(varName);
                         variables.put(varName, varName + "_var");
+                        
+                        // ✅ NUEVO: Rastrear variables flotantes por tipo
+                        if (varType.equals("FLOAT")) {
+                            floatVariables.add(varName);
+                            System.out.println("✅ Variable FLOAT declarada: " + varName);
+                        }
+                        
                         System.out.println("✅ Variable encontrada: " + varName + " tipo " + varType);
                     }
                 }
@@ -182,6 +191,17 @@ public class MipsGenerator {
                 if (parts.length == 2) {
                     String leftSide = parts[0].trim();
                     String rightSide = parts[1].trim();
+                    
+                    // ✅ NUEVO: Si asigna un literal flotante, marcar variable como flotante
+                    if (containsFloatLiteral(rightSide)) {
+                        floatVariables.add(leftSide);
+                        System.out.println("✅ Variable marcada como FLOAT por literal: " + leftSide + " = " + rightSide);
+                    }
+                    // ✅ NUEVO: Si asigna desde variable flotante, propagar el tipo
+                    else if (containsFloatVariable(rightSide)) {
+                        floatVariables.add(leftSide);
+                        System.out.println("✅ Variable marcada como FLOAT por propagación: " + leftSide);
+                    }
                     
                     // ✅ NUEVO: Detectar string literal CON comillas
                     if (rightSide.startsWith("\"") && rightSide.endsWith("\"")) {
@@ -228,10 +248,35 @@ public class MipsGenerator {
         }
         
         System.out.println("DEBUG: Variables encontradas: " + declaredVariables);
+        System.out.println("DEBUG: Variables flotantes: " + floatVariables);
         System.out.println("DEBUG: Strings literales: " + stringLiterals.keySet());
         System.out.println("DEBUG: Parámetros reales detectados: " + functionParameters);
     }
     
+    private boolean containsFloatLiteral(String expr) {
+        String[] tokens = expr.split("[\\s\\+\\-\\*/<>=!]+");
+        for (String token : tokens) {
+            token = token.trim();
+            if (token.contains(".") && isNumber(token)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containsFloatVariable(String expr) {
+        String[] tokens = expr.split("[\\s\\+\\-\\*/<>=!]+");
+        for (String token : tokens) {
+            token = token.trim();
+            if (floatVariables.contains(token)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    
+
     private String handleStringLiteral(String literal) {
         if (!stringLiterals.containsKey(literal)) {
             String label = "str_" + stringCounter++;
@@ -723,7 +768,6 @@ public class MipsGenerator {
         System.out.println("DEBUG: Array assignment simplificado: " + arrayAccess + " → " + simplifiedName);
     }
     
-    // ✅ MEJORADO: evaluateExpression() con operadores adicionales
     private void evaluateExpression(String expr, String targetReg) {
         expr = expr.trim();
         
@@ -1260,11 +1304,26 @@ public class MipsGenerator {
     }
     
     private boolean isFloatVariable(String varName) {
-        // Detectar por nombre de variable (fl, float, z en algunos casos)
+        // Primero verificar si está en el conjunto de variables flotantes
+        if (floatVariables.contains(varName)) {
+            return true;
+        }
+        
+        // Heurísticas adicionales
         return varName.startsWith("fl") || 
-            varName.startsWith("t") && varName.contains("_") || // temporales de operaciones flotantes
-            varName.equals("z") || // basado en tu código intermedio
-            varName.contains("float");
+            varName.equals("z") ||  // basado en tu código específico
+            varName.contains("float") ||
+            varName.matches("t\\d+") && containsFloatInTemporary(varName); // temporales de operaciones flotantes
+    }
+
+    private boolean containsFloatInTemporary(String tempVar) {
+        for (String line : intermediateCode) {
+            if (line.startsWith(tempVar + " = ")) {
+                String expr = line.split(" = ")[1].trim();
+                return containsFloatLiteral(expr) || containsFloatVariable(expr);
+            }
+        }
+        return false;
     }
 
     private void processFunctionCall(String line) {
