@@ -31,23 +31,27 @@
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/s5_intermediate.txt
 multiplicar:
-    # Prólogo simplificado multiplicar
+    # Prólogo estándar multiplicar
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
 
-    # ✅ FIX s5: Guardar parámetros para multiplicar(a, b)
+    # Guardar parámetros en stack frame local
+    sw $a0, -4($fp)   # a local
+    sw $a1, -8($fp)   # b local
+    # También en variables globales para compatibilidad
     sw $a0, a_var
     sw $a1, b_var
-    # Parámetros a y b guardados
 
     # Inicio de función
     # DECLARE a INT
     # DECLARE b INT
     # t1 = a * b
-    lw $t1, a_var
-    lw $t2, b_var
+    lw $t1, -4($fp)   # a local
+    lw $t2, -8($fp)   # b local
     mul $t0, $t1, $t2
     sw $t0, t1_var
 
@@ -62,8 +66,11 @@ multiplicar:
     j exit_multiplicar
 
 
-# Epílogo simplificado multiplicar
+# Epílogo estándar multiplicar
 exit_multiplicar:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)
@@ -71,20 +78,28 @@ exit_multiplicar:
     jr $ra
 
 main:
-    # Prólogo simplificado main
+    # Prólogo estándar main
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función genérica - guardar hasta 4 parámetros en stack frame
+    sw $a0, -4($fp)   # param1 local
+    sw $a1, -8($fp)   # param2 local
+    sw $a2, -12($fp)  # param3 local
+    sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
-    # PARAM 4
-    li $a0, 4
-    # ✅ s1: Parámetro 4 cargado en $a0
+    # PARAM 5
+    li $a0, 5
+    # ✅ FIXED: Parámetro 5 cargado en $a0
 
-    # PARAM 3
-    li $a1, 3
-    # Parámetro 3 cargado en $a1
+    # PARAM 5
+    li $a1, 5
+    # ✅ FIXED: Parámetro 5 cargado en $a1
 
     # t2 = CALL multiplicar 2
     jal multiplicar
@@ -102,8 +117,11 @@ main:
     jal print_string
 
 
-# Epílogo simplificado main
+# Epílogo estándar main
 exit_main:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)

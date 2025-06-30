@@ -23,13 +23,10 @@
     t7_var: .word 0
     resultado_var: .word 0
     t8_var: .word 0
-    i_var: .word 0
-    j_var: .word 0
     k_var: .word 0
     n_var: .word 0
     resultado1_var: .word 0
     resultado2_var: .word 0
-    contador_var: .word 0
     recurse_var: .word 0
     t_cond_var: .word 0
     x_var: .word 0
@@ -45,23 +42,27 @@
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/s1_intermediate.txt
 suma:
-    # Prólogo simplificado suma
+    # Prólogo estándar suma
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
 
-    # Guardar parámetros para suma
-    sw $a1, a_var
-    sw $a2, b_var
+    # Guardar parámetros en stack frame local
+    sw $a0, -4($fp)   # a local
+    sw $a1, -8($fp)   # b local
+    sw $a0, a_var     # a global
+    sw $a1, b_var     # b global
 
     # Inicio de función
     # DECLARE a INT
     # DECLARE b INT
-    # t1 = a * b
-    lw $t1, a_var
-    lw $t2, b_var
-    mul $t0, $t1, $t2
+    # t1 = a + b
+    lw $t1, -4($fp)   # a local
+    lw $t2, -8($fp)   # b local
+    add $t0, $t1, $t2
     sw $t0, t1_var
 
     # DECLARE resultado INT
@@ -75,8 +76,11 @@ suma:
     j exit_suma
 
 
-# Epílogo simplificado suma
+# Epílogo estándar suma
 exit_suma:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)
@@ -84,16 +88,24 @@ exit_suma:
     jr $ra
 
 factorial:
-    # Prólogo simplificado factorial
+    # Prólogo estándar factorial
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función genérica - guardar hasta 4 parámetros en stack frame
+    sw $a0, -4($fp)   # param1 local
+    sw $a1, -8($fp)   # param2 local
+    sw $a2, -12($fp)  # param3 local
+    sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
     # DECLARE n INT
     # t2 = n <= 1
-    lw $t1, n_var
+    lw $t1, -4($fp)   # n local
     li $t2, 1
     sle $t0, $t1, $t2
     sw $t0, t2_var
@@ -109,7 +121,7 @@ factorial:
 
 L1:
     # t3 = n - 1
-    lw $t1, n_var
+    lw $t1, -4($fp)   # n local
     li $t2, 1
     sub $t0, $t1, $t2
     sw $t0, t3_var
@@ -121,7 +133,7 @@ L1:
 
     # PARAM temp
     lw $a0, temp_var
-    # ✅ s1: Parámetro temp cargado en $a0
+    # ✅ FIXED: Parámetro temp cargado en $a0
 
     # t4 = CALL factorial 1
     jal factorial
@@ -133,7 +145,7 @@ L1:
     sw $t0, recurse_var
 
     # t5 = n * recurse
-    lw $t1, n_var
+    lw $t1, -4($fp)   # n local
     lw $t2, recurse_var
     mul $t0, $t1, $t2
     sw $t0, t5_var
@@ -149,8 +161,11 @@ L1:
     j exit_factorial
 
 
-# Epílogo simplificado factorial
+# Epílogo estándar factorial
 exit_factorial:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)
@@ -158,11 +173,19 @@ exit_factorial:
     jr $ra
 
 testBasico:
-    # Prólogo simplificado testBasico
+    # Prólogo estándar testBasico
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función genérica - guardar hasta 4 parámetros en stack frame
+    sw $a0, -4($fp)   # param1 local
+    sw $a1, -8($fp)   # param2 local
+    sw $a2, -12($fp)  # param3 local
+    sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
     # DECLARE x INT
@@ -176,12 +199,12 @@ testBasico:
     sw $t0, y_var
 
     # PARAM x
-    lw $a1, x_var
-    # Parámetro x cargado en $a1
+    lw $a0, x_var
+    # ✅ FIXED: Parámetro x cargado en $a0
 
     # PARAM y
-    lw $a2, y_var
-    # Parámetro y cargado en $a2
+    lw $a1, y_var
+    # ✅ FIXED: Parámetro y cargado en $a1
 
     # t6 = CALL suma 2
     jal suma
@@ -198,9 +221,9 @@ testBasico:
     la $a0, nl
     jal print_string
 
-    # PARAM 2
-    li $a3, 2
-    # Parámetro 2 cargado en $a3
+    # PARAM 5
+    li $a0, 5
+    # ✅ FIXED: Parámetro 5 cargado en $a0
 
     # t7 = CALL factorial 1
     jal factorial
@@ -275,8 +298,11 @@ L2:
 
 L3:
 
-# Epílogo simplificado testBasico
+# Epílogo estándar testBasico
 exit_testBasico:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)
@@ -284,19 +310,30 @@ exit_testBasico:
     jr $ra
 
 main:
-    # Prólogo simplificado main
+    # Prólogo estándar main
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función genérica - guardar hasta 4 parámetros en stack frame
+    sw $a0, -4($fp)   # param1 local
+    sw $a1, -8($fp)   # param2 local
+    sw $a2, -12($fp)  # param3 local
+    sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
     # CALL testBasico 0
     jal testBasico
 
 
-# Epílogo simplificado main
+# Epílogo estándar main
 exit_main:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)

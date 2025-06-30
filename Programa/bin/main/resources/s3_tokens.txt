@@ -12,7 +12,7 @@ Token: INT_LITERAL, Lexema: 1, Línea: 2, Columna: 19, Tabla: N/A
 Token: QUESTION, Lexema: QUESTION, Línea: 2, Columna: 20, Tabla: N/A
 Token: ID, Lexema: k, Línea: 2, Columna: 22, Tabla: VARIABLES
 Token: LTE, Lexema: LTE, Línea: 2, Columna: 24, Tabla: N/A
-Token: INT_LITERAL, Lexema: 6, Línea: 2, Columna: 27, Tabla: N/A
+Token: INT_LITERAL, Lexema: 5, Línea: 2, Columna: 27, Tabla: N/A
 Token: QUESTION, Lexema: QUESTION, Línea: 2, Columna: 28, Tabla: N/A
 Token: INCREMENT, Lexema: INCREMENT, Línea: 2, Columna: 30, Tabla: N/A
 Token: ID, Lexema: k, Línea: 2, Columna: 32, Tabla: VARIABLES

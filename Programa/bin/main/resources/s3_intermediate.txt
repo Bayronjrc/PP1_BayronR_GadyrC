@@ -11,11 +11,11 @@
   6: DECLARE k INT
   7: k = 0
   8: k = 1
-  9: t1 = k <= 6
+  9: t1 = k <= 5
  10: k = k + 1
  11: WRITE k
  12: L1:
- 13: t_cond = k <= 6
+ 13: t_cond = k <= 5
  14: IF NOT t_cond GOTO L2
  15: WRITE k
  16: t_inc = k + 1

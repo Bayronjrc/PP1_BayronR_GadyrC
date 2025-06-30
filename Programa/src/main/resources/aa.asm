@@ -32,11 +32,19 @@
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/aa_intermediate.txt
 main:
-    # Prólogo simplificado main
+    # Prólogo estándar main
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función genérica - guardar hasta 4 parámetros en stack frame
+    sw $a0, -4($fp)   # param1 local
+    sw $a1, -8($fp)   # param2 local
+    sw $a2, -12($fp)  # param3 local
+    sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
     # DECLARE x INT
@@ -65,8 +73,11 @@ L1:
 
 L2:
 
-# Epílogo simplificado main
+# Epílogo estándar main
 exit_main:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)

@@ -17,8 +17,8 @@
  12: END multiplicar
  13: FUNCTION main RETURNS VOID
  14: BEGIN
- 15: PARAM 4
- 16: PARAM 3
+ 15: PARAM 5
+ 16: PARAM 5
  17: t2 = CALL multiplicar 2
  18: DECLARE resultado INT
  19: resultado = t2

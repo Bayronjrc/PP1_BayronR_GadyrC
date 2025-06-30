@@ -10,7 +10,7 @@
   5: BEGIN
   6: DECLARE a INT
   7: DECLARE b INT
-  8: t1 = a * b
+  8: t1 = a + b
   9: DECLARE resultado INT
  10: resultado = t1
  11: RETURN resultado
@@ -46,7 +46,7 @@
  41: DECLARE resultado1 INT
  42: resultado1 = t6
  43: WRITE resultado1
- 44: PARAM 2
+ 44: PARAM 5
  45: t7 = CALL factorial 1
  46: DECLARE resultado2 INT
  47: resultado2 = t7

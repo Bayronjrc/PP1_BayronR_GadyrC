@@ -32,11 +32,19 @@
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/s3_intermediate.txt
 main:
-    # Prólogo simplificado main
+    # Prólogo estándar main
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función genérica - guardar hasta 4 parámetros en stack frame
+    sw $a0, -4($fp)   # param1 local
+    sw $a1, -8($fp)   # param2 local
+    sw $a2, -12($fp)  # param3 local
+    sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
     # DECLARE k INT
@@ -48,9 +56,9 @@ main:
     li $t0, 1
     sw $t0, k_var
 
-    # t1 = k <= 6
+    # t1 = k <= 5
     lw $t1, k_var
-    li $t2, 6
+    li $t2, 5
     sle $t0, $t1, $t2
     sw $t0, t1_var
 
@@ -67,9 +75,9 @@ main:
     jal print_string
 
 L1:
-    # t_cond = k <= 6
+    # t_cond = k <= 5
     lw $t1, k_var
-    li $t2, 6
+    li $t2, 5
     sle $t0, $t1, $t2
     sw $t0, t_cond_var
 
@@ -97,8 +105,11 @@ L1:
 
 L2:
 
-# Epílogo simplificado main
+# Epílogo estándar main
 exit_main:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)

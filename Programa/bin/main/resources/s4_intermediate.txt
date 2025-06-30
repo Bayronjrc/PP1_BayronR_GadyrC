@@ -5,23 +5,125 @@
 
   1: // Código Intermedio Generado
   2: // Archivo: src/main/resources/s4_intermediate.txt
-  3: FUNCTION main RETURNS VOID
-  4: BEGIN
-  5: DECLARE valor INT
-  6: valor = 4
-  7: t1 = valor > 5
+  3: 
+  4: FUNCTION factorial RETURNS INT
+  5: BEGIN
+  6: DECLARE n INT
+  7: t1 = n <= 1
   8: IF NOT t1 GOTO L1
-  9: WRITE 1
- 10: GOTO L2
- 11: L1:
- 12: WRITE 0
- 13: L2:
- 14: END main
- 15: 
+  9: RETURN 1
+ 10: L1:
+ 11: t2 = n - 1
+ 12: DECLARE temp INT
+ 13: temp = t2
+ 14: PARAM temp
+ 15: t3 = CALL factorial 1
+ 16: DECLARE recurse INT
+ 17: recurse = t3
+ 18: t4 = n * recurse
+ 19: DECLARE resultado INT
+ 20: resultado = t4
+ 21: RETURN resultado
+ 22: END factorial
+ 23: FUNCTION fibonacci RETURNS INT
+ 24: BEGIN
+ 25: DECLARE n INT
+ 26: t5 = n <= 1
+ 27: IF NOT t5 GOTO L2
+ 28: RETURN n
+ 29: L2:
+ 30: t6 = n - 1
+ 31: DECLARE temp1 INT
+ 32: temp1 = t6
+ 33: t7 = n - 2
+ 34: DECLARE temp2 INT
+ 35: temp2 = t7
+ 36: PARAM temp1
+ 37: t8 = CALL fibonacci 1
+ 38: DECLARE fib1 INT
+ 39: fib1 = t8
+ 40: PARAM temp2
+ 41: t9 = CALL fibonacci 1
+ 42: DECLARE fib2 INT
+ 43: fib2 = t9
+ 44: t10 = fib1 + fib2
+ 45: DECLARE resultado INT
+ 46: resultado = t10
+ 47: RETURN resultado
+ 48: END fibonacci
+ 49: FUNCTION potencia RETURNS INT
+ 50: BEGIN
+ 51: DECLARE base INT
+ 52: DECLARE exp INT
+ 53: t11 = exp <= 0
+ 54: IF NOT t11 GOTO L3
+ 55: RETURN 1
+ 56: L3:
+ 57: t12 = exp - 1
+ 58: DECLARE temp INT
+ 59: temp = t12
+ 60: PARAM base
+ 61: PARAM temp
+ 62: t13 = CALL potencia 2
+ 63: DECLARE recurse INT
+ 64: recurse = t13
+ 65: t14 = base * recurse
+ 66: DECLARE resultado INT
+ 67: resultado = t14
+ 68: RETURN resultado
+ 69: END potencia
+ 70: FUNCTION mcd RETURNS INT
+ 71: BEGIN
+ 72: DECLARE a INT
+ 73: DECLARE b INT
+ 74: t15 = b == 0
+ 75: IF NOT t15 GOTO L4
+ 76: RETURN a
+ 77: L4:
+ 78: t16 = a % b
+ 79: DECLARE resto INT
+ 80: resto = t16
+ 81: PARAM b
+ 82: PARAM resto
+ 83: t17 = CALL mcd 2
+ 84: DECLARE resultado INT
+ 85: resultado = t17
+ 86: RETURN resultado
+ 87: END mcd
+ 88: FUNCTION testRecursion RETURNS VOID
+ 89: BEGIN
+ 90: PARAM 5
+ 91: t18 = CALL fibonacci 1
+ 92: DECLARE fib5 INT
+ 93: fib5 = t18
+ 94: WRITE fib5
+ 95: PARAM 2
+ 96: PARAM 3
+ 97: t19 = CALL potencia 2
+ 98: DECLARE pot23 INT
+ 99: pot23 = t19
+100: WRITE pot23
+101: PARAM 12
+102: PARAM 8
+103: t20 = CALL mcd 2
+104: DECLARE gcd12_8 INT
+105: gcd12_8 = t20
+106: WRITE gcd12_8
+107: PARAM 4
+108: t21 = CALL factorial 1
+109: DECLARE fact4 INT
+110: fact4 = t21
+111: WRITE fact4
+112: END testRecursion
+113: FUNCTION main RETURNS VOID
+114: BEGIN
+115: CALL testRecursion 0
+116: END main
+117: 
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 15
-// Temporales: 1
+// Líneas: 117
+// Temporales: 21
 // Etiquetas: 0
 // ========================================

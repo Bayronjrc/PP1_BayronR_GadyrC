@@ -12,7 +12,7 @@ Token: INT, Lexema: INT, Línea: 2, Columna: 5, Tabla: PALABRAS_RESERVADAS
 Token: ID, Lexema: resultado, Línea: 2, Columna: 9, Tabla: VARIABLES
 Token: ASSIGN, Lexema: ASSIGN, Línea: 2, Columna: 19, Tabla: N/A
 Token: ID, Lexema: a, Línea: 2, Columna: 21, Tabla: VARIABLES
-Token: TIMES, Lexema: TIMES, Línea: 2, Columna: 23, Tabla: N/A
+Token: PLUS, Lexema: PLUS, Línea: 2, Columna: 23, Tabla: N/A
 Token: ID, Lexema: b, Línea: 2, Columna: 25, Tabla: VARIABLES
 Token: QUESTION, Lexema: QUESTION, Línea: 2, Columna: 27, Tabla: N/A
 Token: RETURN, Lexema: RETURN, Línea: 3, Columna: 5, Tabla: PALABRAS_RESERVADAS
@@ -98,7 +98,7 @@ Token: ID, Lexema: resultado2, Línea: 23, Columna: 9, Tabla: VARIABLES
 Token: ASSIGN, Lexema: ASSIGN, Línea: 23, Columna: 20, Tabla: N/A
 Token: ID, Lexema: factorial, Línea: 23, Columna: 22, Tabla: VARIABLES
 Token: LPAREN, Lexema: LPAREN, Línea: 23, Columna: 32, Tabla: N/A
-Token: INT_LITERAL, Lexema: 2, Línea: 23, Columna: 34, Tabla: N/A
+Token: INT_LITERAL, Lexema: 5, Línea: 23, Columna: 34, Tabla: N/A
 Token: RPAREN, Lexema: RPAREN, Línea: 23, Columna: 36, Tabla: N/A
 Token: QUESTION, Lexema: QUESTION, Línea: 23, Columna: 38, Tabla: N/A
 Token: WRITE, Lexema: WRITE, Línea: 24, Columna: 5, Tabla: PALABRAS_RESERVADAS

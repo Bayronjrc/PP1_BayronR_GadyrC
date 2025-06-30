@@ -1,11 +1,11 @@
 ===== TABLA DE VARIABLES =====
 Lexema: arr, Tipo: ID, Linea: 50, Columna: 21, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: arr, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: testLopps, Tipo: ID, Linea: 56, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: testLopps, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: testLopps, Tipo: ID, Linea: 8, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: testLopps, Variable: Si, Inicializada: No, Utilizada: No
 Lexema: factorial, Tipo: ID, Linea: 48, Columna: 29, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: factorial, Variable: Si, Inicializada: No, Utilizada: No
 Lexema: x, Tipo: ID, Linea: 22, Columna: 15, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: x, Variable: Si, Inicializada: No, Utilizada: No
 Lexema: i, Tipo: ID, Linea: 50, Columna: 25, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: i, Variable: Si, Inicializada: No, Utilizada: No
 Lexema: j, Tipo: ID, Linea: 50, Columna: 28, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: j, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: testArrays, Tipo: ID, Linea: 57, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: testArrays, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: testArrays, Tipo: ID, Linea: 56, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: testArrays, Variable: Si, Inicializada: No, Utilizada: No
 Lexema: n, Tipo: ID, Linea: 5, Columna: 28, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: n, Variable: Si, Inicializada: No, Utilizada: No
 Lexema: option, Tipo: ID, Linea: 25, Columna: 14, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: option, Variable: Si, Inicializada: No, Utilizada: No
 

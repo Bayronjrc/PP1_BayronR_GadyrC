@@ -22,8 +22,9 @@
 	else \ 
 		string str2|"sdff"?
 	 / 
-	for  ʃ int i|0?i<4+i?++i ʅ  
-	\ write ʃ i ʅ ? /  @semantico i y j puede dar error sintactico
+	for  ʃ int i|0?i<4+i?++i ʅ \ 
+		write ʃ i ʅ ? 
+	/  @semantico i y j puede dar error sintactico
 	write ʃ miChar ʅ ?
 	read ʃ x40 ʅ ?
 	return 5.6?@cambio en retorno genera semantico

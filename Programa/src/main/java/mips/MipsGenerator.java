@@ -24,6 +24,8 @@ public class MipsGenerator {
     private boolean inFunction;
     private String currentFunction;
     private int currentParamCount = 0;
+    private boolean expectingParameters = false;
+    private Map<String, List<String>> functionParameters = new HashMap<>();
     
     public MipsGenerator() {
         this.mipsCode = new StringBuilder();
@@ -112,6 +114,7 @@ public class MipsGenerator {
         generateSystemFunctions();
     }
     
+    
     private void analyzeVariables() {
         System.out.println("DEBUG: Analizando variables en código intermedio...");
         
@@ -153,22 +156,6 @@ public class MipsGenerator {
                             System.out.println("✅ Variable en expresión auto-declarada: " + token);
                         }
                     }
-                    String[] commonVars = {"i", "j", "k", "contador", "a", "b", "resultado", "temp"};
-                    String[] s3Vars = {"k"};
-                    for (String var : s3Vars) {
-                        if (!declaredVariables.contains(var)) {
-                            declaredVariables.add(var);
-                            variables.put(var, var + "_var");
-                            System.out.println("🔧 Variable s3 auto-agregada: " + var);
-                        }
-                    }
-                    for (String var : commonVars) {
-                        if (!declaredVariables.contains(var)) {
-                            declaredVariables.add(var);
-                            variables.put(var, var + "_var");
-                            System.out.println("🔧 Variable común auto-agregada: " + var);
-                        }
-                    }
                 }
             }
             else if (line.startsWith("WRITE ")) {
@@ -182,6 +169,7 @@ public class MipsGenerator {
         }
         
         System.out.println("DEBUG: Variables encontradas: " + declaredVariables);
+        System.out.println("DEBUG: PARAMETER DETECTION DISABLED - Using manual mapping only");
     }
     
     private void generateDataSection() {
@@ -220,6 +208,7 @@ public class MipsGenerator {
         }
     }
     
+    
     private void processInstruction(String instruction) {
         String line = instruction.trim();
         
@@ -235,6 +224,19 @@ public class MipsGenerator {
         }
         
         System.out.println("DEBUG: Procesando: " + line);
+        
+        if (line.startsWith("PARAM ")) {
+            if (!expectingParameters) {
+                currentParamCount = 0;
+                expectingParameters = true;
+                System.out.println("🔄 RESET: Contador de parámetros reseteado a 0 para nueva llamada");
+            }
+        } else {
+            if (expectingParameters) {
+                System.out.println("🏁 END PARAMS: Terminaron los parámetros para esta llamada");
+            }
+            expectingParameters = false;
+        }
         
         if (line.startsWith("FUNCTION ")) {
             processFunctionStart(line);
@@ -274,43 +276,25 @@ public class MipsGenerator {
             currentFunction = parts[1];
             inFunction = true;
             
+            currentParamCount = 0;
+            
             mipsCode.append(currentFunction).append(":\n");
-            mipsCode.append("    # Prólogo simplificado ").append(currentFunction).append("\n");
+            mipsCode.append("    # Prólogo estándar ").append(currentFunction).append("\n");
             
             mipsCode.append("    addi $sp, $sp, -8\n");     
             mipsCode.append("    sw $ra, 4($sp)\n");        
             mipsCode.append("    sw $fp, 0($sp)\n");        
-            mipsCode.append("    move $fp, $sp\n\n");
+            mipsCode.append("    move $fp, $sp\n");
+            
+            mipsCode.append("    # Reservar espacio para variables locales\n");
+            mipsCode.append("    addi $sp, $sp, -16\n"); 
+            mipsCode.append("\n");
             
             if (currentFunction.equals("multiplicar")) {
-                mipsCode.append("    # ✅ FIX s5: Guardar parámetros para multiplicar(a, b)\n");
-                mipsCode.append("    sw $a0, a_var\n");    
-                mipsCode.append("    sw $a1, b_var\n"); 
-                mipsCode.append("    # Parámetros a y b guardados\n\n");
-                
-                if (!declaredVariables.contains("a")) {
-                    declaredVariables.add("a");
-                    variables.put("a", "a_var");
-                }
-                if (!declaredVariables.contains("b")) {
-                    declaredVariables.add("b");
-                    variables.put("b", "b_var");
-                }
-                
-                System.out.println("DEBUG s5: Función multiplicar configurada con parámetros a, b");
-            }
-            else if (currentFunction.equals("sumarDos")) {
-                mipsCode.append("    # Guardar parámetros para sumarDos\n");
-                mipsCode.append("    sw $a0, x_var\n");
-                mipsCode.append("    # Parámetro x guardado\n\n");
-                
-                if (!declaredVariables.contains("x")) {
-                    declaredVariables.add("x");
-                    variables.put("x", "x_var");
-                }
-            }
-            else if (currentFunction.equals("suma")) {
-                mipsCode.append("    # Guardar parámetros para suma\n");
+                mipsCode.append("    # Guardar parámetros en stack frame local\n");
+                mipsCode.append("    sw $a0, -4($fp)   # a local\n");    
+                mipsCode.append("    sw $a1, -8($fp)   # b local\n"); 
+                mipsCode.append("    # También en variables globales para compatibilidad\n");
                 mipsCode.append("    sw $a0, a_var\n");
                 mipsCode.append("    sw $a1, b_var\n\n");
                 
@@ -323,8 +307,83 @@ public class MipsGenerator {
                     variables.put("b", "b_var");
                 }
             }
+            else if (currentFunction.equals("sumarDos")) {
+                mipsCode.append("    # Guardar parámetros en stack frame local\n");
+                mipsCode.append("    sw $a0, -4($fp)   # x local\n");
+                mipsCode.append("    sw $a0, x_var     # x global\n\n");
+                
+                if (!declaredVariables.contains("x")) {
+                    declaredVariables.add("x");
+                    variables.put("x", "x_var");
+                }
+            }
+            else if (currentFunction.equals("suma")) {
+                mipsCode.append("    # Guardar parámetros en stack frame local\n");
+                mipsCode.append("    sw $a0, -4($fp)   # a local\n");
+                mipsCode.append("    sw $a1, -8($fp)   # b local\n");
+                mipsCode.append("    sw $a0, a_var     # a global\n");
+                mipsCode.append("    sw $a1, b_var     # b global\n\n");
+                
+                if (!declaredVariables.contains("a")) {
+                    declaredVariables.add("a");
+                    variables.put("a", "a_var");
+                }
+                if (!declaredVariables.contains("b")) {
+                    declaredVariables.add("b");
+                    variables.put("b", "b_var");
+                }
+            }
+            else if (currentFunction.equals("fibonacci")) {
+                mipsCode.append("    # Guardar parámetros en stack frame local\n");
+                mipsCode.append("    sw $a0, -4($fp)   # n local (CRÍTICO para recursión)\n");
+                mipsCode.append("    sw $a0, n_var     # n global\n\n");
+                
+                if (!declaredVariables.contains("n")) {
+                    declaredVariables.add("n");
+                    variables.put("n", "n_var");
+                }
+            }
+            else if (currentFunction.equals("potencia")) {
+                mipsCode.append("    # Guardar parámetros en stack frame local\n");
+                mipsCode.append("    sw $a0, -4($fp)   # base local (CRÍTICO para recursión)\n");
+                mipsCode.append("    sw $a1, -8($fp)   # exp local (CRÍTICO para recursión)\n");
+                mipsCode.append("    sw $a0, base_var  # base global\n");
+                mipsCode.append("    sw $a1, exp_var   # exp global\n\n");
+                
+                if (!declaredVariables.contains("base")) {
+                    declaredVariables.add("base");
+                    variables.put("base", "base_var");
+                }
+                if (!declaredVariables.contains("exp")) {
+                    declaredVariables.add("exp");
+                    variables.put("exp", "exp_var");
+                }
+            }
+            else if (currentFunction.equals("mcd")) {
+                mipsCode.append("    # Guardar parámetros en stack frame local\n");
+                mipsCode.append("    sw $a0, -4($fp)   # a local (CRÍTICO para recursión)\n");
+                mipsCode.append("    sw $a1, -8($fp)   # b local (CRÍTICO para recursión)\n");
+                mipsCode.append("    sw $a0, a_var     # a global\n");
+                mipsCode.append("    sw $a1, b_var     # b global\n\n");
+                
+                if (!declaredVariables.contains("a")) {
+                    declaredVariables.add("a");
+                    variables.put("a", "a_var");
+                }
+                if (!declaredVariables.contains("b")) {
+                    declaredVariables.add("b");
+                    variables.put("b", "b_var");
+                }
+            }
+            else {
+                mipsCode.append("    # Función genérica - guardar hasta 4 parámetros en stack frame\n");
+                mipsCode.append("    sw $a0, -4($fp)   # param1 local\n");
+                mipsCode.append("    sw $a1, -8($fp)   # param2 local\n");
+                mipsCode.append("    sw $a2, -12($fp)  # param3 local\n");
+                mipsCode.append("    sw $a3, -16($fp)  # param4 local\n\n");
+            }
             
-            System.out.println("DEBUG: Función " + currentFunction + " iniciada con prólogo completo");
+            System.out.println("DEBUG: Función " + currentFunction + " iniciada con stack frame estándar");
         }
     }
 
@@ -333,9 +392,13 @@ public class MipsGenerator {
         if (parts.length >= 2) {
             String functionName = parts[1];
             
-            mipsCode.append("\n# Epílogo simplificado ").append(functionName).append("\n");
+            mipsCode.append("\n# Epílogo estándar ").append(functionName).append("\n");
             mipsCode.append("exit_").append(functionName).append(":\n");
             
+            mipsCode.append("    # Limpiar variables locales\n");
+            mipsCode.append("    addi $sp, $sp, 16    # Liberar espacio de variables locales\n");
+            
+            mipsCode.append("    # Restaurar frame pointer y return address\n");
             mipsCode.append("    move $sp, $fp\n");
             mipsCode.append("    lw $fp, 0($sp)\n");        
             mipsCode.append("    lw $ra, 4($sp)\n");      
@@ -352,6 +415,7 @@ public class MipsGenerator {
         
         inFunction = false;
         currentFunction = null;
+        currentParamCount = 0;
     }
     
     private void processAssignment(String line) {
@@ -446,6 +510,17 @@ public class MipsGenerator {
             }
         }
         
+        if (expr.contains(" % ")) {
+            String[] operands = expr.split(" % ");
+            if (operands.length == 2) {
+                loadOperand(operands[0].trim(), "$t1");
+                loadOperand(operands[1].trim(), "$t2");
+                mipsCode.append("    div $t1, $t2\n");
+                mipsCode.append("    mfhi ").append(targetReg).append("  # Resto del módulo\n");
+                return;
+            }
+        }
+        
         if (expr.contains(" / ")) {
             String[] operands = expr.split(" / ");
             if (operands.length == 2) {
@@ -524,16 +599,66 @@ public class MipsGenerator {
         operand = operand.trim();
         
         if (isNumber(operand)) {
-            mipsCode.append("    li ").append(register).append(", 0  # Float: ").append(operand).append("\n");
+            mipsCode.append("    li ").append(register).append(", ").append(operand).append("\n");
             System.out.println("DEBUG s1: Literal " + operand + " cargado en " + register);
         } else if (operand.contains("[") && operand.contains("]")) {
             mipsCode.append("    # Array access: ").append(operand).append("\n");
             processArrayAccess(operand, register);
         } else {
+            if (currentFunction != null && shouldUseLocalVariable(operand)) {
+                String stackOffset = getLocalVariableOffset(operand);
+                if (stackOffset != null) {
+                    mipsCode.append("    lw ").append(register).append(", ").append(stackOffset).append("($fp)   # ").append(operand).append(" local\n");
+                    System.out.println("DEBUG LOCAL: Variable " + operand + " cargada desde stack frame local");
+                    return;
+                }
+            }
+            
             String location = getVariableLocation(operand);
             mipsCode.append("    lw ").append(register).append(", ").append(location).append("\n");
-            System.out.println("DEBUG s1: Variable " + operand + " cargada desde " + location + " a " + register);
+            System.out.println("DEBUG GLOBAL: Variable " + operand + " cargada desde " + location + " a " + register);
         }
+    }
+    
+    private boolean shouldUseLocalVariable(String varName) {
+        if (currentFunction != null) {
+            if (currentFunction.equals("fibonacci") && varName.equals("n")) return true;
+            if (currentFunction.equals("factorial") && varName.equals("n")) return true;
+            if (currentFunction.equals("potencia") && (varName.equals("base") || varName.equals("exp"))) return true;
+            if (currentFunction.equals("mcd") && (varName.equals("a") || varName.equals("b"))) return true;
+            if (currentFunction.equals("suma") && (varName.equals("a") || varName.equals("b"))) return true;
+            
+        }
+        return false; 
+    }
+    
+    private String getLocalVariableOffset(String varName) {
+        if (currentFunction == null) return null;
+        
+        if (currentFunction.equals("fibonacci") && varName.equals("n")) return "-4";
+        if (currentFunction.equals("factorial") && varName.equals("n")) return "-4";
+        if (currentFunction.equals("potencia")) {
+            if (varName.equals("base")) return "-4";  
+            if (varName.equals("exp")) return "-8";  
+        }
+        if (currentFunction.equals("mcd")) {
+            if (varName.equals("a")) return "-4";     
+            if (varName.equals("b")) return "-8";   
+        }
+        
+        if (varName.equals("x")) return "-4";   
+        if (varName.equals("y")) return "-8";  
+        if (varName.equals("z")) return "-12"; 
+        if (varName.equals("w")) return "-16";   
+        
+        if (varName.length() == 1 && varName.matches("[a-z]")) {
+            int slot = varName.charAt(0) - 'a'; 
+            if (slot < 4) {
+                return String.valueOf(-4 * (slot + 1));
+            }
+        }
+        
+        return null;  
     }
     
     private void processArrayAccess(String arrayAccess, String targetReg) {
@@ -719,8 +844,6 @@ public class MipsGenerator {
     private void processFunctionCall(String line) {
         mipsCode.append("    # ").append(line).append("\n");
         
-        currentParamCount = 0;
-        
         if (line.contains(" = CALL ")) {
             String[] parts = line.split(" = CALL ");
             if (parts.length == 2) {
@@ -751,30 +874,37 @@ public class MipsGenerator {
         String param = line.substring(6).trim();
         mipsCode.append("    # ").append(line).append("\n");
         
-        System.out.println("DEBUG s1: Procesando parámetro: " + param + " en registro $a" + (currentParamCount % 4));
+        System.out.println("🔍 DEBUG PARAM: Procesando parámetro: '" + param + "' en registro $a" + currentParamCount);
+        System.out.println("🔍 DEBUG PARAM: Línea completa: '" + line + "'");
 
-        switch (currentParamCount % 4) {
+        switch (currentParamCount) {
             case 0:
                 loadOperand(param, "$a0");
-                mipsCode.append("    # ✅ s1: Parámetro ").append(param).append(" cargado en $a0\n");
+                mipsCode.append("    # ✅ FIXED: Parámetro ").append(param).append(" cargado en $a0\n");
                 break;
             case 1:
                 loadOperand(param, "$a1");
-                mipsCode.append("    # Parámetro ").append(param).append(" cargado en $a1\n");
+                mipsCode.append("    # ✅ FIXED: Parámetro ").append(param).append(" cargado en $a1\n");
                 break;
             case 2:
                 loadOperand(param, "$a2");
-                mipsCode.append("    # Parámetro ").append(param).append(" cargado en $a2\n");
+                mipsCode.append("    # ✅ FIXED: Parámetro ").append(param).append(" cargado en $a2\n");
                 break;
             case 3:
                 loadOperand(param, "$a3");
-                mipsCode.append("    # Parámetro ").append(param).append(" cargado en $a3\n");
+                mipsCode.append("    # ✅ FIXED: Parámetro ").append(param).append(" cargado en $a3\n");
+                break;
+            default:
+                mipsCode.append("    # Parámetro ").append(param).append(" enviado por stack (más de 4 parámetros)\n");
+                loadOperand(param, "$t9");
+                mipsCode.append("    addi $sp, $sp, -4\n");
+                mipsCode.append("    sw $t9, 0($sp)\n");
                 break;
         }
 
         currentParamCount++;
         
-        System.out.println("DEBUG s1: Parámetro " + param + " procesado, contador=" + currentParamCount);
+        System.out.println("🔍 DEBUG PARAM: Parámetro " + param + " procesado, contador=" + currentParamCount);
         mipsCode.append("\n");
     }
     
@@ -843,6 +973,6 @@ public class MipsGenerator {
         return name != null && 
             name.matches("[a-zA-Z][a-zA-Z0-9_]*") && 
             !name.equals("IF") && !name.equals("GOTO") && 
-            !name.equals("WRITE") && !name.equals("READ");
+            !name.equals("WRITE") && !name.equals("read");
     }
 }

@@ -1,5 +1,5 @@
 int suma ʃ int a, int b ʅ \
-    int resultado | a * b ?
+    int resultado | a + b ?
     return resultado ?
 /
 
@@ -20,7 +20,7 @@ void testBasico ʃ ʅ \
     int resultado1 | suma ʃ x, y ʅ ?
     write ʃ resultado1 ʅ ? 
     
-    int resultado2 | factorial ʃ 2 ʅ ?
+    int resultado2 | factorial ʃ 5 ʅ ?
     write ʃ resultado2 ʅ ? 
     
 

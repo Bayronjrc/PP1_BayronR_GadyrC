@@ -31,7 +31,7 @@
  26: IF NOT t6 GOTO L4
  27: GOTO L2
  28: L4:
- 29: t7 = x == 2
+ 29: t7 = x == 6
  30: IF NOT t7 GOTO L5
  31: GOTO L3
  32: L5:
@@ -92,14 +92,13 @@
  87: END testArrays
  88: FUNCTION main RETURNS VOID
  89: BEGIN
- 90: CALL testLopps 0
- 91: CALL testArrays 0
- 92: END main
- 93: 
+ 90: CALL testArrays 0
+ 91: END main
+ 92: 
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 93
+// Líneas: 92
 // Temporales: 10
 // Etiquetas: 0
 // ========================================

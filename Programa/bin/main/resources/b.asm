@@ -46,16 +46,22 @@
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/b_intermediate.txt
 factorial:
-    # Prólogo simplificado factorial
+    # Prólogo estándar factorial
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Guardar parámetros en stack frame local
+    sw $a0, -4($fp)   # n local (CRÍTICO para recursión)
+    sw $a0, n_var     # n global
 
     # Inicio de función
     # DECLARE n INT
     # t1 = n <= 1
-    lw $t1, n_var
+    lw $t1, -4($fp)   # n local
     li $t2, 1
     sle $t0, $t1, $t2
     sw $t0, t1_var
@@ -71,21 +77,21 @@ factorial:
 
 L1:
     # t2 = n - 1
-    lw $t1, n_var
+    lw $t1, -4($fp)   # n local
     li $t2, 1
     sub $t0, $t1, $t2
     sw $t0, t2_var
 
     # PARAM t2
     lw $a0, t2_var
-    # ✅ s1: Parámetro t2 cargado en $a0
+    # ✅ FIXED: Parámetro t2 cargado en $a0
 
     # t3 = CALL factorial 1
     jal factorial
     sw $v0, t3_var
 
     # t4 = n * t3
-    lw $t1, n_var
+    lw $t1, -4($fp)   # n local
     lw $t2, t3_var
     mul $t0, $t1, $t2
     sw $t0, t4_var
@@ -96,8 +102,11 @@ L1:
     j exit_factorial
 
 
-# Epílogo simplificado factorial
+# Epílogo estándar factorial
 exit_factorial:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)
@@ -105,11 +114,19 @@ exit_factorial:
     jr $ra
 
 testLopps:
-    # Prólogo simplificado testLopps
+    # Prólogo estándar testLopps
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función genérica - guardar hasta 4 parámetros en stack frame
+    sw $a0, -4($fp)   # param1 local
+    sw $a1, -8($fp)   # param2 local
+    sw $a2, -12($fp)  # param3 local
+    sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
     # DECLARE x INT
@@ -147,9 +164,9 @@ L2:
     j L2
 
 L4:
-    # t7 = x == 2
+    # t7 = x == 6
     lw $t1, x_var
-    li $t2, 2
+    li $t2, 6
     seq $t0, $t1, $t2
     sw $t0, t7_var
 
@@ -244,8 +261,11 @@ L8:
 L9:
 L10:
 
-# Epílogo simplificado testLopps
+# Epílogo estándar testLopps
 exit_testLopps:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)
@@ -253,11 +273,19 @@ exit_testLopps:
     jr $ra
 
 testArrays:
-    # Prólogo simplificado testArrays
+    # Prólogo estándar testArrays
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función genérica - guardar hasta 4 parámetros en stack frame
+    sw $a0, -4($fp)   # param1 local
+    sw $a1, -8($fp)   # param2 local
+    sw $a2, -12($fp)  # param3 local
+    sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
     # DECLARE i INT
@@ -368,8 +396,11 @@ L11:
 
 L12:
 
-# Epílogo simplificado testArrays
+# Epílogo estándar testArrays
 exit_testArrays:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)
@@ -377,22 +408,30 @@ exit_testArrays:
     jr $ra
 
 main:
-    # Prólogo simplificado main
+    # Prólogo estándar main
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función genérica - guardar hasta 4 parámetros en stack frame
+    sw $a0, -4($fp)   # param1 local
+    sw $a1, -8($fp)   # param2 local
+    sw $a2, -12($fp)  # param3 local
+    sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
-    # CALL testLopps 0
-    jal testLopps
-
     # CALL testArrays 0
     jal testArrays
 
 
-# Epílogo simplificado main
+# Epílogo estándar main
 exit_main:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)

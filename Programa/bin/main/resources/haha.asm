@@ -24,22 +24,14 @@
     luna_var: .word 0
     b1_var: .word 0
     t10_var: .word 0
-    t12_var: .word 0
-    contador_var: .word 0
     t11_var: .word 0
     t_cond_var: .word 0
-    t13_var: .word 0
     var2_var: .word 0
     t_inc_var: .word 0
     s1_var: .word 0
     otra_var: .word 0
-    a_var: .word 0
-    b_var: .word 0
-    temp_var: .word 0
-    resultado_var: .word 0
     var_var: .word 0
     i_var: .word 0
-    j_var: .word 0
     k_var: .word 0
     var_3_opop_4_var: .word 0
     str_var: .word 0
@@ -55,33 +47,41 @@
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/haha_intermediate.txt
 mi:
-    # Prólogo simplificado mi
+    # Prólogo estándar mi
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función genérica - guardar hasta 4 parámetros en stack frame
+    sw $a0, -4($fp)   # param1 local
+    sw $a1, -8($fp)   # param2 local
+    sw $a2, -12($fp)  # param3 local
+    sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
     # DECLARE dif INT
     # DECLARE otra CHAR
     # DECLARE var INT
     # var = 0
-    li $t0, 0  # Float: 0
+    li $t0, 0
     sw $t0, var_var
 
     # DECLARE var2 INT
     # DECLARE str STRING
-    # DECLARE i INT
-    # i = 0
-    li $t0, 0  # Float: 0
-    sw $t0, i_var
+    # DECLARE k INT
+    # k = 0
+    li $t0, 0
+    sw $t0, k_var
 
-    # i = 0
-    li $t0, 0  # Float: 0
-    sw $t0, i_var
+    # k = 0
+    li $t0, 0
+    sw $t0, k_var
 
     # var2 = 1
-    li $t0, 0  # Float: 1
+    li $t0, 1
     sw $t0, var2_var
 
     # IF NOT true GOTO L6
@@ -96,43 +96,43 @@ L6:
     sw $t0, t1_var
 
     # t2 = 2 * t1
-    li $t1, 0  # Float: 2
+    li $t1, 2
     lw $t2, t1_var
     mul $t0, $t1, $t2
     sw $t0, t2_var
 
     # t3 = 1 + t2
-    li $t1, 0  # Float: 1
+    li $t1, 1
     lw $t2, t2_var
     add $t0, $t1, $t2
     sw $t0, t3_var
 
-    # t4 = 4 + i
-    li $t1, 0  # Float: 4
-    lw $t2, i_var
+    # t4 = 4 + k
+    li $t1, 4
+    lw $t2, k_var
     add $t0, $t1, $t2
     sw $t0, t4_var
 
-    # t5 = i < t4
-    lw $t1, i_var
+    # t5 = k < t4
+    lw $t1, k_var
     lw $t2, t4_var
     slt $t0, $t1, $t2
     sw $t0, t5_var
 
     # t6 = var2 > 122
     lw $t1, var2_var
-    li $t2, 0  # Float: 122
+    li $t2, 122
     sgt $t0, $t1, $t2
     sw $t0, t6_var
 
     # t7 = 34 + 35
-    li $t1, 0  # Float: 34
-    li $t2, 0  # Float: 35
+    li $t1, 34
+    li $t2, 35
     add $t0, $t1, $t2
     sw $t0, t7_var
 
     # t8 = 12 > t7
-    li $t1, 0  # Float: 12
+    li $t1, 12
     lw $t2, t7_var
     sgt $t0, $t1, $t2
     sw $t0, t8_var
@@ -143,7 +143,7 @@ L6:
 
     # t10 = var == 0
     lw $t1, var_var
-    li $t2, 0  # Float: 0
+    li $t2, 0
     seq $t0, $t1, $t2
     sw $t0, t10_var
 
@@ -151,7 +151,7 @@ L7:
 L1:
     # t_cond = k <= 2
     lw $t1, k_var
-    li $t2, 0  # Float: 2
+    li $t2, 2
     sle $t0, $t1, $t2
     sw $t0, t_cond_var
 
@@ -167,7 +167,7 @@ L1:
 
     # t_inc = k + 1
     lw $t1, k_var
-    li $t2, 0  # Float: 1
+    li $t2, 1
     add $t0, $t1, $t2
     sw $t0, t_inc_var
 
@@ -179,13 +179,16 @@ L1:
 
 L2:
     # RETURN 1
-    li $v0, 0  # Float: 1
+    li $v0, 1
     # Valor de retorno en $v0
     j exit_mi
 
 
-# Epílogo simplificado mi
+# Epílogo estándar mi
 exit_mi:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)
@@ -193,11 +196,19 @@ exit_mi:
     jr $ra
 
 miOtraFun:
-    # Prólogo simplificado miOtraFun
+    # Prólogo estándar miOtraFun
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función genérica - guardar hasta 4 parámetros en stack frame
+    sw $a0, -4($fp)   # param1 local
+    sw $a1, -8($fp)   # param2 local
+    sw $a2, -12($fp)  # param3 local
+    sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
     # RETURN true
@@ -206,8 +217,11 @@ miOtraFun:
     j exit_miOtraFun
 
 
-# Epílogo simplificado miOtraFun
+# Epílogo estándar miOtraFun
 exit_miOtraFun:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)
@@ -215,31 +229,35 @@ exit_miOtraFun:
     jr $ra
 
 main:
-    # Prólogo simplificado main
+    # Prólogo estándar main
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
     move $fp, $sp
+    # Reservar espacio para variables locales
+    addi $sp, $sp, -16
+
+    # Función genérica - guardar hasta 4 parámetros en stack frame
+    sw $a0, -4($fp)   # param1 local
+    sw $a1, -8($fp)   # param2 local
+    sw $a2, -12($fp)  # param3 local
+    sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
     # DECLARE i INT
     # i = 0
-    li $t0, 0  # Float: 0
+    li $t0, 0
     sw $t0, i_var
 
     # i = 1
-    li $t0, 0  # Float: 1
+    li $t0, 1
     sw $t0, i_var
 
     # t11 = 67 + i
-    li $t1, 0  # Float: 67
+    li $t1, 67
     lw $t2, i_var
     add $t0, $t1, $t2
     sw $t0, t11_var
-
-    # t12 = -0.01
-    li $t0, 0  # Float: -0.01
-    sw $t0, t12_var
 
     # DECLARE b1 BOOL
     # b1 = true
@@ -264,19 +282,18 @@ main:
     la $a0, nl
     jal print_string
 
-    # t13 = -6.7
-    li $t0, 0  # Float: -6.7
-    sw $t0, t13_var
-
-    # WRITE t13
-    lw $a0, t13_var
+    # WRITE 7
+    li $a0, 7
     jal print_int
     la $a0, nl
     jal print_string
 
 
-# Epílogo simplificado main
+# Epílogo estándar main
 exit_main:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
     move $sp, $fp
     lw $fp, 0($sp)
     lw $ra, 4($sp)

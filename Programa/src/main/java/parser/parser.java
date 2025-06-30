@@ -957,8 +957,7 @@ public class parser extends java_cup.runtime.lr_parser {
     public void setCurrentFunctionName(String functionName) {
         this.currentFunctionName = functionName;
     }
-    // Le borre los paramatros List<String> params, int line, int column para hacer pruebas
-    // y porque no los estaba usando en ningún lado
+
     public void enterFunctionScope(String functionName, String returnType) {
         if (semanticTable != null) {
             semanticTable.enterScope("FUNCTION", functionName);
@@ -1033,7 +1032,6 @@ public class parser extends java_cup.runtime.lr_parser {
         }
     }
     
-    /* Métodos de manejo de errores existentes */
     public void syntax_error(Symbol s) {
         errorCount++;
         System.err.println("Error sintactico #" + errorCount + " en linea " + (s.left + 1) + 
@@ -1065,7 +1063,6 @@ public class parser extends java_cup.runtime.lr_parser {
         return errorCount + (semanticTable != null ? semanticTable.getErrorCount() : 0);
     }
     
-    /* Métodos de compatibilidad existentes */
     public void updateVariableType(String id, String type) {
         if (symbolTable != null) {
             symbolTable.actualizarTipoVariable(id, type);
@@ -1077,13 +1074,13 @@ public class parser extends java_cup.runtime.lr_parser {
             symbolTable.marcarComoFuncion(id, returnType);
         }
     }
-    // Para el tema del código intermedio
+
     public String saveCodeValue(String semanticType, String codeValue) {
         if (codeGenerationEnabled && codeValue != null) {
             String uniqueKey = "expr_" + (++uniqueCounter);
             codeValues.put(uniqueKey, codeValue);
             System.out.println("DEBUG: Guardando " + uniqueKey + " = " + codeValue + " (tipo: " + semanticType + ")");
-            return uniqueKey;  // Devolver la clave única
+            return uniqueKey; 
         }
         return null;
     }
@@ -1094,7 +1091,6 @@ public class parser extends java_cup.runtime.lr_parser {
             System.out.println("DEBUG: Recuperando " + key + " = " + value);
             return value != null ? value : key;
         }
-        // Si no es una clave especial, devolver tal como está
         return key;
     }
 
@@ -1113,32 +1109,31 @@ public class parser extends java_cup.runtime.lr_parser {
         return null;
     }
 
-    // Para el tema de etiquetas únicas
     public String generateLabel() {
         return "L" + (++labelCounter);
     }
 
     public void pushLabel(String label) {
-    labelStack.push(label);
-}
+        labelStack.push(label);
+    }
 
-public String popLabel() {
-    return labelStack.isEmpty() ? null : labelStack.pop();
-}
+    public String popLabel() {
+        return labelStack.isEmpty() ? null : labelStack.pop();
+    }
 
-public void pushLabelPair(String label1, String label2) {
-    labelPairStack.push(new String[]{label1, label2});
-}
+    public void pushLabelPair(String label1, String label2) {
+        labelPairStack.push(new String[]{label1, label2});
+    }
 
-public String[] popLabelPair() {
-    return labelPairStack.isEmpty() ? null : labelPairStack.pop();
-}
+    public String[] popLabelPair() {
+        return labelPairStack.isEmpty() ? null : labelPairStack.pop();
+    }
 
-public String[] peekLabelPair() {
-    return labelPairStack.isEmpty() ? null : labelPairStack.peek();
-}
+    public String[] peekLabelPair() {
+        return labelPairStack.isEmpty() ? null : labelPairStack.peek();
+    }
 
-public void enterSwitchContext() {
+    public void enterSwitchContext() {
         inSwitchContext = true;
         deferredSwitchCode.clear();
         System.out.println("DEBUG: Entrando a contexto SWITCH - código diferido");
@@ -1315,7 +1310,6 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
  
-              // ✅ PASO 1: Entrar al scope ANTES de procesar parámetros
               parser.enterFunctionScope(id.toString(), t.toString());
               
               if (parser.codeGenerationEnabled) {
@@ -1342,7 +1336,6 @@ class CUP$parser$actions {
 		int paramsright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		Object params = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
  
-              // ✅ PASO 2: Declarar función CON parámetros reales (después de procesarlos)
               List<String> paramTypes = new ArrayList<String>();
               if (params != null) {
                   paramTypes = (List<String>) params;
@@ -1375,7 +1368,6 @@ class CUP$parser$actions {
 		int paramsright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-5)).right;
 		Object params = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-5)).value;
 		 
-              // ✅ PASO 3: CERRAR TODO AL FINAL (solo una vez)
               System.out.println("DEBUG: Finalizando función completa");
               
               if (parser.codeGenerationEnabled) {
@@ -1399,14 +1391,12 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
  
-              // ✅ FUNCIÓN SIN PARÁMETROS - mismo patrón
               parser.enterFunctionScope(id.toString(), t.toString());
               
               if (parser.codeGenerationEnabled) {
                   parser.getCodeGenerator().startFunction(id.toString(), t.toString());
               }
               
-              // Declarar inmediatamente (sin parámetros)
               if (parser.getSemanticTable() != null) {
                   List<String> noParams = new ArrayList<String>();
                   parser.getSemanticTable().declareFunction(id.toString(), t.toString(), noParams, idleft, idright);
@@ -1430,7 +1420,6 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-6)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-6)).value;
 		 
-              // ✅ CERRAR AL FINAL
               if (parser.codeGenerationEnabled) {
                   parser.getCodeGenerator().endFunction();
               }
@@ -1515,7 +1504,6 @@ class CUP$parser$actions {
 		int pright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Object p = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-                // ✅ CAST EXPLÍCITO
                 List<String> paramList = new ArrayList<String>();
                 if (list != null) {
                     paramList = (List<String>) list;
@@ -1540,13 +1528,11 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-           // ✅ DECLARAR PARÁMETRO EN SCOPE ACTUAL
            if (parser.getSemanticTable() != null) {
                parser.getSemanticTable().declareParameter(id.toString(), t.toString(), idleft);
                System.out.println("DEBUG: Parámetro '" + id + "' declarado como " + t);
            }
            
-           // ✅ GENERAR DECLARACIÓN DE PARÁMETRO
            if (parser.codeGenerationEnabled) {
                parser.getCodeGenerator().declareParameter(id.toString(), t.toString());
            }
@@ -1755,7 +1741,6 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-                // 1. VALIDACIÓN SEMÁNTICA (igual)
                 if (parser.getSemanticTable() != null) {
                     String resultType = parser.getSemanticTable().checkArrayAccess(
                         id.toString(), e1, e2, idleft
@@ -1764,13 +1749,12 @@ class CUP$parser$actions {
                     if (resultType == null) {
                         RESULT = "ERROR";
                     } else {
-                        RESULT = resultType;  // ✅ Tipo del elemento
+                        RESULT = resultType; 
                     }                        
                 } else {
                     RESULT = "ERROR";
                 }
 
-                // 2. GENERACIÓN DE CÓDIGO
                 if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
                     String index2Key = parser.popCodeKey();
                     String index1Key = parser.popCodeKey();
@@ -1779,7 +1763,6 @@ class CUP$parser$actions {
                     
                     String tempVar = parser.getCodeGenerator().generateArrayAccess(id.toString(), index1Code, index2Code);
                     
-                    // ✅ GUARDAR CORRECTAMENTE EN STACK
                     String newKey = parser.saveCodeValue(RESULT, tempVar);
                     parser.pushCodeKey(newKey);
                     
@@ -1799,7 +1782,6 @@ class CUP$parser$actions {
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
           if (parser.getSemanticTable() != null && e != null) {
-              // Registro de uso de expresión
           }
        
               CUP$parser$result = parser.getSymbolFactory().newSymbol("stmt",5, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -1934,7 +1916,6 @@ class CUP$parser$actions {
 		int valueright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		String value = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-                  // 1. VALIDACIÓN SEMÁNTICA
                   if (parser.getSemanticTable() != null) {
                       String arrayType = parser.getSemanticTable().checkArrayAccess(id.toString(), e1, e2, idleft);
                       
@@ -1943,11 +1924,10 @@ class CUP$parser$actions {
                       }
                   }
                   
-                  // 2. GENERACIÓN DE CÓDIGO
                   if (parser.codeGenerationEnabled) {
-                      String valueKey = parser.popCodeKey();   // value
-                      String index2Key = parser.popCodeKey();  // e2  
-                      String index1Key = parser.popCodeKey();  // e1
+                      String valueKey = parser.popCodeKey();  
+                      String index2Key = parser.popCodeKey(); 
+                      String index1Key = parser.popCodeKey(); 
                       
                       String valueCode = parser.getCodeValue(valueKey);
                       String index2Code = parser.getCodeValue(index2Key);
@@ -1982,12 +1962,10 @@ class CUP$parser$actions {
                     String expKey = parser.popCodeKey();
                     String expCode = parser.getCodeValue(expKey);
                     
-                    // ✅ SI ESTAMOS EN SWITCH, DIFERIR LA ASIGNACIÓN
                     if (parser.isInSwitchContext()) {
                         parser.deferSwitchCode(id.toString() + " = " + expCode);
                         System.out.println("DEBUG: Asignación diferida para switch: " + id + " = " + expCode);
                     } else {
-                        // Generar normalmente
                         parser.getCodeGenerator().generateAssignment(id.toString(), expCode);
                         System.out.println("DEBUG: Asignación inmediata: " + id + " = " + expCode);
                     }
@@ -2035,14 +2013,12 @@ class CUP$parser$actions {
                       String expKey = parser.popCodeKey();
                       String expCode = parser.getCodeValue(expKey);
                       
-                      // ✅ FIX s1: VERIFICAR SI ES UNA LLAMADA A FUNCIÓN
                       System.out.println("DEBUG s1: Expresión para " + id + " = " + expCode + " (tipo: " + e + ")");
                       
                       if (parser.isInSwitchContext()) {
                           parser.deferSwitchCode(id.toString() + " = " + expCode);
                           System.out.println("DEBUG: Inicialización diferida para switch: " + id + " = " + expCode);
                       } else {
-                          // ✅ GENERAR ASIGNACIÓN NORMAL
                           parser.getCodeGenerator().generateAssignment(id.toString(), expCode);
                           System.out.println("DEBUG s1: Variable " + id + " inicializada con " + expCode);
                       }
@@ -2088,7 +2064,7 @@ class CUP$parser$actions {
 		int valright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Object val = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-             RESULT = "INT";  // ✅ Siempre String para semántico
+             RESULT = "INT";
              System.out.println("Literal entero: " + val);
              
              if (parser.codeGenerationEnabled) {
@@ -2132,7 +2108,7 @@ class CUP$parser$actions {
              System.out.println("Literal booleano detectado: " + val);
              
              if (parser.codeGenerationEnabled) {
-                 String key = parser.saveCodeValue("BOOL", val.toString());  // ✅ Valor real: "true", "false"
+                 String key = parser.saveCodeValue("BOOL", val.toString());  
                  parser.pushCodeKey(key);
                  System.out.println("DEBUG: Literal BOOL " + val + " guardado como código");
              }
@@ -2153,7 +2129,7 @@ class CUP$parser$actions {
              System.out.println("Literal caracter detectado: " + val);
              
              if (parser.codeGenerationEnabled) {
-                 String key = parser.saveCodeValue("CHAR", val.toString());  // ✅ Valor real: "'a'", "'x'"
+                 String key = parser.saveCodeValue("CHAR", val.toString()); 
                  parser.pushCodeKey(key);
                  System.out.println("DEBUG: Literal CHAR " + val + " guardado como código");
              }
@@ -2174,7 +2150,7 @@ class CUP$parser$actions {
              System.out.println("Literal cadena detectado: " + val);
              
              if (parser.codeGenerationEnabled) {
-                 String key = parser.saveCodeValue("STRING", val.toString());  // ✅ Valor real: "\"hola\""
+                 String key = parser.saveCodeValue("STRING", val.toString());  
                  parser.pushCodeKey(key);
                  System.out.println("DEBUG: Literal STRING " + val + " guardado como código");
              }
@@ -2234,14 +2210,12 @@ class CUP$parser$actions {
                      }
                  }
                  
-                 // 1. VALIDACIÓN SEMÁNTICA
                  if (parser.getSemanticTable() != null) {
-                     // ✅ EXTRAER TIPOS REALES
                      List<String> argTypes = new ArrayList<String>();
                      if (args != null) {
                          List<String> argList = (List<String>) args;
                          for (String arg : argList) {
-                             argTypes.add(arg);  // Los tipos ya están en la lista
+                             argTypes.add(arg); 
                          }
                      }
                      
@@ -2261,28 +2235,23 @@ class CUP$parser$actions {
                      RESULT = "ERROR";
                  }
 
-                 // 2. GENERACIÓN DE CÓDIGO INTERMEDIO SOLO SI ES VÁLIDO
                  if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
-                     // ✅ RECUPERAR ARGUMENTOS DEL STACK (en orden inverso)
                      List<String> argCodes = new ArrayList<String>();
                      if (args != null) {
                          List<String> argList = (List<String>) args;
                          
-                         // Para cada argumento, pop del stack
                          for (int i = argList.size() - 1; i >= 0; i--) {
                              String argKey = parser.popCodeKey();
                              String argCode = parser.getCodeValue(argKey);
-                             argCodes.add(0, argCode);  // Insertar al principio para mantener orden
+                             argCodes.add(0, argCode);  
                              System.out.println("DEBUG s1: Argumento " + i + " código: " + argCode);
                          }
                      }
                      
-                     // ✅ GENERAR CÓDIGO DE LLAMADA COMPLETA
                      String tempResult = parser.getCodeGenerator().generateFunctionCallComplete(
                          id.toString(), argCodes, RESULT
                      );
                      
-                     // ✅ GUARDAR RESULTADO PARA USO POSTERIOR
                      String resultKey = parser.saveCodeValue(RESULT, tempResult);
                      parser.pushCodeKey(resultKey);
                      
@@ -2305,7 +2274,6 @@ class CUP$parser$actions {
 		 
                  System.out.println("DEBUG s1: Función sin argumentos: " + id);
                  
-                 // FUNCIÓN SIN ARGUMENTOS (igual que antes)
                  if (parser.getSemanticTable() != null) {
                      List<String> noArgs = new ArrayList<String>();
                      String returnType = parser.getSemanticTable().checkFunctionCall(
@@ -2358,7 +2326,6 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-             // 1. VALIDACIÓN SEMÁNTICA
              String resultType = parser.getSemanticTable().checkLogicalOperation(
                  e1, e2, "||", e1left
              );
@@ -2366,10 +2333,9 @@ class CUP$parser$actions {
                  RESULT = "ERROR";
                  parser.report_error("Operación lógica OR requiere operandos booleanos", null);
              } else {
-                 RESULT = resultType;  // Debería ser "BOOL"
+                 RESULT = resultType; 
              }
              
-             // 2. GENERACIÓN DE CÓDIGO
              if (parser.codeGenerationEnabled && resultType != null) {
                  String rightKey = parser.popCodeKey();
                  String leftKey = parser.popCodeKey();
@@ -2408,7 +2374,6 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-              // 1. VALIDACIÓN SEMÁNTICA
               String resultType = parser.getSemanticTable().checkLogicalOperation(
                   e1, e2, "&&", e1left
               );
@@ -2419,7 +2384,6 @@ class CUP$parser$actions {
                   RESULT = resultType;
               }
               
-              // 2. GENERACIÓN DE CÓDIGO
               if (parser.codeGenerationEnabled && resultType != null) {
                   String rightKey = parser.popCodeKey();
                   String leftKey = parser.popCodeKey();
@@ -2455,7 +2419,6 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-                // 1. VALIDACIÓN SEMÁNTICA
                 String resultType = parser.getSemanticTable().checkLogicalOperation(
                     e, null, "!", eleft
                 );
@@ -2466,7 +2429,6 @@ class CUP$parser$actions {
                     RESULT = resultType;
                 }
                 
-                // 2. GENERACIÓN DE CÓDIGO
                 if (parser.codeGenerationEnabled && resultType != null) {
                     String operandKey = parser.popCodeKey();
                     String operandCode = parser.getCodeValue(operandKey);
@@ -2515,7 +2477,6 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-             // 1. VALIDACIÓN SEMÁNTICA
              String resultType = parser.getSemanticTable().checkRelationalOperation(
                  e1, e2, "<", e1left
              );
@@ -2523,10 +2484,9 @@ class CUP$parser$actions {
                  RESULT = "ERROR";
                  parser.report_error("Tipos no comparables en operación <", null);
              } else {
-                 RESULT = resultType;  // Debería ser "BOOL"
+                 RESULT = resultType;  
              }
              
-             // 2. GENERACIÓN DE CÓDIGO
              if (parser.codeGenerationEnabled && resultType != null) {
                  String rightKey = parser.popCodeKey();
                  String leftKey = parser.popCodeKey();
@@ -2745,7 +2705,6 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-              // 1. VALIDACIÓN SEMÁNTICA
               String resultType = parser.getSemanticTable().checkArithmeticOperation(
                   e1, e2, "+", e1left
               );
@@ -2753,13 +2712,12 @@ class CUP$parser$actions {
                   RESULT = "ERROR";
                   parser.report_error("Tipos incompatibles en operación +", null);
               } else {
-                  RESULT = resultType;  // ✅ Tipo semántico
+                  RESULT = resultType; 
               }
               
-              // 2. GENERACIÓN DE CÓDIGO
               if (parser.codeGenerationEnabled && resultType != null) {
-                  String rightKey = parser.popCodeKey();  // e2
-                  String leftKey = parser.popCodeKey();   // e1
+                  String rightKey = parser.popCodeKey(); 
+                  String leftKey = parser.popCodeKey();   
                   String rightCode = parser.getCodeValue(rightKey);
                   String leftCode = parser.getCodeValue(leftKey);
                   
@@ -2783,7 +2741,6 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-              // 1. VALIDACIÓN SEMÁNTICA
               String resultType = parser.getSemanticTable().checkArithmeticOperation(
                   e1, e2, "-", e1left
               );
@@ -2794,7 +2751,6 @@ class CUP$parser$actions {
                   RESULT = resultType;
               }
               
-              // 2. GENERACIÓN DE CÓDIGO
               if (parser.codeGenerationEnabled && resultType != null) {
                   String rightKey = parser.popCodeKey();
                   String leftKey = parser.popCodeKey();
@@ -2833,7 +2789,6 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-               // 1. VALIDACIÓN SEMÁNTICA
                String resultType = parser.getSemanticTable().checkArithmeticOperation(
                    e1, e2, "*", e1left
                );
@@ -2844,7 +2799,6 @@ class CUP$parser$actions {
                    RESULT = resultType;
                }
                
-               // 2. GENERACIÓN DE CÓDIGO
                if (parser.codeGenerationEnabled && resultType != null) {
                    String rightKey = parser.popCodeKey();
                    String leftKey = parser.popCodeKey();
@@ -2871,7 +2825,6 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-               // 1. VALIDACIÓN SEMÁNTICA
                String resultType = parser.getSemanticTable().checkArithmeticOperation(
                    e1, e2, "/", e1left
                );
@@ -2882,7 +2835,6 @@ class CUP$parser$actions {
                    RESULT = resultType;
                }
                
-               // 2. GENERACIÓN DE CÓDIGO
                if (parser.codeGenerationEnabled && resultType != null) {
                    String rightKey = parser.popCodeKey();
                    String leftKey = parser.popCodeKey();
@@ -2909,7 +2861,6 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-               // 1. VALIDACIÓN SEMÁNTICA - MOD solo para enteros
                if (!e1.equals("INT") || !e2.equals("INT")) {
                    parser.report_error("Operador % requiere operandos enteros", null);
                    RESULT = "ERROR";
@@ -2917,7 +2868,6 @@ class CUP$parser$actions {
                    RESULT = "INT";
                }
                
-               // 2. GENERACIÓN DE CÓDIGO
                if (parser.codeGenerationEnabled && RESULT.equals("INT")) {
                    String rightKey = parser.popCodeKey();
                    String leftKey = parser.popCodeKey();
@@ -2956,7 +2906,6 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e2 = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-                 // 1. VALIDACIÓN SEMÁNTICA
                  String resultType = parser.getSemanticTable().checkArithmeticOperation(
                      e1, e2, "**", e1left
                  );
@@ -2964,7 +2913,6 @@ class CUP$parser$actions {
                      RESULT = "ERROR";
                      parser.report_error("Operación POW requiere operandos numéricos", null);
                  } else {
-                     // POW inteligente: si ambos son INT, resultado es INT
                      if (e1.equals("INT") && e2.equals("INT")) {
                          RESULT = "INT";
                      } else {
@@ -2972,7 +2920,6 @@ class CUP$parser$actions {
                      }
                  }
                  
-                 // 2. GENERACIÓN DE CÓDIGO
                  if (parser.codeGenerationEnabled && resultType != null) {
                      String rightKey = parser.popCodeKey();
                      String leftKey = parser.popCodeKey();
@@ -3020,15 +2967,13 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-               // 1. VALIDACIÓN SEMÁNTICA
                if (!e.equals("INT") && !e.equals("FLOAT")) {
                    parser.report_error("Operador unario - requiere operando numérico (INT o FLOAT), encontrado: " + e, null);
                    RESULT = "ERROR";
                } else {
-                   RESULT = e;  // Mantiene el tipo original
+                   RESULT = e; 
                }
                
-               // 2. GENERACIÓN DE CÓDIGO
                if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
                    String operandKey = parser.popCodeKey();
                    String operandCode = parser.getCodeValue(operandKey);
@@ -3052,7 +2997,6 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-               // 1. VALIDACIÓN SEMÁNTICA
                if (parser.getSemanticTable() != null) {
                    SymbolInfo var = parser.getSemanticTable().checkVariableUsage(id.toString(), idleft);
                    if (var == null) {
@@ -3067,7 +3011,6 @@ class CUP$parser$actions {
                    RESULT = "ERROR";
                }
                
-               // 2. GENERACIÓN DE CÓDIGO
                if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
                    String tempVar = parser.getCodeGenerator().generateIncrement(id.toString());
                    String newKey = parser.saveCodeValue(RESULT, tempVar);
@@ -3088,7 +3031,6 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-               // 1. VALIDACIÓN SEMÁNTICA
                if (parser.getSemanticTable() != null) {
                    SymbolInfo var = parser.getSemanticTable().checkVariableUsage(id.toString(), idleft);
                    if (var == null) {
@@ -3103,7 +3045,6 @@ class CUP$parser$actions {
                    RESULT = "ERROR";
                }
                
-               // 2. GENERACIÓN DE CÓDIGO
                if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
                    String tempVar = parser.getCodeGenerator().generateDecrement(id.toString());
                    String newKey = parser.saveCodeValue(RESULT, tempVar);
@@ -3139,7 +3080,7 @@ class CUP$parser$actions {
                if (parser.getSemanticTable() != null) {
                    SymbolInfo symbol = parser.getSemanticTable().checkVariableUsage(id.toString(), idleft);
                    if (symbol != null) {
-                       RESULT = symbol.getTipoVariable();  // ✅ String tipo semántico
+                       RESULT = symbol.getTipoVariable(); 
                        
                        if (parser.codeGenerationEnabled) {
                            String key = parser.saveCodeValue(RESULT, id.toString());
@@ -3191,7 +3132,6 @@ class CUP$parser$actions {
 		String f = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
                 RESULT = f; 
-                // ✅ DEBUG s1: Verificar que la llamada se procesó
                 System.out.println("DEBUG s1: Llamada a función procesada en atom_arit: " + f);
             
               CUP$parser$result = parser.getSymbolFactory().newSymbol("atom_arit",13, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -3218,7 +3158,6 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-              // ✅ CREAR LISTA CON UN ARGUMENTO - SIN DUPLICAR
               List<String> argList = new ArrayList<String>();
               if (e != null) {
                   argList.add(e.toString());
@@ -3242,15 +3181,14 @@ class CUP$parser$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		String e = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
-              // ✅ AGREGAR ARGUMENTO A LISTA EXISTENTE (ORDEN CORRECTO)
               List<String> argList = new ArrayList<String>();
               if (list != null) {
                   List<String> existingList = (List<String>) list;
-                  argList.addAll(existingList);  // ✅ PRIMERO los existentes
+                  argList.addAll(existingList);  
                   System.out.println("DEBUG s1: Argumentos existentes: " + existingList.size());
               }
               if (e != null) {
-                  argList.add(e.toString());  // ✅ DESPUÉS el nuevo
+                  argList.add(e.toString());  
                   System.out.println("DEBUG s1: Nuevo argumento agregado: " + e.toString());
               }
               RESULT = argList;
@@ -3312,7 +3250,6 @@ class CUP$parser$actions {
 		int then_blockright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		Object then_block = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-             // ✅ TODA LA LÓGICA AL FINAL - SIN ACCIONES INTERMEDIAS
              if (!e.equals("BOOL")) {
                  parser.report_error("Condición de IF debe ser booleana", null);
                  RESULT = "ERROR";
@@ -3320,13 +3257,11 @@ class CUP$parser$actions {
                  RESULT = "VOID";
              }
              
-             // ✅ FIX s4: GENERAR IF SIMPLE CON LÓGICA DIFERIDA
              if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
                  String conditionKey = parser.popCodeKey();
                  String conditionCode = parser.getCodeValue(conditionKey);
                  String endLabel = parser.generateLabel();
                  
-                 // ✅ INSERTAR CONDICIÓN AL PRINCIPIO DEL CÓDIGO THEN
                  parser.getCodeGenerator().insertConditionalBeforeBlock("IF NOT " + conditionCode + " GOTO " + endLabel);
                  parser.getCodeGenerator().emit(endLabel + ":");
                  
@@ -3351,7 +3286,6 @@ class CUP$parser$actions {
 		int else_blockright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		Object else_block = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-             // ✅ TODA LA LÓGICA AL FINAL - SIN ACCIONES INTERMEDIAS
              if (!e.equals("BOOL")) {
                  parser.report_error("Condición de IF-ELSE debe ser booleana", null);
                  RESULT = "ERROR";
@@ -3359,14 +3293,12 @@ class CUP$parser$actions {
                  RESULT = "VOID";
              }
              
-             // ✅ FIX s4: GENERAR IF-ELSE CON LÓGICA DIFERIDA
              if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
                  String conditionKey = parser.popCodeKey();
                  String conditionCode = parser.getCodeValue(conditionKey);
                  String elseLabel = parser.generateLabel();
                  String endLabel = parser.generateLabel();
                  
-                 // ✅ GENERAR ESTRUCTURA COMPLETA CON INSERCIÓN INTELIGENTE
                  parser.getCodeGenerator().generateDeferredIfElse(conditionCode, elseLabel, endLabel);
                  System.out.println("DEBUG s4: IF-ELSE diferido generado");
              }
@@ -3380,12 +3312,10 @@ class CUP$parser$actions {
             {
               Object RESULT =null;
  
-              // ✅ GENERAR ETIQUETA DE INICIO INMEDIATAMENTE
               String startLabel = parser.generateLabel();
               String endLabel = parser.generateLabel();
               parser.pushLoopLabels(startLabel, endLabel);
               
-              // ✅ GENERAR LA ETIQUETA DE INICIO AHORA (antes del body)
               if (parser.codeGenerationEnabled) {
                   parser.getCodeGenerator().generateLabel(startLabel);
                   System.out.println("DEBUG: DO-WHILE iniciado - etiqueta: " + startLabel);
@@ -3408,7 +3338,6 @@ class CUP$parser$actions {
 		int conditionright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		String condition = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
 		 
-              // 1. VALIDACIÓN SEMÁNTICA
               if (!condition.equals("BOOL")) {
                   parser.report_error("Condición de DO-WHILE debe ser booleana", null);
                   RESULT = "ERROR";
@@ -3416,29 +3345,21 @@ class CUP$parser$actions {
                   RESULT = "VOID";
               }
               
-              // 2. ✅ FIX s2: CORREGIR LÓGICA DE CONDICIÓN
               if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
-                  // Recuperar condición del stack
                   String conditionKey = parser.popCodeKey();
                   String conditionCode = parser.getCodeValue(conditionKey);
                   
-                  // ✅ USAR ETIQUETAS DEL STACK
                   String[] labels = parser.peekLoopLabels();
                   String startLabel = labels[0];
                   String endLabel = labels[1];
                   
-                  // ✅ LÓGICA CORRECTA: "MIENTRAS la condición sea TRUE, repetir"
-                  // Si conditionCode = "contador <= 3", queremos:
-                  // IF (contador <= 3) GOTO startLabel
                   parser.getCodeGenerator().emit("IF " + conditionCode + " GOTO " + startLabel);
                   
-                  // ✅ GENERAR ETIQUETA DE SALIDA
                   parser.getCodeGenerator().generateLabel(endLabel);
                   
                   System.out.println("DEBUG s2: DO-WHILE - condición TRUE repite: " + conditionCode + " -> " + startLabel);
               }
               
-              // ✅ POP DEL STACK AL TERMINAR
               parser.popLoopLabels();
            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("do_while",21, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-9)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -3459,7 +3380,6 @@ class CUP$parser$actions {
 		int updateright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		String update = (String)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
  
-              // ✅ GENERAR ETIQUETAS PARA ESTE LOOP
               String startLabel = parser.generateLabel();
               String endLabel = parser.generateLabel();
               parser.pushLoopLabels(startLabel, endLabel);
@@ -3488,7 +3408,6 @@ class CUP$parser$actions {
 		int bodyright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		Object body = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
-              // 1. VALIDACIÓN SEMÁNTICA
               if (!condition.equals("BOOL")) {
                   parser.report_error("Condición de FOR debe ser booleana", null);
                   RESULT = "ERROR";
@@ -3496,21 +3415,17 @@ class CUP$parser$actions {
                   RESULT = "VOID";
               }
               
-              // 2. GENERACIÓN DE CÓDIGO
               if (parser.codeGenerationEnabled && !RESULT.equals("ERROR")) {
-                  // Recuperar códigos generados
                   String updateKey = parser.popCodeKey();
                   String updateCode = parser.getCodeValue(updateKey);
                   
                   String conditionKey = parser.popCodeKey();
                   String conditionCode = parser.getCodeValue(conditionKey);
                   
-                  // ✅ USAR ETIQUETAS DEL STACK
                   String[] labels = parser.peekLoopLabels();
                   String startLabel = labels[0];
                   String endLabel = labels[1];
                   
-                  // ✅ GENERAR FOR CON ETIQUETAS DEL STACK
                   parser.getCodeGenerator().generateForWithExistingGrammar(conditionCode, updateCode, startLabel, endLabel);
                   
                   System.out.println("DEBUG: FOR - condición: " + conditionCode + ", update: " + updateCode);
@@ -3518,7 +3433,6 @@ class CUP$parser$actions {
 
               }
               
-              // ✅ POP DEL STACK AL TERMINAR
               parser.popLoopLabels();
            
               CUP$parser$result = parser.getSymbolFactory().newSymbol("for_stmt",22, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-10)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -3530,7 +3444,6 @@ class CUP$parser$actions {
             {
               Object RESULT =null;
  
-                 // ✅ ENTRAR A MODO SWITCH ANTES DE PROCESAR
                  parser.enterSwitchContext();
                  System.out.println("DEBUG: INICIANDO SWITCH - modo diferido activado");
               
@@ -3552,20 +3465,16 @@ class CUP$parser$actions {
 		Object cases = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		 
                  if (parser.codeGenerationEnabled) {
-                     // Recuperar la expresión del switch
                      String switchKey = parser.popCodeKey();
                      String switchValue = parser.getCodeValue(switchKey);
                      
-                     // Generar etiquetas para el switch
                      String exitLabel = parser.generateLabel();
                      
-                     // ✅ GENERAR SWITCH CON CÓDIGO DIFERIDO
                      parser.getCodeGenerator().generateCompleteSwitchWithDeferred(switchValue, exitLabel, parser.getDeferredSwitchCode());
                      
                      System.out.println("DEBUG: SWITCH generado - expr: " + switchValue + " -> " + exitLabel);
                  }
                  
-                 // ✅ SALIR DEL MODO SWITCH
                  parser.exitSwitchContext();
               
               CUP$parser$result = parser.getSymbolFactory().newSymbol("switch_stmt",39, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-7)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -3611,14 +3520,11 @@ class CUP$parser$actions {
 		Object caseBlock = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
                if (parser.codeGenerationEnabled) {
-                   // Recuperar valor del case
                    String caseKey = parser.popCodeKey();
                    String caseVal = parser.getCodeValue(caseKey);
                    
-                   // Generar etiqueta para este case
                    String caseLabel = parser.generateLabel();
                    
-                   // ✅ REGISTRAR CASE para el switch
                    parser.getCodeGenerator().registerCase(caseVal, caseLabel);
                    
                    System.out.println("DEBUG: CASE registrado - valor: " + caseVal + " -> " + caseLabel);
@@ -3637,10 +3543,8 @@ class CUP$parser$actions {
 		Object defaultBlock = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 
                   if (parser.codeGenerationEnabled) {
-                      // Generar etiqueta para default
                       String defaultLabel = parser.generateLabel();
                       
-                      // ✅ REGISTRAR DEFAULT
                       parser.getCodeGenerator().registerDefault(defaultLabel);
                       
                       System.out.println("DEBUG: DEFAULT registrado -> " + defaultLabel);
@@ -3656,20 +3560,17 @@ class CUP$parser$actions {
               Object RESULT =null;
 		 
                 if (parser.codeGenerationEnabled) {
-                    // ✅ PRIORIDAD 1: Si estamos en switch, usar el mecanismo de switch
                     if (parser.isInSwitchContext()) {
                         parser.deferSwitchCode("BREAK");
                         System.out.println("DEBUG: Break diferido para switch");
                     } 
-                    // ✅ PRIORIDAD 2: Si estamos en loop, usar etiquetas de loop
                     else {
                         String[] loopLabels = parser.peekLoopLabels();
                         if (loopLabels != null) {
-                            String endLabel = loopLabels[1];  // Etiqueta de salida del loop
+                            String endLabel = loopLabels[1]; 
                             parser.getCodeGenerator().generateBreakToLabel(endLabel);
                             System.out.println("DEBUG: Break generado para loop -> " + endLabel);
                         } else {
-                            // ✅ FALLBACK: Break genérico (switch sin contexto activo)
                             parser.getCodeGenerator().generateBreak();
                             System.out.println("DEBUG: Break genérico");
                         }
@@ -3688,7 +3589,7 @@ class CUP$parser$actions {
                    if (parser.codeGenerationEnabled) {
                        String[] loopLabels = parser.peekLoopLabels();
                        if (loopLabels != null) {
-                           String startLabel = loopLabels[0];  // Etiqueta de inicio del loop
+                           String startLabel = loopLabels[0];  
                            parser.getCodeGenerator().generateContinue(startLabel);
                            System.out.println("DEBUG: Continue generado -> " + startLabel);
                        } else {
@@ -3717,7 +3618,6 @@ class CUP$parser$actions {
                  }
                  
                  if (parser.codeGenerationEnabled) {
-                     // ✅ RECUPERAR EXPRESIÓN DEL STACK CORRECTAMENTE
                      String expKey = parser.popCodeKey();
                      
                      if (expKey != null) {
@@ -3725,7 +3625,6 @@ class CUP$parser$actions {
                          parser.getCodeGenerator().generateReturnWithValue(expValue);
                          System.out.println("DEBUG: Return generado con valor: " + expValue + " (clave: " + expKey + ")");
                      } else {
-                         // ✅ SI NO HAY CLAVE, USAR LA EXPRESIÓN DIRECTAMENTE
                          parser.getCodeGenerator().generateReturnWithValue(e.toString());
                          System.out.println("DEBUG: Return generado con valor directo: " + e.toString());
                      }
@@ -3777,13 +3676,12 @@ class CUP$parser$actions {
 		int idright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		Object id = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
 		 
-               // ✅ VALIDACIÓN: Verificar que la variable existe
                if (parser.getSemanticTable() != null) {
                    SymbolInfo var = parser.getSemanticTable().checkVariableUsage(id.toString(), idleft);
                    if (var == null) {
                        parser.report_error("Variable '" + id + "' no declarada en READ", null);
                    } else {
-                       var.setInicializada(true); // ✅ READ inicializa la variable
+                       var.setInicializada(true); 
                        System.out.println("DEBUG: READ de variable '" + id + "' tipo " + var.getTipoVariable());
                    }
                }
@@ -3818,13 +3716,11 @@ class CUP$parser$actions {
 		 
                 System.out.println("DEBUG: WRITE con expresión: " + e);
                 
-                // ✅ VALIDACIÓN: Verificar que la expresión sea válida
                 if (e != null && e.equals("ERROR")) {
                     parser.report_error("Expresión inválida en write", null);
                 }
                 
                 if (parser.codeGenerationEnabled && !e.equals("ERROR")) {
-                    // ✅ PROCESAR STACK DE CÓDIGOS (como en return)
                     String expKey = parser.popCodeKey();
                     
                     if (expKey != null) {
@@ -3832,7 +3728,6 @@ class CUP$parser$actions {
                         parser.getCodeGenerator().generateWrite(expValue);
                         System.out.println("DEBUG: WRITE generado con valor: " + expValue + " (clave: " + expKey + ")");
                     } else {
-                        // ✅ FALLBACK: usar la expresión directamente
                         parser.getCodeGenerator().generateWrite(e.toString());
                         System.out.println("DEBUG: WRITE generado con valor directo: " + e);
                     }

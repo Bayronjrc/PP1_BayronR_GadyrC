@@ -13,9 +13,9 @@
   8: var = 0
   9: DECLARE var2 INT
  10: DECLARE str STRING
- 11: DECLARE i INT
- 12: i = 0
- 13: i = 0
+ 11: DECLARE k INT
+ 12: k = 0
+ 13: k = 0
  14: var2 = 1
  15: IF NOT true GOTO L6
  16: GOTO L7
@@ -23,8 +23,8 @@
  18: t1 = 3 ** 4
  19: t2 = 2 * t1
  20: t3 = 1 + t2
- 21: t4 = 4 + i
- 22: t5 = i < t4
+ 21: t4 = 4 + k
+ 22: t5 = k < t4
  23: t6 = var2 > 122
  24: t7 = 34 + 35
  25: t8 = 12 > t7
@@ -51,22 +51,20 @@
  46: i = 0
  47: i = 1
  48: t11 = 67 + i
- 49: t12 = -0.01
- 50: DECLARE b1 BOOL
- 51: b1 = true
- 52: DECLARE s1 STRING
- 53: s1 = luna
- 54: READ s1
- 55: WRITE b1
- 56: WRITE true
- 57: t13 = -6.7
- 58: WRITE t13
- 59: END main
- 60: 
+ 49: DECLARE b1 BOOL
+ 50: b1 = true
+ 51: DECLARE s1 STRING
+ 52: s1 = luna
+ 53: READ s1
+ 54: WRITE b1
+ 55: WRITE true
+ 56: WRITE 7
+ 57: END main
+ 58: 
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 60
-// Temporales: 13
+// Líneas: 58
+// Temporales: 11
 // Etiquetas: 0
 // ========================================

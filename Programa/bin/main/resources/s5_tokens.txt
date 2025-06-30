@@ -29,9 +29,9 @@ Token: ID, Lexema: resultado, Línea: 7, Columna: 9, Tabla: VARIABLES
 Token: ASSIGN, Lexema: ASSIGN, Línea: 7, Columna: 19, Tabla: N/A
 Token: ID, Lexema: multiplicar, Línea: 7, Columna: 21, Tabla: VARIABLES
 Token: LPAREN, Lexema: LPAREN, Línea: 7, Columna: 33, Tabla: N/A
-Token: INT_LITERAL, Lexema: 4, Línea: 7, Columna: 35, Tabla: N/A
+Token: INT_LITERAL, Lexema: 5, Línea: 7, Columna: 35, Tabla: N/A
 Token: COMMA, Lexema: COMMA, Línea: 7, Columna: 36, Tabla: N/A
-Token: INT_LITERAL, Lexema: 3, Línea: 7, Columna: 38, Tabla: N/A
+Token: INT_LITERAL, Lexema: 5, Línea: 7, Columna: 38, Tabla: N/A
 Token: RPAREN, Lexema: RPAREN, Línea: 7, Columna: 40, Tabla: N/A
 Token: QUESTION, Lexema: QUESTION, Línea: 7, Columna: 41, Tabla: N/A
 Token: WRITE, Lexema: WRITE, Línea: 8, Columna: 5, Tabla: PALABRAS_RESERVADAS
