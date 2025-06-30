@@ -489,3 +489,12 @@ print_decimal:
     addi $sp, $sp, 4
     jr $ra
 
+exit_func1:
+    # Limpiar variables locales
+    addi $sp, $sp, 16    # Liberar espacio de variables locales
+    # Restaurar frame pointer y return address
+    move $sp, $fp
+    lw $fp, 0($sp)
+    lw $ra, 4($sp)
+    addi $sp, $sp, 8
+    jr $ra
