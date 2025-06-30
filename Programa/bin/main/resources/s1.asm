@@ -1,6 +1,6 @@
 # ========================================
-# CÓDIGO MIPS GENERADO AUTOMÁTICAMENTE
-# Compilador - Proyecto 3
+# CÓDIGO MIPS UNIVERSAL - SIN HARDCODEO
+# Funciona con cualquier nombre de función
 # Autores: Bayron Rodríguez & Gadir Calderón
 # ========================================
 
@@ -9,29 +9,36 @@
     nl:           .asciiz "\n"
     prompt_int:   .asciiz "Ingrese un entero: "
     prompt_float: .asciiz "Ingrese un float: "
+    prompt_string: .asciiz "Ingrese texto: "
     result_msg:   .asciiz "Resultado: "
     true_str:     .asciiz "true"
     false_str:    .asciiz "false"
 
+    # Constantes booleanas del lenguaje
+    true_const:   .word 1
+    false_const:  .word 0
+    luna_const:   .word 1    # luna = true
+    sol_const:    .word 0    # sol = false
+
     # Variables del programa
     t4_var: .word 0
-    a_var: .word 0
     t5_var: .word 0
-    b_var: .word 0
-    temp_var: .word 0
     t6_var: .word 0
     t7_var: .word 0
+    t8_var: .word 0
+    resultado1_var: .word 0
+    resultado2_var: .word 0
+    t_cond_var: .word 0
+    t_inc_var: .word 0
+    a_var: .word 0
+    b_var: .word 0
+    temp_var: .word 0
     resultado_var: .word 0
     d_var: .word 0
-    t8_var: .word 0
     k_var: .word 0
     n_var: .word 0
     r_var: .word 0
-    resultado1_var: .word 0
-    resultado2_var: .word 0
     recurse_var: .word 0
-    t_cond_var: .word 0
-    t_inc_var: .word 0
     t1_var: .word 0
     t2_var: .word 0
     t3_var: .word 0
@@ -41,8 +48,8 @@
 
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/s1_intermediate.txt
-carlos:
-    # Prólogo estándar carlos
+atun:
+    # 🚀 UNIVERSAL: Prólogo para atun
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -50,11 +57,11 @@ carlos:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # 🚀 UNIVERSAL: Guardar parámetros de atun
+    sw $a0, -4($fp)   # a local
+    sw $a0, a_var     # a global
+    sw $a1, -8($fp)   # b local
+    sw $a1, b_var     # b global
 
     # Inicio de función
     # DECLARE a INT
@@ -73,11 +80,11 @@ carlos:
     # RETURN resultado
     lw $v0, resultado_var
     # Valor de retorno en $v0
-    j exit_carlos
+    j exit_atun
 
 
-# Epílogo estándar carlos
-exit_carlos:
+# 🚀 UNIVERSAL: Epílogo para atun
+exit_atun:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
     # Restaurar frame pointer y return address
@@ -87,8 +94,8 @@ exit_carlos:
     addi $sp, $sp, 8
     jr $ra
 
-factorial:
-    # Prólogo estándar factorial
+pepe:
+    # 🚀 UNIVERSAL: Prólogo para pepe
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -96,18 +103,23 @@ factorial:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # 🚀 UNIVERSAL: Guardar parámetros de pepe
+    sw $a0, -4($fp)   # n local
+    sw $a0, n_var     # n global
 
     # Inicio de función
     # DECLARE n INT
     # t2 = n <= 1
     lw $t1, -4($fp)   # n local
     li $t2, 1
-    sle $t0, $t1, $t2
+    # n <= 1
+    sub $t3, $t2, $t1    # t2 - t1
+    bgez $t3, set_true_le_1
+    li $t0, 0
+    j end_le_1
+set_true_le_1:
+    li $t0, 1
+end_le_1:
     sw $t0, t2_var
 
     # IF NOT t2 GOTO L1
@@ -117,7 +129,7 @@ factorial:
     # RETURN 1
     li $v0, 1
     # Valor de retorno en $v0
-    j exit_factorial
+    j exit_pepe
 
 L1:
     # t3 = n - 1
@@ -133,10 +145,10 @@ L1:
 
     # PARAM temp
     lw $a0, temp_var
-    # ✅ FIXED: Parámetro temp cargado en $a0
+    # ✅ UNIVERSAL: Parámetro temp cargado en $a0
 
-    # t4 = CALL factorial 1
-    jal factorial
+    # t4 = CALL pepe 1
+    jal pepe
     sw $v0, t4_var
 
     # DECLARE recurse INT
@@ -147,7 +159,8 @@ L1:
     # t5 = n * recurse
     lw $t1, -4($fp)   # n local
     lw $t2, recurse_var
-    mul $t0, $t1, $t2
+    mult $t1, $t2
+    mflo $t0
     sw $t0, t5_var
 
     # DECLARE resultado INT
@@ -158,11 +171,11 @@ L1:
     # RETURN resultado
     lw $v0, resultado_var
     # Valor de retorno en $v0
-    j exit_factorial
+    j exit_pepe
 
 
-# Epílogo estándar factorial
-exit_factorial:
+# 🚀 UNIVERSAL: Epílogo para pepe
+exit_pepe:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
     # Restaurar frame pointer y return address
@@ -173,7 +186,7 @@ exit_factorial:
     jr $ra
 
 testBasico:
-    # Prólogo estándar testBasico
+    # 🚀 UNIVERSAL: Prólogo para testBasico
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -181,11 +194,7 @@ testBasico:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # Función sin parámetros o no detectados
 
     # Inicio de función
     # DECLARE d INT
@@ -200,14 +209,14 @@ testBasico:
 
     # PARAM d
     lw $a0, d_var
-    # ✅ FIXED: Parámetro d cargado en $a0
+    # ✅ UNIVERSAL: Parámetro d cargado en $a0
 
     # PARAM r
     lw $a1, r_var
-    # ✅ FIXED: Parámetro r cargado en $a1
+    # ✅ UNIVERSAL: Parámetro r cargado en $a1
 
-    # t6 = CALL carlos 2
-    jal carlos
+    # t6 = CALL atun 2
+    jal atun
     sw $v0, t6_var
 
     # DECLARE resultado1 INT
@@ -223,10 +232,10 @@ testBasico:
 
     # PARAM 5
     li $a0, 5
-    # ✅ FIXED: Parámetro 5 cargado en $a0
+    # ✅ UNIVERSAL: Parámetro 5 cargado en $a0
 
-    # t7 = CALL factorial 1
-    jal factorial
+    # t7 = CALL pepe 1
+    jal pepe
     sw $v0, t7_var
 
     # DECLARE resultado2 INT
@@ -252,7 +261,14 @@ testBasico:
     # t8 = k < 7
     lw $t1, k_var
     li $t2, 7
-    slt $t0, $t1, $t2
+    # k < 7
+    sub $t3, $t1, $t2    # t1 - t2
+    bltz $t3, set_true_lt_2
+    li $t0, 0
+    j end_lt_2
+set_true_lt_2:
+    li $t0, 1
+end_lt_2:
     sw $t0, t8_var
 
     # k = k + 1
@@ -271,7 +287,14 @@ L2:
     # t_cond = k < 7
     lw $t1, k_var
     li $t2, 7
-    slt $t0, $t1, $t2
+    # k < 7
+    sub $t3, $t1, $t2    # t1 - t2
+    bltz $t3, set_true_lt_3
+    li $t0, 0
+    j end_lt_3
+set_true_lt_3:
+    li $t0, 1
+end_lt_3:
     sw $t0, t_cond_var
 
     # IF NOT t_cond GOTO L3
@@ -298,7 +321,7 @@ L2:
 
 L3:
 
-# Epílogo estándar testBasico
+# 🚀 UNIVERSAL: Epílogo para testBasico
 exit_testBasico:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -310,7 +333,7 @@ exit_testBasico:
     jr $ra
 
 main:
-    # Prólogo estándar main
+    # 🚀 UNIVERSAL: Prólogo para main
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -318,18 +341,14 @@ main:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # Función sin parámetros o no detectados
 
     # Inicio de función
     # CALL testBasico 0
     jal testBasico
 
 
-# Epílogo estándar main
+# 🚀 UNIVERSAL: Epílogo para main
 exit_main:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -368,5 +387,37 @@ read_int:
 read_float:
     li $v0, 6
     syscall
+    jr $ra
+
+print_float_decimal:
+    # $a0 contiene el flotante multiplicado por 100
+    addi $sp, $sp, -4
+    sw $a0, 0($sp)
+    bgez $a0, positive_float
+    li $v0, 11
+    li $a0, 45    # ASCII de '-'
+    syscall
+    lw $a0, 0($sp)
+    sub $a0, $zero, $a0
+positive_float:
+    li $t1, 100
+    div $a0, $t1
+    mflo $t2
+    mfhi $t3
+    move $a0, $t2
+    li $v0, 1
+    syscall
+    li $v0, 11
+    li $a0, 46    # ASCII de '.'
+    syscall
+    bge $t3, 10, print_decimal
+    li $v0, 11
+    li $a0, 48    # ASCII de '0'
+    syscall
+print_decimal:
+    move $a0, $t3
+    li $v0, 1
+    syscall
+    addi $sp, $sp, 4
     jr $ra
 

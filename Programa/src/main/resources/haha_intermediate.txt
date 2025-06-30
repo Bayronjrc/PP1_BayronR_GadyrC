@@ -58,13 +58,14 @@
  53: READ s1
  54: WRITE b1
  55: WRITE true
- 56: WRITE 7
- 57: END main
- 58: 
+ 56: t12 = -6.7
+ 57: WRITE t12
+ 58: END main
+ 59: 
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 58
-// Temporales: 11
+// Líneas: 59
+// Temporales: 12
 // Etiquetas: 0
 // ========================================

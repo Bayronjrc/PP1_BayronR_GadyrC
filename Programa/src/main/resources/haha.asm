@@ -1,6 +1,6 @@
 # ========================================
-# CÓDIGO MIPS GENERADO AUTOMÁTICAMENTE
-# Compilador - Proyecto 3
+# CÓDIGO MIPS UNIVERSAL - SIN HARDCODEO
+# Funciona con cualquier nombre de función
 # Autores: Bayron Rodríguez & Gadir Calderón
 # ========================================
 
@@ -9,9 +9,16 @@
     nl:           .asciiz "\n"
     prompt_int:   .asciiz "Ingrese un entero: "
     prompt_float: .asciiz "Ingrese un float: "
+    prompt_string: .asciiz "Ingrese texto: "
     result_msg:   .asciiz "Resultado: "
     true_str:     .asciiz "true"
     false_str:    .asciiz "false"
+
+    # Constantes booleanas del lenguaje
+    true_const:   .word 1
+    false_const:  .word 0
+    luna_const:   .word 1    # luna = true
+    sol_const:    .word 0    # sol = false
 
     # Variables del programa
     dif_var: .word 0
@@ -21,9 +28,9 @@
     t7_var: .word 0
     t8_var: .word 0
     t9_var: .word 0
-    luna_var: .word 0
     b1_var: .word 0
     t10_var: .word 0
+    t12_var: .word 0
     t11_var: .word 0
     t_cond_var: .word 0
     var2_var: .word 0
@@ -33,11 +40,8 @@
     var_var: .word 0
     i_var: .word 0
     k_var: .word 0
-    var_3_opop_4_var: .word 0
     str_var: .word 0
-    true_var: .word 0
     t1_var: .word 0
-    t6_and_t8_var: .word 0
     t2_var: .word 0
     t3_var: .word 0
 
@@ -47,7 +51,7 @@
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/haha_intermediate.txt
 mi:
-    # Prólogo estándar mi
+    # 🚀 UNIVERSAL: Prólogo para mi
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -55,11 +59,7 @@ mi:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # Función sin parámetros o no detectados
 
     # Inicio de función
     # DECLARE dif INT
@@ -85,20 +85,21 @@ mi:
     sw $t0, var2_var
 
     # IF NOT true GOTO L6
-    lw $t0, true_var
+    lw $t0, true_const
     beq $t0, $zero, L6
 
     j L7
 
 L6:
     # t1 = 3 ** 4
-    lw $t0, var_3_opop_4_var
+    li $t0, 0    # ERROR: No se pudo procesar '3 ** 4'
     sw $t0, t1_var
 
     # t2 = 2 * t1
     li $t1, 2
     lw $t2, t1_var
-    mul $t0, $t1, $t2
+    mult $t1, $t2
+    mflo $t0
     sw $t0, t2_var
 
     # t3 = 1 + t2
@@ -116,13 +117,27 @@ L6:
     # t5 = k < t4
     lw $t1, k_var
     lw $t2, t4_var
-    slt $t0, $t1, $t2
+    # k < t4
+    sub $t3, $t1, $t2    # t1 - t2
+    bltz $t3, set_true_lt_1
+    li $t0, 0
+    j end_lt_1
+set_true_lt_1:
+    li $t0, 1
+end_lt_1:
     sw $t0, t5_var
 
     # t6 = var2 > 122
     lw $t1, var2_var
     li $t2, 122
-    sgt $t0, $t1, $t2
+    # var2 > 122
+    sub $t3, $t2, $t1    # t2 - t1
+    bltz $t3, set_true_gt_2
+    li $t0, 0
+    j end_gt_2
+set_true_gt_2:
+    li $t0, 1
+end_gt_2:
     sw $t0, t6_var
 
     # t7 = 34 + 35
@@ -134,17 +149,31 @@ L6:
     # t8 = 12 > t7
     li $t1, 12
     lw $t2, t7_var
-    sgt $t0, $t1, $t2
+    # 12 > t7
+    sub $t3, $t2, $t1    # t2 - t1
+    bltz $t3, set_true_gt_3
+    li $t0, 0
+    j end_gt_3
+set_true_gt_3:
+    li $t0, 1
+end_gt_3:
     sw $t0, t8_var
 
     # t9 = t6 && t8
-    lw $t0, t6_and_t8_var
+    li $t0, 0    # ERROR: No se pudo procesar 't6 && t8'
     sw $t0, t9_var
 
     # t10 = var == 0
     lw $t1, var_var
     li $t2, 0
-    seq $t0, $t1, $t2
+    # var == 0
+    sub $t3, $t1, $t2    # t1 - t2
+    beq $t3, $zero, set_true_eq_4
+    li $t0, 0
+    j end_eq_4
+set_true_eq_4:
+    li $t0, 1
+end_eq_4:
     sw $t0, t10_var
 
 L7:
@@ -152,7 +181,14 @@ L1:
     # t_cond = k <= 2
     lw $t1, k_var
     li $t2, 2
-    sle $t0, $t1, $t2
+    # k <= 2
+    sub $t3, $t2, $t1    # t2 - t1
+    bgez $t3, set_true_le_5
+    li $t0, 0
+    j end_le_5
+set_true_le_5:
+    li $t0, 1
+end_le_5:
     sw $t0, t_cond_var
 
     # IF NOT t_cond GOTO L2
@@ -184,7 +220,7 @@ L2:
     j exit_mi
 
 
-# Epílogo estándar mi
+# 🚀 UNIVERSAL: Epílogo para mi
 exit_mi:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -196,7 +232,7 @@ exit_mi:
     jr $ra
 
 miOtraFun:
-    # Prólogo estándar miOtraFun
+    # 🚀 UNIVERSAL: Prólogo para miOtraFun
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -204,20 +240,16 @@ miOtraFun:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # Función sin parámetros o no detectados
 
     # Inicio de función
     # RETURN true
-    lw $v0, true_var
+    lw $v0, true_const
     # Valor de retorno en $v0
     j exit_miOtraFun
 
 
-# Epílogo estándar miOtraFun
+# 🚀 UNIVERSAL: Epílogo para miOtraFun
 exit_miOtraFun:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -229,7 +261,7 @@ exit_miOtraFun:
     jr $ra
 
 main:
-    # Prólogo estándar main
+    # 🚀 UNIVERSAL: Prólogo para main
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -237,11 +269,7 @@ main:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # Función sin parámetros o no detectados
 
     # Inicio de función
     # DECLARE i INT
@@ -261,12 +289,12 @@ main:
 
     # DECLARE b1 BOOL
     # b1 = true
-    lw $t0, true_var
+    lw $t0, true_const
     sw $t0, b1_var
 
     # DECLARE s1 STRING
     # s1 = luna
-    lw $t0, luna_var
+    lw $t0, luna_const    # luna = true
     sw $t0, s1_var
 
     # UNKNOWN: READ s1
@@ -277,19 +305,23 @@ main:
     jal print_string
 
     # WRITE true
-    lw $a0, true_var
+    lw $a0, true_const
     jal print_int
     la $a0, nl
     jal print_string
 
-    # WRITE 7
-    li $a0, 7
-    jal print_int
+    # t12 = -6.7
+    li $t0, -670    # Float -6.7 (*100)
+    sw $t0, t12_var
+
+    # WRITE t12
+    lw $a0, t12_var
+    jal print_float_decimal
     la $a0, nl
     jal print_string
 
 
-# Epílogo estándar main
+# 🚀 UNIVERSAL: Epílogo para main
 exit_main:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -328,5 +360,37 @@ read_int:
 read_float:
     li $v0, 6
     syscall
+    jr $ra
+
+print_float_decimal:
+    # $a0 contiene el flotante multiplicado por 100
+    addi $sp, $sp, -4
+    sw $a0, 0($sp)
+    bgez $a0, positive_float
+    li $v0, 11
+    li $a0, 45    # ASCII de '-'
+    syscall
+    lw $a0, 0($sp)
+    sub $a0, $zero, $a0
+positive_float:
+    li $t1, 100
+    div $a0, $t1
+    mflo $t2
+    mfhi $t3
+    move $a0, $t2
+    li $v0, 1
+    syscall
+    li $v0, 11
+    li $a0, 46    # ASCII de '.'
+    syscall
+    bge $t3, 10, print_decimal
+    li $v0, 11
+    li $a0, 48    # ASCII de '0'
+    syscall
+print_decimal:
+    move $a0, $t3
+    li $v0, 1
+    syscall
+    addi $sp, $sp, 4
     jr $ra
 

@@ -1,6 +1,6 @@
 # ========================================
-# CÓDIGO MIPS GENERADO AUTOMÁTICAMENTE
-# Compilador - Proyecto 3
+# CÓDIGO MIPS UNIVERSAL - SIN HARDCODEO
+# Funciona con cualquier nombre de función
 # Autores: Bayron Rodríguez & Gadir Calderón
 # ========================================
 
@@ -9,9 +9,16 @@
     nl:           .asciiz "\n"
     prompt_int:   .asciiz "Ingrese un entero: "
     prompt_float: .asciiz "Ingrese un float: "
+    prompt_string: .asciiz "Ingrese texto: "
     result_msg:   .asciiz "Resultado: "
     true_str:     .asciiz "true"
     false_str:    .asciiz "false"
+
+    # Constantes booleanas del lenguaje
+    true_const:   .word 1
+    false_const:  .word 0
+    luna_const:   .word 1    # luna = true
+    sol_const:    .word 0    # sol = false
 
     # Variables del programa
     t4_var: .word 0
@@ -58,8 +65,8 @@
 
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/s4_intermediate.txt
-factorial:
-    # Prólogo estándar factorial
+filo:
+    # 🚀 UNIVERSAL: Prólogo para filo
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -67,18 +74,23 @@ factorial:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # 🚀 UNIVERSAL: Guardar parámetros de filo
+    sw $a0, -4($fp)   # n local
+    sw $a0, n_var     # n global
 
     # Inicio de función
     # DECLARE n INT
     # t1 = n <= 1
     lw $t1, -4($fp)   # n local
     li $t2, 1
-    sle $t0, $t1, $t2
+    # n <= 1
+    sub $t3, $t2, $t1    # t2 - t1
+    bgez $t3, set_true_le_1
+    li $t0, 0
+    j end_le_1
+set_true_le_1:
+    li $t0, 1
+end_le_1:
     sw $t0, t1_var
 
     # IF NOT t1 GOTO L1
@@ -88,7 +100,7 @@ factorial:
     # RETURN 1
     li $v0, 1
     # Valor de retorno en $v0
-    j exit_factorial
+    j exit_filo
 
 L1:
     # t2 = n - 1
@@ -104,10 +116,10 @@ L1:
 
     # PARAM temp
     lw $a0, temp_var
-    # ✅ FIXED: Parámetro temp cargado en $a0
+    # ✅ UNIVERSAL: Parámetro temp cargado en $a0
 
-    # t3 = CALL factorial 1
-    jal factorial
+    # t3 = CALL filo 1
+    jal filo
     sw $v0, t3_var
 
     # DECLARE recurse INT
@@ -118,7 +130,8 @@ L1:
     # t4 = n * recurse
     lw $t1, -4($fp)   # n local
     lw $t2, recurse_var
-    mul $t0, $t1, $t2
+    mult $t1, $t2
+    mflo $t0
     sw $t0, t4_var
 
     # DECLARE resultado INT
@@ -129,11 +142,11 @@ L1:
     # RETURN resultado
     lw $v0, resultado_var
     # Valor de retorno en $v0
-    j exit_factorial
+    j exit_filo
 
 
-# Epílogo estándar factorial
-exit_factorial:
+# 🚀 UNIVERSAL: Epílogo para filo
+exit_filo:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
     # Restaurar frame pointer y return address
@@ -143,8 +156,8 @@ exit_factorial:
     addi $sp, $sp, 8
     jr $ra
 
-fibonacci:
-    # Prólogo estándar fibonacci
+azul:
+    # 🚀 UNIVERSAL: Prólogo para azul
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -152,8 +165,8 @@ fibonacci:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Guardar parámetros en stack frame local
-    sw $a0, -4($fp)   # n local (CRÍTICO para recursión)
+    # 🚀 UNIVERSAL: Guardar parámetros de azul
+    sw $a0, -4($fp)   # n local
     sw $a0, n_var     # n global
 
     # Inicio de función
@@ -161,7 +174,14 @@ fibonacci:
     # t5 = n <= 1
     lw $t1, -4($fp)   # n local
     li $t2, 1
-    sle $t0, $t1, $t2
+    # n <= 1
+    sub $t3, $t2, $t1    # t2 - t1
+    bgez $t3, set_true_le_2
+    li $t0, 0
+    j end_le_2
+set_true_le_2:
+    li $t0, 1
+end_le_2:
     sw $t0, t5_var
 
     # IF NOT t5 GOTO L2
@@ -171,7 +191,7 @@ fibonacci:
     # RETURN n
     lw $v0, -4($fp)   # n local
     # Valor de retorno en $v0
-    j exit_fibonacci
+    j exit_azul
 
 L2:
     # t6 = n - 1
@@ -198,10 +218,10 @@ L2:
 
     # PARAM temp1
     lw $a0, temp1_var
-    # ✅ FIXED: Parámetro temp1 cargado en $a0
+    # ✅ UNIVERSAL: Parámetro temp1 cargado en $a0
 
-    # t8 = CALL fibonacci 1
-    jal fibonacci
+    # t8 = CALL azul 1
+    jal azul
     sw $v0, t8_var
 
     # DECLARE fib1 INT
@@ -211,10 +231,10 @@ L2:
 
     # PARAM temp2
     lw $a0, temp2_var
-    # ✅ FIXED: Parámetro temp2 cargado en $a0
+    # ✅ UNIVERSAL: Parámetro temp2 cargado en $a0
 
-    # t9 = CALL fibonacci 1
-    jal fibonacci
+    # t9 = CALL azul 1
+    jal azul
     sw $v0, t9_var
 
     # DECLARE fib2 INT
@@ -236,11 +256,11 @@ L2:
     # RETURN resultado
     lw $v0, resultado_var
     # Valor de retorno en $v0
-    j exit_fibonacci
+    j exit_azul
 
 
-# Epílogo estándar fibonacci
-exit_fibonacci:
+# 🚀 UNIVERSAL: Epílogo para azul
+exit_azul:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
     # Restaurar frame pointer y return address
@@ -250,8 +270,8 @@ exit_fibonacci:
     addi $sp, $sp, 8
     jr $ra
 
-potencia:
-    # Prólogo estándar potencia
+pocoyo:
+    # 🚀 UNIVERSAL: Prólogo para pocoyo
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -259,19 +279,26 @@ potencia:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Guardar parámetros en stack frame local
-    sw $a0, -4($fp)   # base local (CRÍTICO para recursión)
-    sw $a1, -8($fp)   # exp local (CRÍTICO para recursión)
-    sw $a0, base_var  # base global
-    sw $a1, exp_var   # exp global
+    # 🚀 UNIVERSAL: Guardar parámetros de pocoyo
+    sw $a0, -4($fp)   # base local
+    sw $a0, base_var     # base global
+    sw $a1, -8($fp)   # exp local
+    sw $a1, exp_var     # exp global
 
     # Inicio de función
     # DECLARE base INT
     # DECLARE exp INT
     # t11 = exp <= 0
-    lw $t1, exp_var
+    lw $t1, -8($fp)   # exp local
     li $t2, 0
-    sle $t0, $t1, $t2
+    # exp <= 0
+    sub $t3, $t2, $t1    # t2 - t1
+    bgez $t3, set_true_le_3
+    li $t0, 0
+    j end_le_3
+set_true_le_3:
+    li $t0, 1
+end_le_3:
     sw $t0, t11_var
 
     # IF NOT t11 GOTO L3
@@ -281,11 +308,11 @@ potencia:
     # RETURN 1
     li $v0, 1
     # Valor de retorno en $v0
-    j exit_potencia
+    j exit_pocoyo
 
 L3:
     # t12 = exp - 1
-    lw $t1, exp_var
+    lw $t1, -8($fp)   # exp local
     li $t2, 1
     sub $t0, $t1, $t2
     sw $t0, t12_var
@@ -296,15 +323,15 @@ L3:
     sw $t0, temp_var
 
     # PARAM base
-    lw $a0, base_var
-    # ✅ FIXED: Parámetro base cargado en $a0
+    lw $a0, -4($fp)   # base local
+    # ✅ UNIVERSAL: Parámetro base cargado en $a0
 
     # PARAM temp
     lw $a1, temp_var
-    # ✅ FIXED: Parámetro temp cargado en $a1
+    # ✅ UNIVERSAL: Parámetro temp cargado en $a1
 
-    # t13 = CALL potencia 2
-    jal potencia
+    # t13 = CALL pocoyo 2
+    jal pocoyo
     sw $v0, t13_var
 
     # DECLARE recurse INT
@@ -313,9 +340,10 @@ L3:
     sw $t0, recurse_var
 
     # t14 = base * recurse
-    lw $t1, base_var
+    lw $t1, -4($fp)   # base local
     lw $t2, recurse_var
-    mul $t0, $t1, $t2
+    mult $t1, $t2
+    mflo $t0
     sw $t0, t14_var
 
     # DECLARE resultado INT
@@ -326,11 +354,11 @@ L3:
     # RETURN resultado
     lw $v0, resultado_var
     # Valor de retorno en $v0
-    j exit_potencia
+    j exit_pocoyo
 
 
-# Epílogo estándar potencia
-exit_potencia:
+# 🚀 UNIVERSAL: Epílogo para pocoyo
+exit_pocoyo:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
     # Restaurar frame pointer y return address
@@ -341,7 +369,7 @@ exit_potencia:
     jr $ra
 
 mcd:
-    # Prólogo estándar mcd
+    # 🚀 UNIVERSAL: Prólogo para mcd
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -349,10 +377,10 @@ mcd:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Guardar parámetros en stack frame local
-    sw $a0, -4($fp)   # a local (CRÍTICO para recursión)
-    sw $a1, -8($fp)   # b local (CRÍTICO para recursión)
+    # 🚀 UNIVERSAL: Guardar parámetros de mcd
+    sw $a0, -4($fp)   # a local
     sw $a0, a_var     # a global
+    sw $a1, -8($fp)   # b local
     sw $a1, b_var     # b global
 
     # Inicio de función
@@ -361,7 +389,14 @@ mcd:
     # t15 = b == 0
     lw $t1, -8($fp)   # b local
     li $t2, 0
-    seq $t0, $t1, $t2
+    # b == 0
+    sub $t3, $t1, $t2    # t1 - t2
+    beq $t3, $zero, set_true_eq_4
+    li $t0, 0
+    j end_eq_4
+set_true_eq_4:
+    li $t0, 1
+end_eq_4:
     sw $t0, t15_var
 
     # IF NOT t15 GOTO L4
@@ -388,11 +423,11 @@ L4:
 
     # PARAM b
     lw $a0, -8($fp)   # b local
-    # ✅ FIXED: Parámetro b cargado en $a0
+    # ✅ UNIVERSAL: Parámetro b cargado en $a0
 
     # PARAM resto
     lw $a1, resto_var
-    # ✅ FIXED: Parámetro resto cargado en $a1
+    # ✅ UNIVERSAL: Parámetro resto cargado en $a1
 
     # t17 = CALL mcd 2
     jal mcd
@@ -409,7 +444,7 @@ L4:
     j exit_mcd
 
 
-# Epílogo estándar mcd
+# 🚀 UNIVERSAL: Epílogo para mcd
 exit_mcd:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -421,7 +456,7 @@ exit_mcd:
     jr $ra
 
 testRecursion:
-    # Prólogo estándar testRecursion
+    # 🚀 UNIVERSAL: Prólogo para testRecursion
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -429,19 +464,15 @@ testRecursion:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # Función sin parámetros o no detectados
 
     # Inicio de función
     # PARAM 5
     li $a0, 5
-    # ✅ FIXED: Parámetro 5 cargado en $a0
+    # ✅ UNIVERSAL: Parámetro 5 cargado en $a0
 
-    # t18 = CALL fibonacci 1
-    jal fibonacci
+    # t18 = CALL azul 1
+    jal azul
     sw $v0, t18_var
 
     # DECLARE fib5 INT
@@ -457,14 +488,14 @@ testRecursion:
 
     # PARAM 2
     li $a0, 2
-    # ✅ FIXED: Parámetro 2 cargado en $a0
+    # ✅ UNIVERSAL: Parámetro 2 cargado en $a0
 
     # PARAM 3
     li $a1, 3
-    # ✅ FIXED: Parámetro 3 cargado en $a1
+    # ✅ UNIVERSAL: Parámetro 3 cargado en $a1
 
-    # t19 = CALL potencia 2
-    jal potencia
+    # t19 = CALL pocoyo 2
+    jal pocoyo
     sw $v0, t19_var
 
     # DECLARE pot23 INT
@@ -480,11 +511,11 @@ testRecursion:
 
     # PARAM 12
     li $a0, 12
-    # ✅ FIXED: Parámetro 12 cargado en $a0
+    # ✅ UNIVERSAL: Parámetro 12 cargado en $a0
 
     # PARAM 8
     li $a1, 8
-    # ✅ FIXED: Parámetro 8 cargado en $a1
+    # ✅ UNIVERSAL: Parámetro 8 cargado en $a1
 
     # t20 = CALL mcd 2
     jal mcd
@@ -503,10 +534,10 @@ testRecursion:
 
     # PARAM 4
     li $a0, 4
-    # ✅ FIXED: Parámetro 4 cargado en $a0
+    # ✅ UNIVERSAL: Parámetro 4 cargado en $a0
 
-    # t21 = CALL factorial 1
-    jal factorial
+    # t21 = CALL filo 1
+    jal filo
     sw $v0, t21_var
 
     # DECLARE fact4 INT
@@ -521,7 +552,7 @@ testRecursion:
     jal print_string
 
 
-# Epílogo estándar testRecursion
+# 🚀 UNIVERSAL: Epílogo para testRecursion
 exit_testRecursion:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -533,7 +564,7 @@ exit_testRecursion:
     jr $ra
 
 main:
-    # Prólogo estándar main
+    # 🚀 UNIVERSAL: Prólogo para main
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -541,18 +572,14 @@ main:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # Función sin parámetros o no detectados
 
     # Inicio de función
     # CALL testRecursion 0
     jal testRecursion
 
 
-# Epílogo estándar main
+# 🚀 UNIVERSAL: Epílogo para main
 exit_main:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
@@ -591,5 +618,37 @@ read_int:
 read_float:
     li $v0, 6
     syscall
+    jr $ra
+
+print_float_decimal:
+    # $a0 contiene el flotante multiplicado por 100
+    addi $sp, $sp, -4
+    sw $a0, 0($sp)
+    bgez $a0, positive_float
+    li $v0, 11
+    li $a0, 45    # ASCII de '-'
+    syscall
+    lw $a0, 0($sp)
+    sub $a0, $zero, $a0
+positive_float:
+    li $t1, 100
+    div $a0, $t1
+    mflo $t2
+    mfhi $t3
+    move $a0, $t2
+    li $v0, 1
+    syscall
+    li $v0, 11
+    li $a0, 46    # ASCII de '.'
+    syscall
+    bge $t3, 10, print_decimal
+    li $v0, 11
+    li $a0, 48    # ASCII de '0'
+    syscall
+print_decimal:
+    move $a0, $t3
+    li $v0, 1
+    syscall
+    addi $sp, $sp, 4
     jr $ra
 

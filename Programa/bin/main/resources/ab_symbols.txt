@@ -1,8 +1,8 @@
 ===== TABLA DE VARIABLES =====
-Lexema: suma, Tipo: ID, Linea: 6, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: suma, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: a, Tipo: ID, Linea: 5, Columna: 17, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: a, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: b, Tipo: ID, Linea: 5, Columna: 21, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: b, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: resta, Tipo: ID, Linea: 7, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: resta, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: a, Tipo: ID, Linea: 5, Columna: 18, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: a, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: b, Tipo: ID, Linea: 5, Columna: 22, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: b, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: arbol, Tipo: ID, Linea: 6, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: arbol, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: planta, Tipo: ID, Linea: 7, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: planta, Variable: Si, Inicializada: No, Utilizada: No
 
 ===== TABLA DE FUNCIONES =====
 

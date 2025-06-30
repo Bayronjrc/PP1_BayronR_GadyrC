@@ -4,13 +4,13 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Generador de Código MIPS
+ * Generador de Código MIPS UNIVERSAL
  * 
- * Convierte código intermedio de tres direcciones a código MIPS assembly
- * que puede ejecutarse en QtSpim
+ * Detecta automáticamente parámetros de CUALQUIER función sin hardcodeo
+ * Funciona con fibonacci, factorial, paco, abeja, funct1, etc.
  * 
  * @author Bayron Rodríguez & Gadir Calderón
- * @version 1.0
+ * @version 2.0 UNIVERSAL
  */
 public class MipsGenerator {
     private List<String> intermediateCode;
@@ -25,6 +25,7 @@ public class MipsGenerator {
     private String currentFunction;
     private int currentParamCount = 0;
     private boolean expectingParameters = false;
+    
     private Map<String, List<String>> functionParameters = new HashMap<>();
     private Map<String, Integer> functionParamCounts = new HashMap<>();
     
@@ -49,7 +50,6 @@ public class MipsGenerator {
         this.currentParamCount = 0;
         this.labelCounter = 1; 
         this.floatVariables = new HashSet<>(); 
-
         
         initializeConstants();
     }
@@ -72,7 +72,7 @@ public class MipsGenerator {
     }
 
     public void generateFromFile(String intermediateFile, String outputFile) throws IOException {
-        System.out.println("=== GENERADOR DE CÓDIGO MIPS ===");
+        System.out.println("=== GENERADOR DE CÓDIGO MIPS UNIVERSAL ===");
         System.out.println("Leyendo código intermedio: " + intermediateFile);
         
         intermediateCode = readIntermediateCode(intermediateFile);
@@ -121,8 +121,8 @@ public class MipsGenerator {
 
     private void generateMipsCode() {
         mipsCode.append("# ========================================\n");
-        mipsCode.append("# CÓDIGO MIPS GENERADO AUTOMÁTICAMENTE\n");
-        mipsCode.append("# Compilador - Proyecto 3\n");
+        mipsCode.append("# CÓDIGO MIPS UNIVERSAL - SIN HARDCODEO\n");
+        mipsCode.append("# Funciona con cualquier nombre de función\n");
         mipsCode.append("# Autores: Bayron Rodríguez & Gadir Calderón\n");
         mipsCode.append("# ========================================\n\n");
         
@@ -143,22 +143,11 @@ public class MipsGenerator {
         
         generateSystemFunctions();
     }
-    
-    private boolean isLikelyStringLiteral(String text) {
-        if (text.length() > 10 && 
-            (text.contains(" ") || text.contains("[") || text.contains("]")) &&
-            !text.matches(".*\\s*[+\\-*/]\\s*.*") && 
-            !text.matches(".*\\s*[<>=!]+\\s*.*") && 
-            text.matches(".*[a-zA-Z]{3,}.*")) { 
-            return true;
-        }
-        return false;
-    }
 
     private void analyzeVariables() {
-        System.out.println("DEBUG: Analizando variables en código intermedio...");
+        System.out.println("🚀 UNIVERSAL: Analizando variables sin hardcodeo...");
         
-        detectRealFunctionParameters();
+        detectUniversalFunctionParameters();
         
         for (String line : intermediateCode) {
             System.out.println("DEBUG: Procesando línea: " + line);
@@ -197,23 +186,13 @@ public class MipsGenerator {
                         System.out.println(" Variable marcada como FLOAT por propagación: " + leftSide);
                     }
                     
-                    if (rightSide.startsWith("\"") && rightSide.endsWith("\"")) {
-                        handleStringLiteral(rightSide);
-                        System.out.println(" String literal detectado: " + rightSide);
-                    }
-                    else if (isLikelyStringLiteral(rightSide)) {
-                        String quotedString = "\"" + rightSide + "\"";
-                        handleStringLiteral(quotedString);
-                        System.out.println(" String sin comillas detectado y corregido: " + rightSide + " -> " + quotedString);
-                    }
-                    
                     if (!declaredVariables.contains(leftSide) && isValidVariableName(leftSide)) {
                         declaredVariables.add(leftSide);
                         variables.put(leftSide, leftSide + "_var");
                         System.out.println("✅ Variable auto-declarada: " + leftSide);
                     }
                     
-                    if (!rightSide.startsWith("\"") && !isLikelyStringLiteral(rightSide)) {
+                    if (!rightSide.startsWith("\"")) {
                         String[] tokens = rightSide.split("[\\s\\+\\-\\*/<>=!]+");
                         for (String token : tokens) {
                             token = token.trim();
@@ -238,47 +217,12 @@ public class MipsGenerator {
             }
         }
         
-        System.out.println("DEBUG: Variables encontradas: " + declaredVariables);
-        System.out.println("DEBUG: Variables flotantes: " + floatVariables);
-        System.out.println("DEBUG: Strings literales: " + stringLiterals.keySet());
-        System.out.println("DEBUG: Parámetros reales detectados: " + functionParameters);
+        System.out.println("🚀 UNIVERSAL: Variables encontradas: " + declaredVariables);
+        System.out.println("🚀 UNIVERSAL: Parámetros detectados: " + functionParameters);
     }
     
-    private boolean containsFloatLiteral(String expr) {
-        String[] tokens = expr.split("[\\s\\+\\-\\*/<>=!]+");
-        for (String token : tokens) {
-            token = token.trim();
-            if (token.contains(".") && isNumber(token)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean containsFloatVariable(String expr) {
-        String[] tokens = expr.split("[\\s\\+\\-\\*/<>=!]+");
-        for (String token : tokens) {
-            token = token.trim();
-            if (floatVariables.contains(token)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    
-
-    private String handleStringLiteral(String literal) {
-        if (!stringLiterals.containsKey(literal)) {
-            String label = "str_" + stringCounter++;
-            stringLiterals.put(literal, label);
-            System.out.println("DEBUG: String literal registrado: " + literal + " -> " + label);
-        }
-        return stringLiterals.get(literal);
-    }
-    
-    private void detectRealFunctionParameters() {
-        System.out.println("🔍 DETECTING real function parameters from PARAM patterns...");
+    private void detectUniversalFunctionParameters() {
+        System.out.println("🔍 UNIVERSAL: Detectando parámetros de CUALQUIER función...");
         
         for (int i = 0; i < intermediateCode.size(); i++) {
             String line = intermediateCode.get(i).trim();
@@ -304,85 +248,91 @@ public class MipsGenerator {
                 
                 if (functionName != null && paramCount > 0) {
                     functionParamCounts.put(functionName, paramCount);
-                    System.out.println("🎯 DETECTED: " + functionName + " has " + paramCount + " parameters");
-                    
-                    List<String> params = new ArrayList<>();
-                    int paramsSeen = 0;
-                    for (int k = i - 1; k >= 0 && paramsSeen < paramCount; k--) {
-                        String prevLine = intermediateCode.get(k).trim();
-                        if (prevLine.startsWith("PARAM ")) {
-                            paramsSeen++;
-                        } else if (!prevLine.isEmpty() && !prevLine.startsWith("//")) {
-                            break; 
-                        }
-                    }
-                    
-                    for (int p = 0; p < paramCount; p++) {
-                        if (paramCount == 1) {
-                            params.add("n");
-                        } else if (paramCount == 2) {
-                            params.add(p == 0 ? "a" : "b"); 
-                        } else {
-                            params.add("param" + (p + 1)); 
-                        }
-                    }
-                    
-                    functionParameters.put(functionName, params);
+                    System.out.println("🎯 DETECTED: " + functionName + " tiene " + paramCount + " parámetros");
                 }
             }
         }
+        
+        analyzeUniversalFunctionBodies();
     }
     
-    private void analyzeFunctionSignatures() {
+    private void analyzeUniversalFunctionBodies() {
         String currentFunc = null;
         boolean inFunction = false;
-        List<String> currentParams = new ArrayList<>();
-        Set<String> declaredInFunction = new HashSet<>();
+        List<String> declaredInFunction = new ArrayList<>();
         
-        for (String line : intermediateCode) {
+        for (int i = 0; i < intermediateCode.size(); i++) {
+            String line = intermediateCode.get(i).trim();
+            
             if (line.startsWith("FUNCTION ")) {
                 String[] parts = line.split("\\s+");
                 if (parts.length >= 2) {
                     currentFunc = parts[1];
                     inFunction = true;
-                    currentParams = new ArrayList<>();
-                    declaredInFunction = new HashSet<>();
-                    System.out.println("🔍 ANALYZING function: " + currentFunc);
+                    declaredInFunction = new ArrayList<>();
+                    System.out.println("🔍 ANALYZING: " + currentFunc);
                 }
-            } else if (line.startsWith("END ") && inFunction) {
-                functionParameters.put(currentFunc, new ArrayList<>(currentParams));
-                System.out.println("✅ Function " + currentFunc + " parameters: " + currentParams);
+            } 
+            else if (line.startsWith("END ") && inFunction) {
+                Integer expectedParamCount = functionParamCounts.get(currentFunc);
+                if (expectedParamCount != null && expectedParamCount > 0) {
+                    List<String> detectedParams = detectParametersFromDeclares(
+                        declaredInFunction, expectedParamCount);
+                    functionParameters.put(currentFunc, detectedParams);
+                    System.out.println("✅ " + currentFunc + " parámetros: " + detectedParams);
+                }
                 inFunction = false;
                 currentFunc = null;
-            } else if (inFunction && line.startsWith("DECLARE ")) {
+            }
+            else if (inFunction && line.startsWith("DECLARE ")) {
                 String[] parts = line.split("\\s+");
                 if (parts.length >= 3) {
                     String varName = parts[1];
                     declaredInFunction.add(varName);
+                    System.out.println("📝 " + currentFunc + ": DECLARE " + varName);
                 }
-            } else if (inFunction && line.contains(" = ") && 
-                      (line.contains(currentFunc) || hasVariableFromParams(line, declaredInFunction))) {
-                extractPotentialParameters(line, currentParams, declaredInFunction);
             }
         }
     }
     
-    private boolean hasVariableFromParams(String line, Set<String> declared) {
-        for (String var : declared) {
-            if (line.contains(var)) return true;
+    private List<String> detectParametersFromDeclares(List<String> declares, int expectedCount) {
+        List<String> params = new ArrayList<>();
+        
+        for (int i = 0; i < Math.min(declares.size(), expectedCount); i++) {
+            params.add(declares.get(i));
+        }
+        
+        while (params.size() < expectedCount) {
+            if (expectedCount == 1) {
+                params.add("param1"); 
+            } else {
+                params.add("param" + (params.size() + 1));
+            }
+        }
+        
+        return params;
+    }
+    
+    private boolean containsFloatLiteral(String expr) {
+        String[] tokens = expr.split("[\\s\\+\\-\\*/<>=!]+");
+        for (String token : tokens) {
+            token = token.trim();
+            if (token.contains(".") && isNumber(token)) {
+                return true;
+            }
         }
         return false;
     }
-    
-    private void extractPotentialParameters(String line, List<String> params, Set<String> declared) {
-        String[] tokens = line.split("[\\s=+\\-*/<>!()]+");
+
+    private boolean containsFloatVariable(String expr) {
+        String[] tokens = expr.split("[\\s\\+\\-\\*/<>=!]+");
         for (String token : tokens) {
             token = token.trim();
-            if (isValidVariableName(token) && declared.contains(token) && !params.contains(token)) {
-                params.add(token);
-                System.out.println("🎯 DETECTED parameter: " + token);
+            if (floatVariables.contains(token)) {
+                return true;
             }
         }
+        return false;
     }
     
     private void generateDataSection() {
@@ -403,14 +353,6 @@ public class MipsGenerator {
         mipsCode.append("    luna_const:   .word 1    # luna = true\n");
         mipsCode.append("    sol_const:    .word 0    # sol = false\n");
         mipsCode.append("\n");
-        
-        if (!stringLiterals.isEmpty()) {
-            mipsCode.append("    # Strings literales\n");
-            for (Map.Entry<String, String> entry : stringLiterals.entrySet()) {
-                mipsCode.append("    ").append(entry.getValue()).append(": .asciiz ").append(entry.getKey()).append("\n");
-            }
-            mipsCode.append("\n");
-        }
         
         if (!declaredVariables.isEmpty()) {
             mipsCode.append("    # Variables del programa\n");
@@ -518,19 +460,7 @@ public class MipsGenerator {
             processLabel(line);
         } else if (line.startsWith("RETURN")) {
             processReturn(line);
-        } else if (line.startsWith("READ ") || line.startsWith("READ\t") || line.startsWith("READ(")) {
-            processRead(line);
-        } else if (line.startsWith("READ ") || line.startsWith("READ\t")) {
-            processRead(line);
-        } else if (line.startsWith("READ ")) {
-            processRead(line);
-        } else if (line.startsWith("READ ")) {
-            processRead(line);
-        } else if (line.startsWith("READ ")) {
-            processRead(line);
-        } else if (line.startsWith("read ")) {
-            processRead(line);
-        } else if (line.startsWith("READ ")) {
+        } else if (line.startsWith("read ") || line.startsWith("read\t") || line.startsWith("read(")) {
             processRead(line);
         } else if (line.startsWith("WRITE ")) {
             processWrite(line);
@@ -552,7 +482,7 @@ public class MipsGenerator {
             currentParamCount = 0;
             
             mipsCode.append(currentFunction).append(":\n");
-            mipsCode.append("    # Prólogo estándar ").append(currentFunction).append("\n");
+            mipsCode.append("    # 🚀 UNIVERSAL: Prólogo para ").append(currentFunction).append("\n");
             
             mipsCode.append("    addi $sp, $sp, -8\n");     
             mipsCode.append("    sw $ra, 4($sp)\n");        
@@ -563,100 +493,31 @@ public class MipsGenerator {
             mipsCode.append("    addi $sp, $sp, -16\n");  
             mipsCode.append("\n");
             
-            if (currentFunction.equals("multiplicar")) {
-                mipsCode.append("    # Guardar parámetros en stack frame local\n");
-                mipsCode.append("    sw $a0, -4($fp)   # a local\n");    
-                mipsCode.append("    sw $a1, -8($fp)   # b local\n"); 
-                mipsCode.append("    # También en variables globales para compatibilidad\n");
-                mipsCode.append("    sw $a0, a_var\n");
-                mipsCode.append("    sw $a1, b_var\n\n");
+            List<String> params = functionParameters.get(currentFunction);
+            if (params != null && !params.isEmpty()) {
+                mipsCode.append("    # 🚀 UNIVERSAL: Guardar parámetros de ").append(currentFunction).append("\n");
                 
-                if (!declaredVariables.contains("a")) {
-                    declaredVariables.add("a");
-                    variables.put("a", "a_var");
+                for (int i = 0; i < Math.min(params.size(), 4); i++) {
+                    String paramName = params.get(i);
+                    String reg = "$a" + i;
+                    int offset = -4 * (i + 1);
+                    
+                    mipsCode.append("    sw ").append(reg).append(", ").append(offset).append("($fp)   # ")
+                           .append(paramName).append(" local\n");
+                    mipsCode.append("    sw ").append(reg).append(", ").append(paramName).append("_var     # ")
+                           .append(paramName).append(" global\n");
+                    
+                    if (!declaredVariables.contains(paramName)) {
+                        declaredVariables.add(paramName);
+                        variables.put(paramName, paramName + "_var");
+                    }
                 }
-                if (!declaredVariables.contains("b")) {
-                    declaredVariables.add("b");
-                    variables.put("b", "b_var");
-                }
-            }
-            else if (currentFunction.equals("sumarDos")) {
-                mipsCode.append("    # Guardar parámetros en stack frame local\n");
-                mipsCode.append("    sw $a0, -4($fp)   # x local\n");
-                mipsCode.append("    sw $a0, x_var     # x global\n\n");
+                mipsCode.append("\n");
                 
-                if (!declaredVariables.contains("x")) {
-                    declaredVariables.add("x");
-                    variables.put("x", "x_var");
-                }
+                System.out.println("🚀 UNIVERSAL: " + currentFunction + " configurado con parámetros: " + params);
+            } else {
+                mipsCode.append("    # Función sin parámetros o no detectados\n\n");
             }
-            else if (currentFunction.equals("suma")) {
-                mipsCode.append("    # Guardar parámetros en stack frame local\n");
-                mipsCode.append("    sw $a0, -4($fp)   # a local\n");
-                mipsCode.append("    sw $a1, -8($fp)   # b local\n");
-                mipsCode.append("    sw $a0, a_var     # a global\n");
-                mipsCode.append("    sw $a1, b_var     # b global\n\n");
-                
-                if (!declaredVariables.contains("a")) {
-                    declaredVariables.add("a");
-                    variables.put("a", "a_var");
-                }
-                if (!declaredVariables.contains("b")) {
-                    declaredVariables.add("b");
-                    variables.put("b", "b_var");
-                }
-            }
-            else if (currentFunction.equals("fibonacci")) {
-                mipsCode.append("    # Guardar parámetros en stack frame local\n");
-                mipsCode.append("    sw $a0, -4($fp)   # n local (CRÍTICO para recursión)\n");
-                mipsCode.append("    sw $a0, n_var     # n global\n\n");
-                
-                if (!declaredVariables.contains("n")) {
-                    declaredVariables.add("n");
-                    variables.put("n", "n_var");
-                }
-            }
-            else if (currentFunction.equals("potencia")) {
-                mipsCode.append("    # Guardar parámetros en stack frame local\n");
-                mipsCode.append("    sw $a0, -4($fp)   # base local (CRÍTICO para recursión)\n");
-                mipsCode.append("    sw $a1, -8($fp)   # exp local (CRÍTICO para recursión)\n");
-                mipsCode.append("    sw $a0, base_var  # base global\n");
-                mipsCode.append("    sw $a1, exp_var   # exp global\n\n");
-                
-                if (!declaredVariables.contains("base")) {
-                    declaredVariables.add("base");
-                    variables.put("base", "base_var");
-                }
-                if (!declaredVariables.contains("exp")) {
-                    declaredVariables.add("exp");
-                    variables.put("exp", "exp_var");
-                }
-            }
-            else if (currentFunction.equals("mcd")) {
-                mipsCode.append("    # Guardar parámetros en stack frame local\n");
-                mipsCode.append("    sw $a0, -4($fp)   # a local (CRÍTICO para recursión)\n");
-                mipsCode.append("    sw $a1, -8($fp)   # b local (CRÍTICO para recursión)\n");
-                mipsCode.append("    sw $a0, a_var     # a global\n");
-                mipsCode.append("    sw $a1, b_var     # b global\n\n");
-                
-                if (!declaredVariables.contains("a")) {
-                    declaredVariables.add("a");
-                    variables.put("a", "a_var");
-                }
-                if (!declaredVariables.contains("b")) {
-                    declaredVariables.add("b");
-                    variables.put("b", "b_var");
-                }
-            }
-            else {
-                mipsCode.append("    # Función genérica - guardar hasta 4 parámetros en stack frame\n");
-                mipsCode.append("    sw $a0, -4($fp)   # param1 local\n");
-                mipsCode.append("    sw $a1, -8($fp)   # param2 local\n");
-                mipsCode.append("    sw $a2, -12($fp)  # param3 local\n");
-                mipsCode.append("    sw $a3, -16($fp)  # param4 local\n\n");
-            }
-            
-            System.out.println("DEBUG: Función " + currentFunction + " iniciada con stack frame estándar");
         }
     }
 
@@ -665,7 +526,7 @@ public class MipsGenerator {
         if (parts.length >= 2) {
             String functionName = parts[1];
             
-            mipsCode.append("\n# Epílogo estándar ").append(functionName).append("\n");
+            mipsCode.append("\n# 🚀 UNIVERSAL: Epílogo para ").append(functionName).append("\n");
             mipsCode.append("exit_").append(functionName).append(":\n");
             
             mipsCode.append("    # Limpiar variables locales\n");
@@ -717,77 +578,15 @@ public class MipsGenerator {
                 }
             }
             
-            if (dest.contains("[") && dest.contains("]")) {
-                mipsCode.append("    # Array assignment: ").append(dest).append(" = ").append(expr).append("\n");
-                evaluateExpression(expr, "$t0");
-                processArrayAssignment(dest, "$t0");
-                mipsCode.append("\n");
-                return;
-            }
-            
             evaluateExpression(expr, "$t0");
-
             storeVariable(dest, "$t0");
             
             mipsCode.append("\n");
         }
     }
     
-    private void processArrayAssignment(String arrayAccess, String sourceReg) {
-        String arrayName = arrayAccess.substring(0, arrayAccess.indexOf('['));
-        
-        String simplifiedName = arrayName + "_element";
-        
-        if (!declaredVariables.contains(simplifiedName)) {
-            declaredVariables.add(simplifiedName);
-            variables.put(simplifiedName, simplifiedName + "_var");
-            System.out.println("DEBUG: Variable de array declarada dinámicamente: " + simplifiedName);
-        }
-        
-        String location = getVariableLocation(simplifiedName);
-        mipsCode.append("    sw ").append(sourceReg).append(", ").append(location).append("\n");
-        
-        System.out.println("DEBUG: Array assignment simplificado: " + arrayAccess + " → " + simplifiedName);
-    }
-    
     private void evaluateExpression(String expr, String targetReg) {
         expr = expr.trim();
-        
-        if (expr.contains(" ** ")) {
-            String[] operands = expr.split(" \\*\\* ");
-            if (operands.length == 2) {
-                loadOperand(operands[0].trim(), "$t1");
-                loadOperand(operands[1].trim(), "$t2");
-                mipsCode.append("    # Potencia: ").append(operands[0]).append(" ** ").append(operands[1]).append("\n");
-                mipsCode.append("    move $a0, $t1\n");
-                mipsCode.append("    move $a1, $t2\n");
-                mipsCode.append("    jal power_function\n");
-                mipsCode.append("    move ").append(targetReg).append(", $v0\n");
-                return;
-            }
-        }
-        
-        if (expr.contains(" && ")) {
-            String[] operands = expr.split(" && ");
-            if (operands.length == 2) {
-                loadOperand(operands[0].trim(), "$t1");
-                loadOperand(operands[1].trim(), "$t2");
-                mipsCode.append("    # AND lógico\n");
-                mipsCode.append("    and ").append(targetReg).append(", $t1, $t2\n");
-                return;
-            }
-        }
-        
-        if (expr.contains(" || ")) {
-            String[] operands = expr.split(" \\|\\| ");
-            if (operands.length == 2) {
-                loadOperand(operands[0].trim(), "$t1");
-                loadOperand(operands[1].trim(), "$t2");
-                mipsCode.append("    # OR lógico\n");
-                mipsCode.append("    or ").append(targetReg).append(", $t1, $t2\n");
-                return;
-            }
-        }
         
         if (expr.contains(" + ")) {
             String[] operands = expr.split(" \\+ ");
@@ -805,6 +604,17 @@ public class MipsGenerator {
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
                 mipsCode.append("    sub ").append(targetReg).append(", $t1, $t2\n");
+                return;
+            }
+        }
+        
+        if (expr.contains(" * ")) {
+            String[] operands = expr.split(" \\* ");
+            if (operands.length == 2) {
+                loadOperand(operands[0].trim(), "$t1");
+                loadOperand(operands[1].trim(), "$t2");
+                mipsCode.append("    mult $t1, $t2\n");
+                mipsCode.append("    mflo ").append(targetReg).append("\n");
                 return;
             }
         }
@@ -938,49 +748,12 @@ public class MipsGenerator {
                 return;
             }
         }
-        
-        if (expr.contains(" * ")) {
-            String[] operands = expr.split(" \\* ");
-            if (operands.length == 2) {
-                loadOperand(operands[0].trim(), "$t1");
-                loadOperand(operands[1].trim(), "$t2");
-                mipsCode.append("    mult $t1, $t2\n");
-                mipsCode.append("    mflo ").append(targetReg).append("\n");
-                return;
-            }
-        }
 
         loadOperand(expr, targetReg);
     }
-        
-       
 
     private void loadOperand(String operand, String register) {
         operand = operand.trim();
-        
-        if (operand.startsWith("\"") && operand.endsWith("\"")) {
-            String stringLabel = handleStringLiteral(operand);
-            mipsCode.append("    la ").append(register).append(", ").append(stringLabel).append("\n");
-            System.out.println("DEBUG: String literal " + operand + " cargado como " + stringLabel);
-            return;
-        }
-        
-        if (isLikelyStringLiteral(operand)) {
-            String quotedString = "\"" + operand + "\"";
-            String stringLabel = handleStringLiteral(quotedString);
-            mipsCode.append("    la ").append(register).append(", ").append(stringLabel).append("\n");
-            System.out.println("DEBUG: String sin comillas detectado: " + operand + " -> " + stringLabel);
-            return;
-        }
-        
-        
-        if (operand.startsWith("'") && operand.endsWith("'") && operand.length() == 3) {
-            char ch = operand.charAt(1);
-            int asciiValue = (int) ch;
-            mipsCode.append("    li ").append(register).append(", ").append(asciiValue).append("\n");
-            System.out.println("DEBUG: Caracter literal '" + ch + "' cargado como ASCII " + asciiValue);
-            return;
-        }
         
         if (isNumber(operand)) {
             if (operand.contains(".")) {
@@ -1016,17 +789,11 @@ public class MipsGenerator {
             return;
         }
         
-        if (operand.contains("[") && operand.contains("]")) {
-            mipsCode.append("    # Array access: ").append(operand).append("\n");
-            processArrayAccess(operand, register);
-            return;
-        }
-        
         if (currentFunction != null && shouldUseLocalVariable(operand)) {
-            String stackOffset = getLocalVariableOffset(operand);
+            String stackOffset = getUniversalLocalVariableOffset(operand);
             if (stackOffset != null) {
                 mipsCode.append("    lw ").append(register).append(", ").append(stackOffset).append("($fp)   # ").append(operand).append(" local\n");
-                System.out.println("DEBUG LOCAL: Variable " + operand + " cargada desde stack frame local");
+                System.out.println("🚀 UNIVERSAL LOCAL: Variable " + operand + " cargada desde stack frame local");
                 return;
             }
         }
@@ -1054,55 +821,28 @@ public class MipsGenerator {
         if (currentFunction != null) {
             List<String> params = functionParameters.get(currentFunction);
             if (params != null && params.contains(varName)) {
+                System.out.println("🚀 UNIVERSAL: " + varName + " es parámetro de " + currentFunction);
                 return true; 
             }
         }
         return false; 
     }
      
-    private String getLocalVariableOffset(String varName) {
+    private String getUniversalLocalVariableOffset(String varName) {
         if (currentFunction == null) return null;
         
-        if (currentFunction.equals("fibonacci") && varName.equals("n")) return "-4";
-        if (currentFunction.equals("factorial") && varName.equals("n")) return "-4";
-        if (currentFunction.equals("potencia")) {
-            if (varName.equals("base")) return "-4";  
-            if (varName.equals("exp")) return "-8";   
-        }
-        if (currentFunction.equals("mcd")) {
-            if (varName.equals("a")) return "-4";     
-            if (varName.equals("b")) return "-8";      
-        }
-        
-        if (varName.equals("x")) return "-4";   
-        if (varName.equals("y")) return "-8";   
-        if (varName.equals("z")) return "-12";  
-        if (varName.equals("w")) return "-16";   
-        
-        if (varName.length() == 1 && varName.matches("[a-z]")) {
-            int slot = varName.charAt(0) - 'a';  
-            if (slot < 4) {
-                return String.valueOf(-4 * (slot + 1));
+        List<String> params = functionParameters.get(currentFunction);
+        if (params != null) {
+            for (int i = 0; i < params.size(); i++) {
+                if (params.get(i).equals(varName)) {
+                    int offset = -4 * (i + 1);
+                    System.out.println("🚀 UNIVERSAL: " + varName + " en " + currentFunction + " -> " + offset + "($fp)");
+                    return String.valueOf(offset);
+                }
             }
         }
         
         return null;  
-    }
-    
-    private void processArrayAccess(String arrayAccess, String targetReg) {
-        
-        String arrayName = arrayAccess.substring(0, arrayAccess.indexOf('['));
-        String simplifiedName = arrayName + "_element";
-        if (!declaredVariables.contains(simplifiedName)) {
-            declaredVariables.add(simplifiedName);
-            variables.put(simplifiedName, simplifiedName + "_var");
-            System.out.println("DEBUG: Variable de array declarada dinámicamente: " + simplifiedName);
-        }
-        
-        String location = getVariableLocation(simplifiedName);
-        mipsCode.append("    lw ").append(targetReg).append(", ").append(location).append("\n");
-        
-        System.out.println("DEBUG: Array access simplificado: " + arrayAccess + " → " + simplifiedName);
     }
     
     private void storeVariable(String varName, String register) {
@@ -1139,11 +879,6 @@ public class MipsGenerator {
     private String sanitizeVariableName(String varName) {
         if (varName == null) return "unknown";
         
-        if (varName.contains("[") && varName.contains("]")) {
-            String arrayName = varName.substring(0, varName.indexOf('['));
-            return arrayName + "_element";
-        }
-        
         if (varName.contains("CALL")) {
             return "call_temp";
         }
@@ -1174,7 +909,6 @@ public class MipsGenerator {
         
         return clean;
     }
-    
 
     private void processConditional(String line) {
         mipsCode.append("    # ").append(line).append("\n");
@@ -1201,7 +935,6 @@ public class MipsGenerator {
         mipsCode.append("\n");
     }
 
-
     private void processJump(String line) {
         String label = line.substring(5).trim();
         
@@ -1212,7 +945,6 @@ public class MipsGenerator {
         
         mipsCode.append("    j ").append(label).append("\n\n");
     }
-        
 
     private void processLabel(String line) {
         String label = line.substring(0, line.length() - 1);
@@ -1324,31 +1056,29 @@ public class MipsGenerator {
         
         mipsCode.append("\n");
     }
-    
 
     private void processParameter(String line) {
         String param = line.substring(6).trim();
         mipsCode.append("    # ").append(line).append("\n");
         
         System.out.println("🔍 DEBUG PARAM: Procesando parámetro: '" + param + "' en registro $a" + currentParamCount);
-        System.out.println("🔍 DEBUG PARAM: Línea completa: '" + line + "'");
 
         switch (currentParamCount) {
             case 0:
                 loadOperand(param, "$a0");
-                mipsCode.append("    # ✅ FIXED: Parámetro ").append(param).append(" cargado en $a0\n");
+                mipsCode.append("    # ✅ UNIVERSAL: Parámetro ").append(param).append(" cargado en $a0\n");
                 break;
             case 1:
                 loadOperand(param, "$a1");
-                mipsCode.append("    # ✅ FIXED: Parámetro ").append(param).append(" cargado en $a1\n");
+                mipsCode.append("    # ✅ UNIVERSAL: Parámetro ").append(param).append(" cargado en $a1\n");
                 break;
             case 2:
                 loadOperand(param, "$a2");
-                mipsCode.append("    # ✅ FIXED: Parámetro ").append(param).append(" cargado en $a2\n");
+                mipsCode.append("    # ✅ UNIVERSAL: Parámetro ").append(param).append(" cargado en $a2\n");
                 break;
             case 3:
                 loadOperand(param, "$a3");
-                mipsCode.append("    # ✅ FIXED: Parámetro ").append(param).append(" cargado en $a3\n");
+                mipsCode.append("    # ✅ UNIVERSAL: Parámetro ").append(param).append(" cargado en $a3\n");
                 break;
             default:
                 mipsCode.append("    # Parámetro ").append(param).append(" enviado por stack (más de 4 parámetros)\n");
@@ -1391,113 +1121,36 @@ public class MipsGenerator {
         
         mipsCode.append("print_float_decimal:\n");
         mipsCode.append("    # $a0 contiene el flotante multiplicado por 100\n");
-        mipsCode.append("    # Guardar $a0 en el stack para uso posterior\n");
         mipsCode.append("    addi $sp, $sp, -4\n");
         mipsCode.append("    sw $a0, 0($sp)\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    # Verificar si es negativo\n");
         mipsCode.append("    bgez $a0, positive_float\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    # Imprimir signo negativo\n");
         mipsCode.append("    li $v0, 11\n");
         mipsCode.append("    li $a0, 45    # ASCII de '-'\n");
         mipsCode.append("    syscall\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    # Convertir a positivo\n");
-        mipsCode.append("    lw $a0, 0($sp)   # Recargar valor original\n");
+        mipsCode.append("    lw $a0, 0($sp)\n");
         mipsCode.append("    sub $a0, $zero, $a0\n");
-        mipsCode.append("    \n");
         mipsCode.append("positive_float:\n");
-        mipsCode.append("    # Dividir por 100 para separar parte entera y decimal\n");
         mipsCode.append("    li $t1, 100\n");
         mipsCode.append("    div $a0, $t1\n");
-        mipsCode.append("    mflo $t2        # Parte entera\n");
-        mipsCode.append("    mfhi $t3        # Resto (parte decimal * 100)\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    # Imprimir parte entera\n");
+        mipsCode.append("    mflo $t2\n");
+        mipsCode.append("    mfhi $t3\n");
         mipsCode.append("    move $a0, $t2\n");
         mipsCode.append("    li $v0, 1\n");
         mipsCode.append("    syscall\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    # Imprimir punto decimal\n");
         mipsCode.append("    li $v0, 11\n");
         mipsCode.append("    li $a0, 46    # ASCII de '.'\n");
         mipsCode.append("    syscall\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    # Imprimir parte decimal\n");
-        mipsCode.append("    # Si es menor que 10, agregar un 0 adelante\n");
         mipsCode.append("    bge $t3, 10, print_decimal\n");
         mipsCode.append("    li $v0, 11\n");
         mipsCode.append("    li $a0, 48    # ASCII de '0'\n");
         mipsCode.append("    syscall\n");
-        mipsCode.append("    \n");
         mipsCode.append("print_decimal:\n");
         mipsCode.append("    move $a0, $t3\n");
         mipsCode.append("    li $v0, 1\n");
         mipsCode.append("    syscall\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    # Restaurar stack\n");
         mipsCode.append("    addi $sp, $sp, 4\n");
         mipsCode.append("    jr $ra\n\n");
-        
-        mipsCode.append("power_function:\n");
-        mipsCode.append("    li $v0, 1\n");
-        mipsCode.append("    beq $a1, $zero, power_done\n");
-        mipsCode.append("    blt $a1, $zero, power_negative\n");
-        mipsCode.append("power_loop:\n");
-        mipsCode.append("    mult $v0, $a0\n");
-        mipsCode.append("    mflo $v0\n");
-        mipsCode.append("    addi $a1, $a1, -1\n");
-        mipsCode.append("    bne $a1, $zero, power_loop\n");
-        mipsCode.append("power_done:\n");
-        mipsCode.append("    jr $ra\n");
-        mipsCode.append("power_negative:\n");
-        mipsCode.append("    li $v0, 0\n");
-        mipsCode.append("    jr $ra\n\n");
     }
-
-    private void generateFloatPrintFunction() {
-        mipsCode.append("print_float_as_decimal:\n");
-        mipsCode.append("    # $a0 contiene el entero (flotante * 1000)\n");
-        mipsCode.append("    # Dividir por 1000 e imprimir parte entera y decimal\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    # Verificar si es negativo\n");
-        mipsCode.append("    bgez $a0, positive_float\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    # Imprimir signo negativo\n");
-        mipsCode.append("    li $v0, 11\n");
-        mipsCode.append("    li $a0, 45    # ASCII de '-'\n");
-        mipsCode.append("    syscall\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    # Convertir a positivo\n");
-        mipsCode.append("    lw $a0, 0($sp)   # Recargar valor original\n");
-        mipsCode.append("    sub $a0, $zero, $a0\n");
-        mipsCode.append("    \n");
-        mipsCode.append("positive_float:\n");
-        mipsCode.append("    # Dividir por 1000\n");
-        mipsCode.append("    li $t1, 1000\n");
-        mipsCode.append("    div $a0, $t1\n");
-        mipsCode.append("    mflo $t2        # Parte entera\n");
-        mipsCode.append("    mfhi $t3        # Resto (parte decimal * 1000)\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    # Imprimir parte entera\n");
-        mipsCode.append("    move $a0, $t2\n");
-        mipsCode.append("    li $v0, 1\n");
-        mipsCode.append("    syscall\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    # Imprimir punto decimal\n");
-        mipsCode.append("    li $v0, 11\n");
-        mipsCode.append("    li $a0, 46    # ASCII de '.'\n");
-        mipsCode.append("    syscall\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    # Imprimir parte decimal (hasta 3 dígitos)\n");
-        mipsCode.append("    move $a0, $t3\n");
-        mipsCode.append("    li $v0, 1\n");
-        mipsCode.append("    syscall\n");
-        mipsCode.append("    \n");
-        mipsCode.append("    jr $ra\n\n");
-    }
-    
 
     private boolean isNumber(String str) {
         try {
@@ -1512,7 +1165,6 @@ public class MipsGenerator {
             }
         }
     }
-    
 
     private void writeToFile(String filename) throws IOException {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
@@ -1525,11 +1177,12 @@ public class MipsGenerator {
     }
 
     public void printStatistics() {
-        System.out.println("\n=== ESTADÍSTICAS GENERACIÓN MIPS ===");
+        System.out.println("\n=== ESTADÍSTICAS GENERACIÓN MIPS UNIVERSAL ===");
         System.out.println("Líneas de código intermedio: " + (intermediateCode != null ? intermediateCode.size() : 0));
         System.out.println("Variables procesadas: " + variables.size());
+        System.out.println("Funciones detectadas: " + functionParameters.size());
         System.out.println("Líneas MIPS generadas: " + mipsCode.toString().split("\n").length);
-        System.out.println("====================================\n");
+        System.out.println("=============================================\n");
     }
 
     private boolean isValidVariableName(String name) {

@@ -6,7 +6,7 @@
   1: // Código Intermedio Generado
   2: // Archivo: src/main/resources/s1_intermediate.txt
   3: 
-  4: FUNCTION carlos RETURNS INT
+  4: FUNCTION atun RETURNS INT
   5: BEGIN
   6: DECLARE a INT
   7: DECLARE b INT
@@ -14,8 +14,8 @@
   9: DECLARE resultado INT
  10: resultado = t1
  11: RETURN resultado
- 12: END carlos
- 13: FUNCTION factorial RETURNS INT
+ 12: END atun
+ 13: FUNCTION pepe RETURNS INT
  14: BEGIN
  15: DECLARE n INT
  16: t2 = n <= 1
@@ -26,14 +26,14 @@
  21: DECLARE temp INT
  22: temp = t3
  23: PARAM temp
- 24: t4 = CALL factorial 1
+ 24: t4 = CALL pepe 1
  25: DECLARE recurse INT
  26: recurse = t4
  27: t5 = n * recurse
  28: DECLARE resultado INT
  29: resultado = t5
  30: RETURN resultado
- 31: END factorial
+ 31: END pepe
  32: FUNCTION testBasico RETURNS VOID
  33: BEGIN
  34: DECLARE d INT
@@ -42,12 +42,12 @@
  37: r = 4
  38: PARAM d
  39: PARAM r
- 40: t6 = CALL carlos 2
+ 40: t6 = CALL atun 2
  41: DECLARE resultado1 INT
  42: resultado1 = t6
  43: WRITE resultado1
  44: PARAM 5
- 45: t7 = CALL factorial 1
+ 45: t7 = CALL pepe 1
  46: DECLARE resultado2 INT
  47: resultado2 = t7
  48: WRITE resultado2

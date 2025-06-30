@@ -13,13 +13,13 @@
   8: DECLARE b INT
   9: b = 5
  10: t1 = a + b
- 11: DECLARE suma INT
- 12: suma = t1
+ 11: DECLARE arbol INT
+ 12: arbol = t1
  13: t2 = a - b
- 14: DECLARE resta INT
- 15: resta = t2
- 16: WRITE suma
- 17: WRITE resta
+ 14: DECLARE planta INT
+ 15: planta = t2
+ 16: WRITE arbol
+ 17: WRITE planta
  18: END main
  19: 
 

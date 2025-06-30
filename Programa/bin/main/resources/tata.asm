@@ -1,6 +1,6 @@
 # ========================================
-# CÓDIGO MIPS GENERADO AUTOMÁTICAMENTE
-# Compilador - Proyecto 3
+# CÓDIGO MIPS UNIVERSAL - SIN HARDCODEO
+# Funciona con cualquier nombre de función
 # Autores: Bayron Rodríguez & Gadir Calderón
 # ========================================
 
@@ -20,64 +20,74 @@
     luna_const:   .word 1    # luna = true
     sol_const:    .word 0    # sol = false
 
-    # Strings literales
-    str_1: .asciiz "Hola a todos los que est[a] haciendo un compilador nuevo\n"
-    str_2: .asciiz "Mi string 1"
-    str_3: .asciiz "arr[67][67]"
-
     # Variables del programa
-    t4_var: .word 0
-    t5_var: .word 0
-    t6_var: .word 0
-    t7_var: .word 0
-    t8_var: .word 0
-    t9_var: .word 0
     hola_var: .word 0
+    haciendo_var: .word 0
     b1_var: .word 0
     x50_var: .word 0
     t10_var: .word 0
-    x30_var: .word 0
     t12_var: .word 0
     x51_var: .word 0
     t11_var: .word 0
-    t_cond_var: .word 0
     str1_var: .word 0
     t14_var: .word 0
     str2_var: .word 0
     t13_var: .word 0
+    un_var: .word 0
     t15_var: .word 0
     t_inc_var: .word 0
-    arr_var: .word 0
-    a_var: .word 0
-    sdff_var: .word 0
     bl1_var: .word 0
     bl0_var: .word 0
-    i_var: .word 0
     fl1_var: .word 0
     ch33_var: .word 0
-    k_var: .word 0
     in2_var: .word 0
     in1_var: .word 0
     fl2_var: .word 0
-    miChar2_var: .word 0
-    miChar_var: .word 0
-    x40_var: .word 0
     x23_var: .word 0
     x22_var: .word 0
-    y_var: .word 0
-    z_var: .word 0
     x24_var: .word 0
+    Mi_var: .word 0
     t1_var: .word 0
     t2_var: .word 0
     t3_var: .word 0
+    que_var: .word 0
+    t4_var: .word 0
+    compilador_var: .word 0
+    t5_var: .word 0
+    t6_var: .word 0
+    t7_var: .word 0
+    string_var: .word 0
+    t8_var: .word 0
+    t9_var: .word 0
+    los_var: .word 0
+    x30_var: .word 0
+    t_cond_var: .word 0
+    arr_var: .word 0
+    a_var: .word 0
+    sdff_var: .word 0
+    i_var: .word 0
+    k_var: .word 0
+    miChar2_var: .word 0
+    miChar_var: .word 0
+    x40_var: .word 0
+    y_var: .word 0
+    z_var: .word 0
+    todos_var: .word 0
+    Hola_var: .word 0
 
 .text
 .globl main
 
+main:
+    # Función main generada automáticamente
+    jal func1
+    li $v0, 10
+    syscall
+
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/tata_intermediate.txt
 func1:
-    # Prólogo estándar func1
+    # 🚀 UNIVERSAL: Prólogo para func1
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -85,17 +95,13 @@ func1:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Función genérica - guardar hasta 4 parámetros en stack frame
-    sw $a0, -4($fp)   # param1 local
-    sw $a1, -8($fp)   # param2 local
-    sw $a2, -12($fp)  # param3 local
-    sw $a3, -16($fp)  # param4 local
+    # Función sin parámetros o no detectados
 
     # Inicio de función
     # DECLARE x22 CHAR
     # DECLARE x23 CHAR
     # t1 = -0.01
-    li $t0, -10    # Float -0.01 como entero
+    li $t0, -1    # Float -0.01 (*100)
     sw $t0, t1_var
 
     # DECLARE z FLOAT
@@ -136,13 +142,20 @@ func1:
     # // Array inicializado con matriz
     # DECLARE x51 STRING
     # x51 = Hola a todos los que est[a] haciendo un compilador nuevo\n
-    la $t0, str_1
+    li $t0, 0    # ERROR: No se pudo procesar 'Hola a todos los que est[a] haciendo un compilador nuevo\n'
     sw $t0, x51_var
 
     # t3 = z > 5.6
     lw $t1, z_var
-    li $t2, 5600    # Float 5.6 como entero
-    sgt $t0, $t1, $t2
+    li $t2, 560    # Float 5.6 (*100)
+    # z > 5.6
+    sub $t3, $t2, $t1    # t2 - t1
+    bltz $t3, set_true_gt_1
+    li $t0, 0
+    j end_gt_1
+set_true_gt_1:
+    li $t0, 1
+end_gt_1:
     sw $t0, t3_var
 
     # DECLARE y INT
@@ -186,7 +199,14 @@ func1:
     # t5 = i < t4
     lw $t1, i_var
     lw $t2, t4_var
-    slt $t0, $t1, $t2
+    # i < t4
+    sub $t3, $t1, $t2    # t1 - t2
+    bltz $t3, set_true_lt_2
+    li $t0, 0
+    j end_lt_2
+set_true_lt_2:
+    li $t0, 1
+end_lt_2:
     sw $t0, t5_var
 
     # i = i + 1
@@ -205,7 +225,14 @@ L1:
     # t_cond = k <= 2
     lw $t1, k_var
     li $t2, 2
-    sle $t0, $t1, $t2
+    # k <= 2
+    sub $t3, $t2, $t1    # t2 - t1
+    bgez $t3, set_true_le_3
+    li $t0, 0
+    j end_le_3
+set_true_le_3:
+    li $t0, 1
+end_le_3:
     sw $t0, t_cond_var
 
     # IF NOT t_cond GOTO L2
@@ -237,14 +264,9 @@ L2:
     la $a0, nl
     jal print_string
 
-    # READ x40
-    la $a0, prompt_int
-    jal print_string
-    jal read_int
-    sw $v0, x40_var
-
+    # UNKNOWN: READ x40
     # RETURN 5.6
-    li $v0, 5600    # Float 5.6 como entero
+    li $v0, 560    # Float 5.6 (*100)
     # Valor de retorno en $v0
     j exit_func1
 
@@ -265,12 +287,12 @@ L2:
 
     # DECLARE str1 STRING
     # str1 = Mi string 1
-    la $t0, str_2
+    li $t0, 0    # ERROR: No se pudo procesar 'Mi string 1'
     sw $t0, str1_var
 
     # DECLARE fl1 FLOAT
     # fl1 = 56.6
-    li $t0, 56600    # Float 56.6 como entero
+    li $t0, 5660    # Float 56.6 (*100)
     sw $t0, fl1_var
 
     # DECLARE in2 INT
@@ -316,13 +338,7 @@ L2:
     sw $t0, in1_var
 
     # t10 = 3.7 ** fl1
-    li $t1, 3700    # Float 3.7 como entero
-    lw $t2, fl1_var
-    # Potencia: 3.7 ** fl1
-    move $a0, $t1
-    move $a1, $t2
-    jal power_function
-    move $t0, $v0
+    li $t0, 0    # ERROR: No se pudo procesar '3.7 ** fl1'
     sw $t0, t10_var
 
     # DECLARE fl2 FLOAT
@@ -333,17 +349,24 @@ L2:
     # DECLARE arr INT[][]
     # // Array inicializado con matriz
     # t11 = arr[67][67]
-    la $t0, str_3
+    li $t0, 0    # ERROR: No se pudo procesar 'arr[67][67]'
     sw $t0, t11_var
 
     # t12 = -0.005
-    li $t0, -5    # Float -0.005 como entero
+    li $t0, 0    # Float -0.005 (*100)
     sw $t0, t12_var
 
     # t13 = 6.7 != 8.9
-    li $t1, 6700    # Float 6.7 como entero
-    li $t2, 8900    # Float 8.9 como entero
-    sne $t0, $t1, $t2
+    li $t1, 670    # Float 6.7 (*100)
+    li $t2, 889    # Float 8.9 (*100)
+    # 6.7 != 8.9
+    sub $t3, $t1, $t2    # t1 - t2
+    bne $t3, $zero, set_true_ne_4
+    li $t0, 0
+    j end_ne_4
+set_true_ne_4:
+    li $t0, 1
+end_ne_4:
     sw $t0, t13_var
 
     # DECLARE bl0 BOOL
@@ -354,7 +377,14 @@ L2:
     # t14 = true != false
     lw $t1, true_const
     lw $t2, false_const
-    sne $t0, $t1, $t2
+    # true != false
+    sub $t3, $t1, $t2    # t1 - t2
+    bne $t3, $zero, set_true_ne_5
+    li $t0, 0
+    j end_ne_5
+set_true_ne_5:
+    li $t0, 1
+end_ne_5:
     sw $t0, t14_var
 
     # bl0 = t14
@@ -364,7 +394,14 @@ L2:
     # t15 = in1 >= fl1
     lw $t1, in1_var
     lw $t2, fl1_var
-    sge $t0, $t1, $t2
+    # in1 >= fl1
+    sub $t3, $t1, $t2    # t1 - t2
+    bgez $t3, set_true_ge_6
+    li $t0, 0
+    j end_ge_6
+set_true_ge_6:
+    li $t0, 1
+end_ge_6:
     sw $t0, t15_var
 
     # DECLARE bl1 BOOL
@@ -406,20 +443,35 @@ read_float:
     syscall
     jr $ra
 
-power_function:
-    # $a0 = base, $a1 = exponente
-    # Retorna $v0 = base^exponente
-    li $v0, 1        # resultado = 1
-    beq $a1, $zero, power_done
-    blt $a1, $zero, power_negative
-power_loop:
-    mul $v0, $v0, $a0
-    addi $a1, $a1, -1
-    bne $a1, $zero, power_loop
-power_done:
-    jr $ra
-power_negative:
-    # Para exponentes negativos, retornar 0 (simplificación)
-    li $v0, 0
+print_float_decimal:
+    # $a0 contiene el flotante multiplicado por 100
+    addi $sp, $sp, -4
+    sw $a0, 0($sp)
+    bgez $a0, positive_float
+    li $v0, 11
+    li $a0, 45    # ASCII de '-'
+    syscall
+    lw $a0, 0($sp)
+    sub $a0, $zero, $a0
+positive_float:
+    li $t1, 100
+    div $a0, $t1
+    mflo $t2
+    mfhi $t3
+    move $a0, $t2
+    li $v0, 1
+    syscall
+    li $v0, 11
+    li $a0, 46    # ASCII de '.'
+    syscall
+    bge $t3, 10, print_decimal
+    li $v0, 11
+    li $a0, 48    # ASCII de '0'
+    syscall
+print_decimal:
+    move $a0, $t3
+    li $v0, 1
+    syscall
+    addi $sp, $sp, 4
     jr $ra
 

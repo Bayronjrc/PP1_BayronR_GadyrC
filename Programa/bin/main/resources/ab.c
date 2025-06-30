@@ -1,8 +1,8 @@
 void main ʃ ʅ \
     int a | 10?
     int b | 5?
-    int suma | a + b?
-    int resta | a - b?
-    write ʃ suma ʅ?
-    write ʃ resta ʅ?
+    int arbol | a + b?
+    int planta | a - b?
+    write ʃ arbol ʅ?
+    write ʃ planta ʅ?
 /

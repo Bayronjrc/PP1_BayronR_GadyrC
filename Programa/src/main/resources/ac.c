@@ -1,8 +1,14 @@
+int simple ʃ int x ʅ \
+    return x ?
+/
+
+void testSimple ʃ ʅ \
+    int a | 5 ?
+    int b | simple ʃ a ʅ ? 
+    write ʃ a ʅ ?
+    write ʃ b ʅ ? 
+/
+
 void main ʃ ʅ \
-    int x | 10?
-    if ʃ x > 5 ʅ \
-        write ʃ 1 ʅ?
-    / else \
-        write ʃ 0 ʅ?
-    /
+    testSimple ʃ ʅ ?
 /

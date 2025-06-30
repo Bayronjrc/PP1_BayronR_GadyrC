@@ -33,7 +33,7 @@
 	read ʃ s1 ʅ ? @ semantico
 	write ʃ b1 ʅ ? @ semantico
 	write ʃ luna ʅ ? @ semantico
-	write ʃ 7 ʅ ?
+	write ʃ -6.7 ʅ ?
 	
  / 
 

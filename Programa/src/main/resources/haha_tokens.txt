@@ -167,7 +167,8 @@ Token: RPAREN, Lexema: RPAREN, Línea: 35, Columna: 15, Tabla: N/A
 Token: QUESTION, Lexema: QUESTION, Línea: 35, Columna: 17, Tabla: N/A
 Token: WRITE, Lexema: WRITE, Línea: 36, Columna: 2, Tabla: PALABRAS_RESERVADAS
 Token: LPAREN, Lexema: LPAREN, Línea: 36, Columna: 8, Tabla: N/A
-Token: INT_LITERAL, Lexema: 7, Línea: 36, Columna: 10, Tabla: N/A
-Token: RPAREN, Lexema: RPAREN, Línea: 36, Columna: 12, Tabla: N/A
-Token: QUESTION, Lexema: QUESTION, Línea: 36, Columna: 14, Tabla: N/A
+Token: MINUS, Lexema: MINUS, Línea: 36, Columna: 10, Tabla: N/A
+Token: FLOAT_LITERAL, Lexema: 6.7, Línea: 36, Columna: 11, Tabla: N/A
+Token: RPAREN, Lexema: RPAREN, Línea: 36, Columna: 15, Tabla: N/A
+Token: QUESTION, Lexema: QUESTION, Línea: 36, Columna: 17, Tabla: N/A
 Token: RBLOCK, Lexema: RBLOCK, Línea: 38, Columna: 2, Tabla: N/A
