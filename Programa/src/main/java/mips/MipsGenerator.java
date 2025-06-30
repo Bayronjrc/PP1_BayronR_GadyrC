@@ -28,19 +28,48 @@ public class MipsGenerator {
     private Map<String, List<String>> functionParameters = new HashMap<>();
     private Map<String, Integer> functionParamCounts = new HashMap<>();
     
+    // ✅ NUEVO: Campos para manejar strings literales y constantes
+    private Map<String, String> stringLiterals = new HashMap<>();
+    private int stringCounter = 1;
+    
     public MipsGenerator() {
         this.mipsCode = new StringBuilder();
         this.variables = new HashMap<>();
         this.labels = new HashMap<>();
         this.declaredVariables = new HashSet<>();
+        this.stringLiterals = new HashMap<>();  // ✅ NUEVO
         this.stackOffset = 0;
         this.currentVarOffset = 0;
         this.tempCounter = 1;
+        this.stringCounter = 1;  // ✅ NUEVO
         this.inFunction = false;
         this.currentFunction = null;
-        this.currentParamCount = 0; 
+        this.currentParamCount = 0;
+        
+        // ✅ NUEVO: Inicializar constantes del sistema
+        initializeConstants();
     }
     
+    // ✅ NUEVO: Método para inicializar constantes del sistema
+    private void initializeConstants() {
+        // Valores booleanos estándar
+        declaredVariables.add("true");
+        variables.put("true", "true_const");
+        declaredVariables.add("false");
+        variables.put("false", "false_const");
+        
+        // Constantes sol/luna del lenguaje
+        declaredVariables.add("sol");
+        variables.put("sol", "sol_const");   // sol = false
+        declaredVariables.add("luna");
+        variables.put("luna", "luna_const"); // luna = true
+    }
+    
+    // ✅ NUEVO: Verificar si es constante del sistema
+    private boolean isSystemConstant(String varName) {
+        return varName.equals("true") || varName.equals("false") || 
+               varName.equals("luna") || varName.equals("sol");
+    }
 
     public void generateFromFile(String intermediateFile, String outputFile) throws IOException {
         System.out.println("=== GENERADOR DE CÓDIGO MIPS ===");
@@ -61,6 +90,7 @@ public class MipsGenerator {
         
         System.out.println("✓ Código MIPS generado: " + outputFile);
         System.out.println("Variables procesadas: " + variables.size());
+        System.out.println("Strings literales: " + stringLiterals.size());
         System.out.println("Etiquetas generadas: " + labels.size());
     }
     
@@ -88,7 +118,6 @@ public class MipsGenerator {
         
         return code;
     }
-    
 
     private void generateMipsCode() {
         mipsCode.append("# ========================================\n");
@@ -115,8 +144,18 @@ public class MipsGenerator {
         generateSystemFunctions();
     }
     
-    
-    
+    private boolean isLikelyStringLiteral(String text) {
+        // Detectar patrones típicos de strings sin comillas
+        if (text.length() > 10 && 
+            (text.contains(" ") || text.contains("[") || text.contains("]")) &&
+            !text.matches(".*\\s*[+\\-*/]\\s*.*") && // No es expresión aritmética
+            !text.matches(".*\\s*[<>=!]+\\s*.*") && // No es expresión de comparación
+            text.matches(".*[a-zA-Z]{3,}.*")) { // Contiene palabras de al menos 3 letras
+            return true;
+        }
+        return false;
+    }
+
     private void analyzeVariables() {
         System.out.println("DEBUG: Analizando variables en código intermedio...");
         
@@ -142,6 +181,19 @@ public class MipsGenerator {
                 String[] parts = line.split(" = ");
                 if (parts.length == 2) {
                     String leftSide = parts[0].trim();
+                    String rightSide = parts[1].trim();
+                    
+                    // ✅ NUEVO: Detectar string literal CON comillas
+                    if (rightSide.startsWith("\"") && rightSide.endsWith("\"")) {
+                        handleStringLiteral(rightSide);
+                        System.out.println("✅ String literal detectado: " + rightSide);
+                    }
+                    // ✅ NUEVO: Detectar string literal SIN comillas (caso problemático)
+                    else if (isLikelyStringLiteral(rightSide)) {
+                        String quotedString = "\"" + rightSide + "\"";
+                        handleStringLiteral(quotedString);
+                        System.out.println("✅ String sin comillas detectado y corregido: " + rightSide + " -> " + quotedString);
+                    }
                     
                     if (!declaredVariables.contains(leftSide) && isValidVariableName(leftSide)) {
                         declaredVariables.add(leftSide);
@@ -149,15 +201,18 @@ public class MipsGenerator {
                         System.out.println("✅ Variable auto-declarada: " + leftSide);
                     }
                     
-                    String rightSide = parts[1].trim();
-                    String[] tokens = rightSide.split("[\\s\\+\\-\\*/<>=!]+");
-                    for (String token : tokens) {
-                        token = token.trim();
-                        if (isValidVariableName(token) && !isNumber(token) && 
-                            !declaredVariables.contains(token)) {
-                            declaredVariables.add(token);
-                            variables.put(token, token + "_var");
-                            System.out.println("✅ Variable en expresión auto-declarada: " + token);
+                    // ✅ MEJORADO: Solo procesar tokens si NO es string literal
+                    if (!rightSide.startsWith("\"") && !isLikelyStringLiteral(rightSide)) {
+                        String[] tokens = rightSide.split("[\\s\\+\\-\\*/<>=!]+");
+                        for (String token : tokens) {
+                            token = token.trim();
+                            if (isValidVariableName(token) && !isNumber(token) && 
+                                !token.startsWith("\"") && !token.startsWith("'") &&
+                                !declaredVariables.contains(token)) {
+                                declaredVariables.add(token);
+                                variables.put(token, token + "_var");
+                                System.out.println("✅ Variable en expresión auto-declarada: " + token);
+                            }
                         }
                     }
                 }
@@ -173,7 +228,17 @@ public class MipsGenerator {
         }
         
         System.out.println("DEBUG: Variables encontradas: " + declaredVariables);
+        System.out.println("DEBUG: Strings literales: " + stringLiterals.keySet());
         System.out.println("DEBUG: Parámetros reales detectados: " + functionParameters);
+    }
+    
+    private String handleStringLiteral(String literal) {
+        if (!stringLiterals.containsKey(literal)) {
+            String label = "str_" + stringCounter++;
+            stringLiterals.put(literal, label);
+            System.out.println("DEBUG: String literal registrado: " + literal + " -> " + label);
+        }
+        return stringLiterals.get(literal);
     }
     
     private void detectRealFunctionParameters() {
@@ -284,21 +349,44 @@ public class MipsGenerator {
         }
     }
     
+    // ✅ MEJORADO: generateDataSection() con strings literales y constantes
     private void generateDataSection() {
         mipsCode.append(".data\n");
         mipsCode.append("    # Strings del sistema\n");
         mipsCode.append("    nl:           .asciiz \"\\n\"\n");
         mipsCode.append("    prompt_int:   .asciiz \"Ingrese un entero: \"\n");
         mipsCode.append("    prompt_float: .asciiz \"Ingrese un float: \"\n");
+        mipsCode.append("    prompt_string: .asciiz \"Ingrese texto: \"\n");
         mipsCode.append("    result_msg:   .asciiz \"Resultado: \"\n");
         mipsCode.append("    true_str:     .asciiz \"true\"\n");
         mipsCode.append("    false_str:    .asciiz \"false\"\n");
         mipsCode.append("\n");
         
+        // ✅ NUEVO: Constantes del lenguaje
+        mipsCode.append("    # Constantes booleanas del lenguaje\n");
+        mipsCode.append("    true_const:   .word 1\n");
+        mipsCode.append("    false_const:  .word 0\n");
+        mipsCode.append("    luna_const:   .word 1    # luna = true\n");
+        mipsCode.append("    sol_const:    .word 0    # sol = false\n");
+        mipsCode.append("\n");
+        
+        // ✅ NUEVO: Strings literales encontrados
+        if (!stringLiterals.isEmpty()) {
+            mipsCode.append("    # Strings literales\n");
+            for (Map.Entry<String, String> entry : stringLiterals.entrySet()) {
+                mipsCode.append("    ").append(entry.getValue()).append(": .asciiz ").append(entry.getKey()).append("\n");
+            }
+            mipsCode.append("\n");
+        }
+        
+        // Variables normales
         if (!declaredVariables.isEmpty()) {
             mipsCode.append("    # Variables del programa\n");
             for (String varName : declaredVariables) {
-                mipsCode.append("    ").append(variables.get(varName)).append(": .word 0\n");
+                // Saltar constantes ya declaradas
+                if (!isSystemConstant(varName)) {
+                    mipsCode.append("    ").append(variables.get(varName)).append(": .word 0\n");
+                }
             }
             mipsCode.append("\n");
         }
@@ -319,7 +407,6 @@ public class MipsGenerator {
             mipsCode.append("    syscall\n");
         }
     }
-    
     
     private void processInstruction(String instruction) {
         String line = instruction.trim();
@@ -368,7 +455,19 @@ public class MipsGenerator {
             processLabel(line);
         } else if (line.startsWith("RETURN")) {
             processReturn(line);
+        } else if (line.startsWith("READ ") || line.startsWith("READ\t") || line.startsWith("READ(")) {
+            processRead(line);
+        } else if (line.startsWith("READ ") || line.startsWith("READ\t")) {
+            processRead(line);
+        } else if (line.startsWith("READ ")) {
+            processRead(line);
+        } else if (line.startsWith("READ ")) {
+            processRead(line);
+        } else if (line.startsWith("READ ")) {
+            processRead(line);
         } else if (line.startsWith("read ")) {
+            processRead(line);
+        } else if (line.startsWith("READ ")) {
             processRead(line);
         } else if (line.startsWith("WRITE ")) {
             processWrite(line);
@@ -380,7 +479,6 @@ public class MipsGenerator {
             mipsCode.append("    # UNKNOWN: ").append(line).append("\n");
         }
     }
-    
 
     private void processFunctionStart(String line) {
         String[] parts = line.split("\\s+");
@@ -589,8 +687,48 @@ public class MipsGenerator {
         System.out.println("DEBUG: Array assignment simplificado: " + arrayAccess + " → " + simplifiedName);
     }
     
+    // ✅ MEJORADO: evaluateExpression() con operadores adicionales
     private void evaluateExpression(String expr, String targetReg) {
         expr = expr.trim();
+        
+        // ✅ NUEVO: Operador exponenciación
+        if (expr.contains(" ** ")) {
+            String[] operands = expr.split(" \\*\\* ");
+            if (operands.length == 2) {
+                loadOperand(operands[0].trim(), "$t1");
+                loadOperand(operands[1].trim(), "$t2");
+                mipsCode.append("    # Potencia: ").append(operands[0]).append(" ** ").append(operands[1]).append("\n");
+                mipsCode.append("    move $a0, $t1\n");
+                mipsCode.append("    move $a1, $t2\n");
+                mipsCode.append("    jal power_function\n");
+                mipsCode.append("    move ").append(targetReg).append(", $v0\n");
+                return;
+            }
+        }
+        
+        // ✅ NUEVO: Operador AND lógico
+        if (expr.contains(" && ")) {
+            String[] operands = expr.split(" && ");
+            if (operands.length == 2) {
+                loadOperand(operands[0].trim(), "$t1");
+                loadOperand(operands[1].trim(), "$t2");
+                mipsCode.append("    # AND lógico\n");
+                mipsCode.append("    and ").append(targetReg).append(", $t1, $t2\n");
+                return;
+            }
+        }
+        
+        // ✅ NUEVO: Operador OR lógico
+        if (expr.contains(" || ")) {
+            String[] operands = expr.split(" \\|\\| ");
+            if (operands.length == 2) {
+                loadOperand(operands[0].trim(), "$t1");
+                loadOperand(operands[1].trim(), "$t2");
+                mipsCode.append("    # OR lógico\n");
+                mipsCode.append("    or ").append(targetReg).append(", $t1, $t2\n");
+                return;
+            }
+        }
         
         if (expr.contains(" + ")) {
             String[] operands = expr.split(" \\+ ");
@@ -710,26 +848,107 @@ public class MipsGenerator {
     private void loadOperand(String operand, String register) {
         operand = operand.trim();
         
+        // ✅ NUEVO: Manejar strings literales (con comillas)
+        if (operand.startsWith("\"") && operand.endsWith("\"")) {
+            String stringLabel = handleStringLiteral(operand);
+            mipsCode.append("    la ").append(register).append(", ").append(stringLabel).append("\n");
+            System.out.println("DEBUG: String literal " + operand + " cargado como " + stringLabel);
+            return;
+        }
+        
+        // ✅ NUEVO: Detectar y manejar strings sin comillas
+        if (isLikelyStringLiteral(operand)) {
+            String quotedString = "\"" + operand + "\"";
+            String stringLabel = handleStringLiteral(quotedString);
+            mipsCode.append("    la ").append(register).append(", ").append(stringLabel).append("\n");
+            System.out.println("DEBUG: String sin comillas detectado: " + operand + " -> " + stringLabel);
+            return;
+        }
+        
+        // ... resto del método loadOperand() sin cambios ...
+        
+        // ✅ NUEVO: Manejar caracteres literales CON COMILLAS
+        if (operand.startsWith("'") && operand.endsWith("'") && operand.length() == 3) {
+            char ch = operand.charAt(1);
+            int asciiValue = (int) ch;
+            mipsCode.append("    li ").append(register).append(", ").append(asciiValue).append("\n");
+            System.out.println("DEBUG: Caracter literal '" + ch + "' cargado como ASCII " + asciiValue);
+            return;
+        }
+        
+        // ✅ MEJORADO: Números (enteros y flotantes)
         if (isNumber(operand)) {
-            mipsCode.append("    li ").append(register).append(", ").append(operand).append("\n");
-            System.out.println("DEBUG s1: Literal " + operand + " cargado en " + register);
-        } else if (operand.contains("[") && operand.contains("]")) {
+            if (operand.contains(".")) {
+                try {
+                    float floatVal = Float.parseFloat(operand);
+                    int intRepresentation = (int) (floatVal * 1000);
+                    mipsCode.append("    li ").append(register).append(", ").append(intRepresentation).append("    # Float ").append(operand).append(" como entero\n");
+                    System.out.println("DEBUG: Float " + operand + " convertido a " + intRepresentation);
+                } catch (NumberFormatException e) {
+                    mipsCode.append("    li ").append(register).append(", 0    # Error parsing float ").append(operand).append("\n");
+                }
+            } else {
+                mipsCode.append("    li ").append(register).append(", ").append(operand).append("\n");
+                System.out.println("DEBUG: Entero " + operand + " cargado en " + register);
+            }
+            return;
+        }
+        
+        // ✅ MEJORADO: Constantes especiales
+        if (operand.equals("luna")) {
+            mipsCode.append("    lw ").append(register).append(", luna_const    # luna = true\n");
+            return;
+        }
+        if (operand.equals("sol")) {
+            mipsCode.append("    lw ").append(register).append(", sol_const     # sol = false\n");
+            return;
+        }
+        if (operand.equals("true")) {
+            mipsCode.append("    lw ").append(register).append(", true_const\n");
+            return;
+        }
+        if (operand.equals("false")) {
+            mipsCode.append("    lw ").append(register).append(", false_const\n");
+            return;
+        }
+        
+        // Arrays
+        if (operand.contains("[") && operand.contains("]")) {
             mipsCode.append("    # Array access: ").append(operand).append("\n");
             processArrayAccess(operand, register);
-        } else {
-            if (currentFunction != null && shouldUseLocalVariable(operand)) {
-                String stackOffset = getLocalVariableOffset(operand);
-                if (stackOffset != null) {
-                    mipsCode.append("    lw ").append(register).append(", ").append(stackOffset).append("($fp)   # ").append(operand).append(" local\n");
-                    System.out.println("DEBUG LOCAL: Variable " + operand + " cargada desde stack frame local");
-                    return;
-                }
+            return;
+        }
+        
+        // Variables locales vs globales
+        if (currentFunction != null && shouldUseLocalVariable(operand)) {
+            String stackOffset = getLocalVariableOffset(operand);
+            if (stackOffset != null) {
+                mipsCode.append("    lw ").append(register).append(", ").append(stackOffset).append("($fp)   # ").append(operand).append(" local\n");
+                System.out.println("DEBUG LOCAL: Variable " + operand + " cargada desde stack frame local");
+                return;
             }
-            
+        }
+        
+        // Variables globales
+        if (declaredVariables.contains(operand) || isValidVariableName(operand)) {
             String location = getVariableLocation(operand);
             mipsCode.append("    lw ").append(register).append(", ").append(location).append("\n");
             System.out.println("DEBUG GLOBAL: Variable " + operand + " cargada desde " + location + " a " + register);
+            return;
         }
+        
+        // ✅ CORREGIDO: Solo caracteres NO declarados como variables
+        if (operand.length() == 1 && operand.matches("[a-zA-Z!@#$%^&*()_+=]") && 
+            !declaredVariables.contains(operand)) {
+            int asciiValue = (int) operand.charAt(0);
+            mipsCode.append("    li ").append(register).append(", ").append(asciiValue).append("    # Char '").append(operand).append("' como ASCII\n");
+            System.out.println("DEBUG: Caracter simple '" + operand + "' convertido a ASCII " + asciiValue);
+            return;
+        }
+        
+        // Fallback
+        mipsCode.append("    li ").append(register).append(", 0    # ERROR: No se pudo procesar '").append(operand).append("'\n");
+        System.out.println("ERROR: No se pudo procesar operando: " + operand);
     }
     
     private boolean shouldUseLocalVariable(String varName) {
@@ -1042,6 +1261,22 @@ public class MipsGenerator {
         mipsCode.append("read_float:\n");
         mipsCode.append("    li $v0, 6\n");
         mipsCode.append("    syscall\n");
+        mipsCode.append("    jr $ra\n\n");
+        mipsCode.append("power_function:\n");
+        mipsCode.append("    # $a0 = base, $a1 = exponente\n");
+        mipsCode.append("    # Retorna $v0 = base^exponente\n");
+        mipsCode.append("    li $v0, 1        # resultado = 1\n");
+        mipsCode.append("    beq $a1, $zero, power_done\n");
+        mipsCode.append("    blt $a1, $zero, power_negative\n");
+        mipsCode.append("power_loop:\n");
+        mipsCode.append("    mul $v0, $v0, $a0\n");
+        mipsCode.append("    addi $a1, $a1, -1\n");
+        mipsCode.append("    bne $a1, $zero, power_loop\n");
+        mipsCode.append("power_done:\n");
+        mipsCode.append("    jr $ra\n");
+        mipsCode.append("power_negative:\n");
+        mipsCode.append("    # Para exponentes negativos, retornar 0 (simplificación)\n");
+        mipsCode.append("    li $v0, 0\n");
         mipsCode.append("    jr $ra\n\n");
     }
     
