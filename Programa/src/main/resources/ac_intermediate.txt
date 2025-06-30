@@ -5,29 +5,118 @@
 
   1: // Código Intermedio Generado
   2: // Archivo: src/main/resources/ac_intermediate.txt
-  3: 
-  4: FUNCTION mi RETURNS FLOAT
-  5: BEGIN
-  6: DECLARE dif INT
-  7: DECLARE otra CHAR
-  8: t1 = dif + 1
-  9: RETURN t1
- 10: END mi
- 11: FUNCTION testWeirdNames RETURNS VOID
- 12: BEGIN
- 13: DECLARE x22 INT
- 14: x22 = 5
- 15: PARAM x22
- 16: PARAM A
- 17: t2 = CALL mi 2
- 18: DECLARE result FLOAT
- 19: result = t2
- 20: WRITE result
- 21: END testWeirdNames
+  3: FUNCTION procesarArrays RETURNS INT
+  4: BEGIN
+  5: DECLARE n INT
+  6: DECLARE i INT
+  7: i = 0
+  8: i = 0
+  9: DECLARE j INT
+ 10: j = 0
+ 11: j = 0
+ 12: i = 0
+ 13: j = 0
+ 14: i = 0
+ 15: DECLARE suma INT
+ 16: suma = 0
+ 17: i = 0
+ 18: j = 0
+ 19: DECLARE mensaje STRING
+ 20: DECLARE saludo STRING
+ 21: DECLARE letra CHAR
+ 22: DECLARE numero CHAR
+ 23: numero = 7
+ 24: DECLARE especial STRING
+ 25: DECLARE resultado FLOAT
+ 26: DECLARE mayor BOOL
+ 27: DECLARE igual BOOL
+ 28: DECLARE diferente BOOL
+ 29: DECLARE verdadero BOOL
+ 30: DECLARE falso BOOL
+ 31: DECLARE explicitoTrue BOOL
+ 32: DECLARE explicitoFalse BOOL
+ 33: DECLARE and_result BOOL
+ 34: DECLARE or_result BOOL
+ 35: DECLARE not_result BOOL
+ 36: DECLARE contador INT
+ 37: contador = 0
+ 38: i = 0
+ 39: t19 = n <= 1
+ 40: DECLARE fib1 INT
+ 41: DECLARE fib2 INT
+ 42: IF NOT t19 GOTO L1
+ 43: RETURN suma
+ 44: RETURN mensaje
+ 45: RETURN resultado
+ 46: RETURN verdadero
+ 47: RETURN contador
+ 48: RETURN n
+ 49: RETURN t22
+ 50: GOTO L2
+ 51: L1:
+ 52: t1 = i < 5
+ 53: t2 = j < 3
+ 54: t3 = i * j
+ 55: t4 = t3 + 1
+ 56: t5 = i < 10
+ 57: t6 = i ** 2
+ 58: t7 = i < 5
+ 59: t8 = j < 3
+ 60: t9 = 2.5 == 1.0
+ 61: t10 = i != j
+ 62: t11 = verdadero && falso
+ 63: t12 = verdadero || falso
+ 64: t13 = !verdadero
+ 65: t14 = contador < 5
+ 66: t15 = contador + 1
+ 67: t16 = i < 10
+ 68: t17 = i + 2
+ 69: t18 = 2 == 0
+ 70: t20 = n - 1
+ 71: t21 = n - 2
+ 72: t22 = fib1 + fib2
+ 73: L2:
+ 74: WRITE === PRUEBA COMPLETA DEL GENERADOR UNIVERSAL ===
+ 75: WRITE 1. Probando arrays...
+ 76: PARAM 5
+ 77: t23 = CALL procesarArrays 1
+ 78: DECLARE resultadoArray INT
+ 79: resultadoArray = t23
+ 80: WRITE 2. Probando strings y chars...
+ 81: DECLARE textoResult STRING
+ 82: textoResult = X
+ 83: WRITE 3. Probando operadores complejos...
+ 84: DECLARE floatResult FLOAT
+ 85: floatResult = 2.71
+ 86: WRITE 4. Probando booleanos...
+ 87: DECLARE boolResult BOOL
+ 88: boolResult = 3.14
+ 89: WRITE 5. Probando estructuras de control...
+ 90: DECLARE controlResult INT
+ 91: controlResult = 15
+ 92: WRITE 6. Probando recursión...
+ 93: DECLARE fibResult INT
+ 94: fibResult = 2
+ 95: WRITE Fibonacci modificado:
+ 96: WRITE fibResult
+ 97: WRITE Array[0]:
+ 98: WRITE Array[1]:
+ 99: WRITE Array[2]:
+100: t24 = -42
+101: DECLARE negativo INT
+102: negativo = t24
+103: t25 = -3.14159
+104: DECLARE negativoFloat FLOAT
+105: negativoFloat = t25
+106: WRITE Entero negativo:
+107: WRITE negativo
+108: WRITE Float negativo:
+109: WRITE negativoFloat
+110: WRITE === TODAS LAS PRUEBAS COMPLETADAS ===
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 21
-// Temporales: 2
+// Líneas: 110
+// Temporales: 25
 // Etiquetas: 0
 // ========================================

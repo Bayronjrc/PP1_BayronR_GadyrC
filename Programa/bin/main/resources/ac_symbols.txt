@@ -1,10 +1,50 @@
 ===== TABLA DE VARIABLES =====
-Lexema: dif, Tipo: ID, Linea: 2, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: dif, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: otra, Tipo: ID, Linea: 1, Columna: 26, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: otra, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: result, Tipo: ID, Linea: 8, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: result, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: x22, Tipo: ID, Linea: 7, Columna: 25, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: x22, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: mi, Tipo: ID, Linea: 7, Columna: 20, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: mi, Variable: Si, Inicializada: No, Utilizada: No
-Lexema: testWeirdNames, Tipo: ID, Linea: 5, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: testWeirdNames, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: procesarArrays, Tipo: ID, Linea: 152, Columna: 26, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: procesarArrays, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: suma, Tipo: ID, Linea: 27, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: suma, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: numero, Tipo: ID, Linea: 46, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: numero, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: logico, Tipo: ID, Linea: 74, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: logico, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: floatResult, Tipo: ID, Linea: 158, Columna: 11, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: floatResult, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: not_result, Tipo: ID, Linea: 93, Columna: 10, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: not_result, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: fibResult, Tipo: ID, Linea: 169, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: fibResult, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: verdadero, Tipo: ID, Linea: 101, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: verdadero, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: limite, Tipo: ID, Linea: 127, Columna: 18, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: limite, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: matriz, Tipo: ID, Linea: 20, Columna: 27, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: matriz, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: resultadoArray, Tipo: ID, Linea: 152, Columna: 9, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: resultadoArray, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: numeros, Tipo: ID, Linea: 181, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: numeros, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: contador, Tipo: ID, Linea: 134, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: contador, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: multiplicador, Tipo: ID, Linea: 143, Columna: 47, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: multiplicador, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: or_result, Tipo: ID, Linea: 99, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: or_result, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: boolResult, Tipo: ID, Linea: 161, Columna: 10, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: boolResult, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: negativo, Tipo: ID, Linea: 187, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: negativo, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: vector, Tipo: ID, Linea: 14, Columna: 9, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: vector, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: a, Tipo: ID, Linea: 67, Columna: 22, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: a, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: b, Tipo: ID, Linea: 67, Columna: 27, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: b, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: explicitoTrue, Tipo: ID, Linea: 82, Columna: 10, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: explicitoTrue, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: textoResult, Tipo: ID, Linea: 155, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: textoResult, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: resultado, Tipo: ID, Linea: 76, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: resultado, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: saludo, Tipo: ID, Linea: 32, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: saludo, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: mayor, Tipo: ID, Linea: 72, Columna: 19, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: mayor, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: estructurasControl, Tipo: ID, Linea: 164, Columna: 25, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: estructurasControl, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: falso, Tipo: ID, Linea: 92, Columna: 34, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: falso, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: i, Tipo: ID, Linea: 130, Columna: 21, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: i, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: diferente, Tipo: ID, Linea: 72, Columna: 36, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: diferente, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: j, Tipo: ID, Linea: 20, Columna: 37, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: j, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: letra, Tipo: ID, Linea: 43, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: letra, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: especial, Tipo: ID, Linea: 49, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: especial, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: calcularComplejo, Tipo: ID, Linea: 158, Columna: 25, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: calcularComplejo, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: and_result, Tipo: ID, Linea: 96, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: and_result, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: inicial, Tipo: ID, Linea: 40, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: inicial, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: n, Tipo: ID, Linea: 143, Columna: 42, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: n, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: negativoFloat, Tipo: ID, Linea: 189, Columna: 13, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: negativoFloat, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: probarBooleanos, Tipo: ID, Linea: 161, Columna: 23, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: probarBooleanos, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: controlResult, Tipo: ID, Linea: 164, Columna: 9, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: controlResult, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: manejarTexto, Tipo: ID, Linea: 155, Columna: 26, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: manejarTexto, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: igual, Tipo: ID, Linea: 72, Columna: 27, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: igual, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: mensaje, Tipo: ID, Linea: 51, Columna: 12, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: mensaje, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: fib2, Tipo: ID, Linea: 144, Columna: 23, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: fib2, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: fib1, Tipo: ID, Linea: 144, Columna: 16, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: fib1, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: explicitoFalse, Tipo: ID, Linea: 83, Columna: 10, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: explicitoFalse, Variable: Si, Inicializada: No, Utilizada: No
+Lexema: fibonacciModificado, Tipo: ID, Linea: 167, Columna: 21, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Valor: fibonacciModificado, Variable: Si, Inicializada: No, Utilizada: No
 
 ===== TABLA DE FUNCIONES =====
 

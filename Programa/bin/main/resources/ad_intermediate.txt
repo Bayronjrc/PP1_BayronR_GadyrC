@@ -6,28 +6,53 @@
   1: // Código Intermedio Generado
   2: // Archivo: src/main/resources/ad_intermediate.txt
   3: 
-  4: FUNCTION main RETURNS VOID
-  5: i = 0
-  6: L1:
-  7: t_cond = i < 7
-  8: IF NOT t_cond GOTO L2
-  9: WRITE i
- 10: t_inc = i + 1
- 11: i = t_inc
- 12: GOTO L1
- 13: L2:
- 14: BEGIN
- 15: DECLARE i INT
- 16: i = 0
- 17: t1 = i < 7
- 18: i = i + 1
- 19: WRITE i
- 20: END main
- 21: 
+  4: FUNCTION testArrays RETURNS VOID
+  5: BEGIN
+  6: WRITE Array[0]:
+  7: WRITE Array[1]:
+  8: WRITE Array[2]:
+  9: END testArrays
+ 10: FUNCTION testStrings RETURNS VOID
+ 11: BEGIN
+ 12: DECLARE mensaje STRING
+ 13: mensaje = Hola_mundo!
+ 14: DECLARE letra CHAR
+ 15: letra = A
+ 16: DECLARE numero CHAR
+ 17: numero = 5
+ 18: WRITE Mensaje:
+ 19: WRITE mensaje
+ 20: WRITE Saludo:
+ 21: WRITE letra
+ 22: WRITE Numero:
+ 23: WRITE numero
+ 24: WRITE Simbolo:
+ 25: END testStrings
+ 26: FUNCTION testMixed RETURNS VOID
+ 27: BEGIN
+ 28: DECLARE espacio CHAR
+ 29: espacio =  
+ 30: WRITE === PRUEBA MIXTA ===
+ 31: WRITE Suma:
+ 32: WRITE Caracteres:
+ 33: WRITE espacio
+ 34: END testMixed
+ 35: FUNCTION main RETURNS VOID
+ 36: BEGIN
+ 37: WRITE === INICIANDO PRUEBAS ===
+ 38: WRITE 1. Probando arrays...
+ 39: CALL testArrays 0
+ 40: WRITE 2. Probando strings y chars...
+ 41: CALL testStrings 0
+ 42: WRITE 3. Probando mixto...
+ 43: CALL testMixed 0
+ 44: WRITE === PRUEBAS COMPLETADAS ===
+ 45: END main
+ 46: 
 
 // ========================================
 // ESTADÍSTICAS
-// Líneas: 21
-// Temporales: 1
+// Líneas: 46
+// Temporales: 0
 // Etiquetas: 0
 // ========================================

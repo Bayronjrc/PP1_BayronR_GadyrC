@@ -1,16 +1,19 @@
 ===== ANÁLISIS SEMÁNTICO =====
-Alcances procesados total: 4
+Alcances procesados total: 7
 Alcances activos: 1
 Errores semánticos: 0
 Advertencias: 0
 
 ===== INFORMACIÓN DE ALCANCES =====
-Alcance 1: Scope[global, nivel=0, tipo=GLOBAL, simbolos=3]
-  - Símbolos locales: 3
-  - Variables: 0, Funciones: 3
+Alcance 1: Scope[global, nivel=0, tipo=GLOBAL, simbolos=6]
+  - Símbolos locales: 6
+  - Variables: 0, Funciones: 6
 
-===== ALCANCE: Scope[global, nivel=0, tipo=GLOBAL, simbolos=3] =====
-Lexema: test, Tipo: ID, Tipo Variable: VOID, Linea: 8, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: Si
-Lexema: fibonnaci, Tipo: ID, Tipo Variable: INT, Linea: 1, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Parametros: [INT], Utilizada: Si
-Lexema: main, Tipo: ID, Tipo Variable: VOID, Linea: 22, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: No
+===== ALCANCE: Scope[global, nivel=0, tipo=GLOBAL, simbolos=6] =====
+Lexema: pocoyo, Tipo: ID, Tipo Variable: INT, Linea: 24, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Parametros: [INT, INT], Utilizada: Si
+Lexema: filo, Tipo: ID, Tipo Variable: INT, Linea: 1, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Parametros: [INT], Utilizada: Si
+Lexema: main, Tipo: ID, Tipo Variable: VOID, Linea: 63, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: No
+Lexema: azul, Tipo: ID, Tipo Variable: INT, Linea: 12, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Parametros: [INT], Utilizada: Si
+Lexema: testRecursion, Tipo: ID, Tipo Variable: VOID, Linea: 44, Columna: 6, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Utilizada: Si
+Lexema: mcd, Tipo: ID, Tipo Variable: INT, Linea: 34, Columna: 5, Alcance: 0, Scope: global, Tipo_Scope: GLOBAL, Ruta_Scope: GLOBAL:global(0), Funcion: Si, Parametros: [INT, INT], Utilizada: Si
 

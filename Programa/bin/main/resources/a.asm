@@ -43,6 +43,9 @@
     t2_var: .word 0
     t3_var: .word 0
 
+    # Strings literales
+    str_1: .asciiz "matrix[i][j]"
+
 .text
 .globl main
 

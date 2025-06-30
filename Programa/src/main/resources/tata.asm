@@ -75,6 +75,12 @@
     todos_var: .word 0
     Hola_var: .word 0
 
+    # Strings literales
+    str_1: .asciiz "Hola a todos los que est[a] haciendo un compilador nuevo\n"
+    str_2: .asciiz "Mi string 1"
+    str_4: .asciiz "arr[67][67]"
+    str_3: .asciiz "in2 % 7"
+
 .text
 .globl main
 
@@ -116,12 +122,14 @@ func1:
 
     # DECLARE miChar CHAR
     # miChar = !
-    li $t0, 33    # Char '!' como ASCII
+    li $t1, 0    # ERROR: No se pudo procesar ''
+    xori $t0, $t1, 1  # NOT lógico
     sw $t0, miChar_var
 
     # DECLARE miChar2 CHAR
     # miChar2 = !
-    li $t0, 33    # Char '!' como ASCII
+    li $t1, 0    # ERROR: No se pudo procesar ''
+    xori $t0, $t1, 1  # NOT lógico
     sw $t0, miChar2_var
 
     # t2 = -1
