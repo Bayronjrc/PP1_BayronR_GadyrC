@@ -28,29 +28,30 @@ public class MipsGenerator {
     private Map<String, List<String>> functionParameters = new HashMap<>();
     private Map<String, Integer> functionParamCounts = new HashMap<>();
     
-    // ✅ NUEVO: Campos para manejar strings literales y constantes
     private Map<String, String> stringLiterals = new HashMap<>();
     private int stringCounter = 1;
+    private int labelCounter = 1;
+
     
     public MipsGenerator() {
         this.mipsCode = new StringBuilder();
         this.variables = new HashMap<>();
         this.labels = new HashMap<>();
         this.declaredVariables = new HashSet<>();
-        this.stringLiterals = new HashMap<>();  // ✅ NUEVO
+        this.stringLiterals = new HashMap<>(); 
         this.stackOffset = 0;
         this.currentVarOffset = 0;
         this.tempCounter = 1;
-        this.stringCounter = 1;  // ✅ NUEVO
+        this.stringCounter = 1;  
         this.inFunction = false;
         this.currentFunction = null;
         this.currentParamCount = 0;
+        this.labelCounter = 1;  
+
         
-        // ✅ NUEVO: Inicializar constantes del sistema
         initializeConstants();
     }
     
-    // ✅ NUEVO: Método para inicializar constantes del sistema
     private void initializeConstants() {
         // Valores booleanos estándar
         declaredVariables.add("true");
@@ -65,7 +66,6 @@ public class MipsGenerator {
         variables.put("luna", "luna_const"); // luna = true
     }
     
-    // ✅ NUEVO: Verificar si es constante del sistema
     private boolean isSystemConstant(String varName) {
         return varName.equals("true") || varName.equals("false") || 
                varName.equals("luna") || varName.equals("sol");
@@ -783,16 +783,6 @@ public class MipsGenerator {
             }
         }
         
-        if (expr.contains(" * ")) {
-            String[] operands = expr.split(" \\* ");
-            if (operands.length == 2) {
-                loadOperand(operands[0].trim(), "$t1");
-                loadOperand(operands[1].trim(), "$t2");
-                mipsCode.append("    mul ").append(targetReg).append(", $t1, $t2\n");
-                return;
-            }
-        }
-        
         if (expr.contains(" % ")) {
             String[] operands = expr.split(" % ");
             if (operands.length == 2) {
@@ -814,20 +804,21 @@ public class MipsGenerator {
                 return;
             }
         }
-        
+
         if (expr.contains(" <= ")) {
             String[] operands = expr.split(" <= ");
             if (operands.length == 2) {
+                int labelId = labelCounter++;  // ✅ NUEVO: ID único
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
                 mipsCode.append("    # ").append(operands[0]).append(" <= ").append(operands[1]).append("\n");
                 mipsCode.append("    sub $t3, $t2, $t1    # t2 - t1\n");
-                mipsCode.append("    bgez $t3, set_true_le\n");
+                mipsCode.append("    bgez $t3, set_true_le_").append(labelId).append("\n");
                 mipsCode.append("    li ").append(targetReg).append(", 0\n");
-                mipsCode.append("    j end_le\n");
-                mipsCode.append("set_true_le:\n");
+                mipsCode.append("    j end_le_").append(labelId).append("\n");
+                mipsCode.append("set_true_le_").append(labelId).append(":\n");
                 mipsCode.append("    li ").append(targetReg).append(", 1\n");
-                mipsCode.append("end_le:\n");
+                mipsCode.append("end_le_").append(labelId).append(":\n");
                 return;
             }
         }
@@ -835,16 +826,17 @@ public class MipsGenerator {
         if (expr.contains(" >= ")) {
             String[] operands = expr.split(" >= ");
             if (operands.length == 2) {
+                int labelId = labelCounter++;  // ✅ NUEVO: ID único
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
                 mipsCode.append("    # ").append(operands[0]).append(" >= ").append(operands[1]).append("\n");
                 mipsCode.append("    sub $t3, $t1, $t2    # t1 - t2\n");
-                mipsCode.append("    bgez $t3, set_true_ge\n");
+                mipsCode.append("    bgez $t3, set_true_ge_").append(labelId).append("\n");
                 mipsCode.append("    li ").append(targetReg).append(", 0\n");
-                mipsCode.append("    j end_ge\n");
-                mipsCode.append("set_true_ge:\n");
+                mipsCode.append("    j end_ge_").append(labelId).append("\n");
+                mipsCode.append("set_true_ge_").append(labelId).append(":\n");
                 mipsCode.append("    li ").append(targetReg).append(", 1\n");
-                mipsCode.append("end_ge:\n");
+                mipsCode.append("end_ge_").append(labelId).append(":\n");
                 return;
             }
         }
@@ -852,16 +844,17 @@ public class MipsGenerator {
         if (expr.contains(" < ")) {
             String[] operands = expr.split(" < ");
             if (operands.length == 2) {
+                int labelId = labelCounter++;  // ✅ NUEVO: ID único
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
                 mipsCode.append("    # ").append(operands[0]).append(" < ").append(operands[1]).append("\n");
                 mipsCode.append("    sub $t3, $t1, $t2    # t1 - t2\n");
-                mipsCode.append("    bltz $t3, set_true_lt\n");
+                mipsCode.append("    bltz $t3, set_true_lt_").append(labelId).append("\n");
                 mipsCode.append("    li ").append(targetReg).append(", 0\n");
-                mipsCode.append("    j end_lt\n");
-                mipsCode.append("set_true_lt:\n");
+                mipsCode.append("    j end_lt_").append(labelId).append("\n");
+                mipsCode.append("set_true_lt_").append(labelId).append(":\n");
                 mipsCode.append("    li ").append(targetReg).append(", 1\n");
-                mipsCode.append("end_lt:\n");
+                mipsCode.append("end_lt_").append(labelId).append(":\n");
                 return;
             }
         }
@@ -869,16 +862,17 @@ public class MipsGenerator {
         if (expr.contains(" > ")) {
             String[] operands = expr.split(" > ");
             if (operands.length == 2) {
+                int labelId = labelCounter++;  // ✅ NUEVO: ID único
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
                 mipsCode.append("    # ").append(operands[0]).append(" > ").append(operands[1]).append("\n");
                 mipsCode.append("    sub $t3, $t2, $t1    # t2 - t1\n");
-                mipsCode.append("    bltz $t3, set_true_gt\n");
+                mipsCode.append("    bltz $t3, set_true_gt_").append(labelId).append("\n");
                 mipsCode.append("    li ").append(targetReg).append(", 0\n");
-                mipsCode.append("    j end_gt\n");
-                mipsCode.append("set_true_gt:\n");
+                mipsCode.append("    j end_gt_").append(labelId).append("\n");
+                mipsCode.append("set_true_gt_").append(labelId).append(":\n");
                 mipsCode.append("    li ").append(targetReg).append(", 1\n");
-                mipsCode.append("end_gt:\n");
+                mipsCode.append("end_gt_").append(labelId).append(":\n");
                 return;
             }
         }
@@ -886,16 +880,17 @@ public class MipsGenerator {
         if (expr.contains(" == ")) {
             String[] operands = expr.split(" == ");
             if (operands.length == 2) {
+                int labelId = labelCounter++;  // ✅ NUEVO: ID único
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
                 mipsCode.append("    # ").append(operands[0]).append(" == ").append(operands[1]).append("\n");
                 mipsCode.append("    sub $t3, $t1, $t2    # t1 - t2\n");
-                mipsCode.append("    beq $t3, $zero, set_true_eq\n");
+                mipsCode.append("    beq $t3, $zero, set_true_eq_").append(labelId).append("\n");
                 mipsCode.append("    li ").append(targetReg).append(", 0\n");
-                mipsCode.append("    j end_eq\n");
-                mipsCode.append("set_true_eq:\n");
+                mipsCode.append("    j end_eq_").append(labelId).append("\n");
+                mipsCode.append("set_true_eq_").append(labelId).append(":\n");
                 mipsCode.append("    li ").append(targetReg).append(", 1\n");
-                mipsCode.append("end_eq:\n");
+                mipsCode.append("end_eq_").append(labelId).append(":\n");
                 return;
             }
         }
@@ -903,21 +898,21 @@ public class MipsGenerator {
         if (expr.contains(" != ")) {
             String[] operands = expr.split(" != ");
             if (operands.length == 2) {
+                int labelId = labelCounter++;  // ✅ NUEVO: ID único
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
                 mipsCode.append("    # ").append(operands[0]).append(" != ").append(operands[1]).append("\n");
                 mipsCode.append("    sub $t3, $t1, $t2    # t1 - t2\n");
-                mipsCode.append("    bne $t3, $zero, set_true_ne\n");
+                mipsCode.append("    bne $t3, $zero, set_true_ne_").append(labelId).append("\n");
                 mipsCode.append("    li ").append(targetReg).append(", 0\n");
-                mipsCode.append("    j end_ne\n");
-                mipsCode.append("set_true_ne:\n");
+                mipsCode.append("    j end_ne_").append(labelId).append("\n");
+                mipsCode.append("set_true_ne_").append(labelId).append(":\n");
                 mipsCode.append("    li ").append(targetReg).append(", 1\n");
-                mipsCode.append("end_ne:\n");
+                mipsCode.append("end_ne_").append(labelId).append(":\n");
                 return;
             }
         }
         
-        // ✅ CORREGIR: Multiplicación compatible
         if (expr.contains(" * ")) {
             String[] operands = expr.split(" \\* ");
             if (operands.length == 2) {
@@ -931,6 +926,8 @@ public class MipsGenerator {
 
         loadOperand(expr, targetReg);
     }
+        
+       
 
     private void loadOperand(String operand, String register) {
         operand = operand.trim();
