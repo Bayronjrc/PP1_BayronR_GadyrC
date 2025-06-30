@@ -55,17 +55,15 @@ public class MipsGenerator {
     }
     
     private void initializeConstants() {
-        // Valores booleanos estándar
         declaredVariables.add("true");
         variables.put("true", "true_const");
         declaredVariables.add("false");
         variables.put("false", "false_const");
         
-        // Constantes sol/luna del lenguaje
         declaredVariables.add("sol");
-        variables.put("sol", "sol_const");   // sol = false
+        variables.put("sol", "sol_const");  
         declaredVariables.add("luna");
-        variables.put("luna", "luna_const"); // luna = true
+        variables.put("luna", "luna_const");
     }
     
     private boolean isSystemConstant(String varName) {
@@ -147,12 +145,11 @@ public class MipsGenerator {
     }
     
     private boolean isLikelyStringLiteral(String text) {
-        // Detectar patrones típicos de strings sin comillas
         if (text.length() > 10 && 
             (text.contains(" ") || text.contains("[") || text.contains("]")) &&
-            !text.matches(".*\\s*[+\\-*/]\\s*.*") && // No es expresión aritmética
-            !text.matches(".*\\s*[<>=!]+\\s*.*") && // No es expresión de comparación
-            text.matches(".*[a-zA-Z]{3,}.*")) { // Contiene palabras de al menos 3 letras
+            !text.matches(".*\\s*[+\\-*/]\\s*.*") && 
+            !text.matches(".*\\s*[<>=!]+\\s*.*") && 
+            text.matches(".*[a-zA-Z]{3,}.*")) { 
             return true;
         }
         return false;
@@ -176,7 +173,6 @@ public class MipsGenerator {
                         declaredVariables.add(varName);
                         variables.put(varName, varName + "_var");
                         
-                        // ✅ NUEVO: Rastrear variables flotantes por tipo
                         if (varType.equals("FLOAT")) {
                             floatVariables.add(varName);
                             System.out.println("✅ Variable FLOAT declarada: " + varName);
@@ -192,27 +188,23 @@ public class MipsGenerator {
                     String leftSide = parts[0].trim();
                     String rightSide = parts[1].trim();
                     
-                    // ✅ NUEVO: Si asigna un literal flotante, marcar variable como flotante
                     if (containsFloatLiteral(rightSide)) {
                         floatVariables.add(leftSide);
-                        System.out.println("✅ Variable marcada como FLOAT por literal: " + leftSide + " = " + rightSide);
+                        System.out.println("Variable marcada como FLOAT por literal: " + leftSide + " = " + rightSide);
                     }
-                    // ✅ NUEVO: Si asigna desde variable flotante, propagar el tipo
                     else if (containsFloatVariable(rightSide)) {
                         floatVariables.add(leftSide);
-                        System.out.println("✅ Variable marcada como FLOAT por propagación: " + leftSide);
+                        System.out.println(" Variable marcada como FLOAT por propagación: " + leftSide);
                     }
                     
-                    // ✅ NUEVO: Detectar string literal CON comillas
                     if (rightSide.startsWith("\"") && rightSide.endsWith("\"")) {
                         handleStringLiteral(rightSide);
-                        System.out.println("✅ String literal detectado: " + rightSide);
+                        System.out.println(" String literal detectado: " + rightSide);
                     }
-                    // ✅ NUEVO: Detectar string literal SIN comillas (caso problemático)
                     else if (isLikelyStringLiteral(rightSide)) {
                         String quotedString = "\"" + rightSide + "\"";
                         handleStringLiteral(quotedString);
-                        System.out.println("✅ String sin comillas detectado y corregido: " + rightSide + " -> " + quotedString);
+                        System.out.println(" String sin comillas detectado y corregido: " + rightSide + " -> " + quotedString);
                     }
                     
                     if (!declaredVariables.contains(leftSide) && isValidVariableName(leftSide)) {
@@ -221,7 +213,6 @@ public class MipsGenerator {
                         System.out.println("✅ Variable auto-declarada: " + leftSide);
                     }
                     
-                    // ✅ MEJORADO: Solo procesar tokens si NO es string literal
                     if (!rightSide.startsWith("\"") && !isLikelyStringLiteral(rightSide)) {
                         String[] tokens = rightSide.split("[\\s\\+\\-\\*/<>=!]+");
                         for (String token : tokens) {
@@ -394,7 +385,6 @@ public class MipsGenerator {
         }
     }
     
-    // ✅ MEJORADO: generateDataSection() con strings literales y constantes
     private void generateDataSection() {
         mipsCode.append(".data\n");
         mipsCode.append("    # Strings del sistema\n");
@@ -407,7 +397,6 @@ public class MipsGenerator {
         mipsCode.append("    false_str:    .asciiz \"false\"\n");
         mipsCode.append("\n");
         
-        // ✅ NUEVO: Constantes del lenguaje
         mipsCode.append("    # Constantes booleanas del lenguaje\n");
         mipsCode.append("    true_const:   .word 1\n");
         mipsCode.append("    false_const:  .word 0\n");
@@ -415,7 +404,6 @@ public class MipsGenerator {
         mipsCode.append("    sol_const:    .word 0    # sol = false\n");
         mipsCode.append("\n");
         
-        // ✅ NUEVO: Strings literales encontrados
         if (!stringLiterals.isEmpty()) {
             mipsCode.append("    # Strings literales\n");
             for (Map.Entry<String, String> entry : stringLiterals.entrySet()) {
@@ -424,11 +412,9 @@ public class MipsGenerator {
             mipsCode.append("\n");
         }
         
-        // Variables normales
         if (!declaredVariables.isEmpty()) {
             mipsCode.append("    # Variables del programa\n");
             for (String varName : declaredVariables) {
-                // Saltar constantes ya declaradas
                 if (!isSystemConstant(varName)) {
                     mipsCode.append("    ").append(variables.get(varName)).append(": .word 0\n");
                 }
@@ -443,7 +429,6 @@ public class MipsGenerator {
         
         boolean hasMain = false;
         
-        // Verificar si hay función main
         for (String line : intermediateCode) {
             if (line.startsWith("FUNCTION main")) {
                 hasMain = true;
@@ -451,12 +436,10 @@ public class MipsGenerator {
             }
         }
         
-        // Si no hay main, crear una que llame a la primera función
         if (!hasMain) {
             mipsCode.append("main:\n");
             mipsCode.append("    # Función main generada automáticamente\n");
             
-            // Buscar la primera función para llamarla
             String firstFunction = null;
             for (String line : intermediateCode) {
                 if (line.startsWith("FUNCTION ")) {
@@ -682,7 +665,6 @@ public class MipsGenerator {
         if (parts.length >= 2) {
             String functionName = parts[1];
             
-            // ✅ IMPORTANTE: Generar etiqueta de salida
             mipsCode.append("\n# Epílogo estándar ").append(functionName).append("\n");
             mipsCode.append("exit_").append(functionName).append(":\n");
             
@@ -852,7 +834,7 @@ public class MipsGenerator {
         if (expr.contains(" <= ")) {
             String[] operands = expr.split(" <= ");
             if (operands.length == 2) {
-                int labelId = labelCounter++;  // ✅ NUEVO: ID único
+                int labelId = labelCounter++;
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
                 mipsCode.append("    # ").append(operands[0]).append(" <= ").append(operands[1]).append("\n");
@@ -870,7 +852,7 @@ public class MipsGenerator {
         if (expr.contains(" >= ")) {
             String[] operands = expr.split(" >= ");
             if (operands.length == 2) {
-                int labelId = labelCounter++;  // ✅ NUEVO: ID único
+                int labelId = labelCounter++;  
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
                 mipsCode.append("    # ").append(operands[0]).append(" >= ").append(operands[1]).append("\n");
@@ -888,7 +870,7 @@ public class MipsGenerator {
         if (expr.contains(" < ")) {
             String[] operands = expr.split(" < ");
             if (operands.length == 2) {
-                int labelId = labelCounter++;  // ✅ NUEVO: ID único
+                int labelId = labelCounter++; 
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
                 mipsCode.append("    # ").append(operands[0]).append(" < ").append(operands[1]).append("\n");
@@ -906,7 +888,7 @@ public class MipsGenerator {
         if (expr.contains(" > ")) {
             String[] operands = expr.split(" > ");
             if (operands.length == 2) {
-                int labelId = labelCounter++;  // ✅ NUEVO: ID único
+                int labelId = labelCounter++;  
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
                 mipsCode.append("    # ").append(operands[0]).append(" > ").append(operands[1]).append("\n");
@@ -924,7 +906,7 @@ public class MipsGenerator {
         if (expr.contains(" == ")) {
             String[] operands = expr.split(" == ");
             if (operands.length == 2) {
-                int labelId = labelCounter++;  // ✅ NUEVO: ID único
+                int labelId = labelCounter++;  
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
                 mipsCode.append("    # ").append(operands[0]).append(" == ").append(operands[1]).append("\n");
@@ -942,7 +924,7 @@ public class MipsGenerator {
         if (expr.contains(" != ")) {
             String[] operands = expr.split(" != ");
             if (operands.length == 2) {
-                int labelId = labelCounter++;  // ✅ NUEVO: ID único
+                int labelId = labelCounter++; 
                 loadOperand(operands[0].trim(), "$t1");
                 loadOperand(operands[1].trim(), "$t2");
                 mipsCode.append("    # ").append(operands[0]).append(" != ").append(operands[1]).append("\n");
@@ -1002,24 +984,21 @@ public class MipsGenerator {
         
         if (isNumber(operand)) {
             if (operand.contains(".")) {
-                // ✅ CAMBIO: Multiplicar por 100 en lugar de 1000
                 try {
                     float floatVal = Float.parseFloat(operand);
-                    int intRepresentation = (int) (floatVal * 100); // ✅ 100 en lugar de 1000
+                    int intRepresentation = (int) (floatVal * 100); 
                     mipsCode.append("    li ").append(register).append(", ").append(intRepresentation).append("    # Float ").append(operand).append(" (*100)\n");
                     System.out.println("DEBUG: Float " + operand + " convertido a " + intRepresentation);
                 } catch (NumberFormatException e) {
                     mipsCode.append("    li ").append(register).append(", 0    # Error parsing float ").append(operand).append("\n");
                 }
             } else {
-                // Entero normal
                 mipsCode.append("    li ").append(register).append(", ").append(operand).append("\n");
                 System.out.println("DEBUG: Entero " + operand + " cargado en " + register);
             }
             return;
         }
         
-        // ✅ MEJORADO: Constantes especiales
         if (operand.equals("luna")) {
             mipsCode.append("    lw ").append(register).append(", luna_const    # luna = true\n");
             return;
@@ -1037,14 +1016,12 @@ public class MipsGenerator {
             return;
         }
         
-        // Arrays
         if (operand.contains("[") && operand.contains("]")) {
             mipsCode.append("    # Array access: ").append(operand).append("\n");
             processArrayAccess(operand, register);
             return;
         }
         
-        // Variables locales vs globales
         if (currentFunction != null && shouldUseLocalVariable(operand)) {
             String stackOffset = getLocalVariableOffset(operand);
             if (stackOffset != null) {
@@ -1054,7 +1031,6 @@ public class MipsGenerator {
             }
         }
         
-        // Variables globales
         if (declaredVariables.contains(operand) || isValidVariableName(operand)) {
             String location = getVariableLocation(operand);
             mipsCode.append("    lw ").append(register).append(", ").append(location).append("\n");
@@ -1062,7 +1038,6 @@ public class MipsGenerator {
             return;
         }
         
-        // ✅ CORREGIDO: Solo caracteres NO declarados como variables
         if (operand.length() == 1 && operand.matches("[a-zA-Z!@#$%^&*()_+=]") && 
             !declaredVariables.contains(operand)) {
             int asciiValue = (int) operand.charAt(0);
@@ -1071,7 +1046,6 @@ public class MipsGenerator {
             return;
         }
         
-        // Fallback
         mipsCode.append("    li ").append(register).append(", 0    # ERROR: No se pudo procesar '").append(operand).append("'\n");
         System.out.println("ERROR: No se pudo procesar operando: " + operand);
     }
@@ -1290,7 +1264,6 @@ public class MipsGenerator {
         
         mipsCode.append("    # ").append(line).append("\n");
         
-        // ✅ NUEVO: Detectar si la variable contiene un flotante
         if (isFloatVariable(value)) {
             loadOperand(value, "$a0");
             mipsCode.append("    jal print_float_decimal\n");
@@ -1304,16 +1277,14 @@ public class MipsGenerator {
     }
     
     private boolean isFloatVariable(String varName) {
-        // Primero verificar si está en el conjunto de variables flotantes
         if (floatVariables.contains(varName)) {
             return true;
         }
         
-        // Heurísticas adicionales
         return varName.startsWith("fl") || 
-            varName.equals("z") ||  // basado en tu código específico
+            varName.equals("z") || 
             varName.contains("float") ||
-            varName.matches("t\\d+") && containsFloatInTemporary(varName); // temporales de operaciones flotantes
+            varName.matches("t\\d+") && containsFloatInTemporary(varName);
     }
 
     private boolean containsFloatInTemporary(String tempVar) {
@@ -1469,7 +1440,6 @@ public class MipsGenerator {
         mipsCode.append("    addi $sp, $sp, 4\n");
         mipsCode.append("    jr $ra\n\n");
         
-        // Función de potencia compatible
         mipsCode.append("power_function:\n");
         mipsCode.append("    li $v0, 1\n");
         mipsCode.append("    beq $a1, $zero, power_done\n");
