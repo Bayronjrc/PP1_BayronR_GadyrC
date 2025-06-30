@@ -269,7 +269,7 @@ potencia:
     # DECLARE base INT
     # DECLARE exp INT
     # t11 = exp <= 0
-    lw $t1, -8($fp)   # exp local
+    lw $t1, exp_var
     li $t2, 0
     sle $t0, $t1, $t2
     sw $t0, t11_var
@@ -285,7 +285,7 @@ potencia:
 
 L3:
     # t12 = exp - 1
-    lw $t1, -8($fp)   # exp local
+    lw $t1, exp_var
     li $t2, 1
     sub $t0, $t1, $t2
     sw $t0, t12_var
@@ -296,7 +296,7 @@ L3:
     sw $t0, temp_var
 
     # PARAM base
-    lw $a0, -4($fp)   # base local
+    lw $a0, base_var
     # ✅ FIXED: Parámetro base cargado en $a0
 
     # PARAM temp
@@ -313,7 +313,7 @@ L3:
     sw $t0, recurse_var
 
     # t14 = base * recurse
-    lw $t1, -4($fp)   # base local
+    lw $t1, base_var
     lw $t2, recurse_var
     mul $t0, $t1, $t2
     sw $t0, t14_var

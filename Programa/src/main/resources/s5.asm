@@ -18,10 +18,6 @@
     b_var: .word 0
     temp_var: .word 0
     resultado_var: .word 0
-    contador_var: .word 0
-    i_var: .word 0
-    j_var: .word 0
-    k_var: .word 0
     t1_var: .word 0
     t2_var: .word 0
 

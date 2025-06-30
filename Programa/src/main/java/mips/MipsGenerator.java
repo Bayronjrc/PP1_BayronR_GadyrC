@@ -26,6 +26,7 @@ public class MipsGenerator {
     private int currentParamCount = 0;
     private boolean expectingParameters = false;
     private Map<String, List<String>> functionParameters = new HashMap<>();
+    private Map<String, Integer> functionParamCounts = new HashMap<>();
     
     public MipsGenerator() {
         this.mipsCode = new StringBuilder();
@@ -115,8 +116,11 @@ public class MipsGenerator {
     }
     
     
+    
     private void analyzeVariables() {
         System.out.println("DEBUG: Analizando variables en código intermedio...");
+        
+        detectRealFunctionParameters();
         
         for (String line : intermediateCode) {
             System.out.println("DEBUG: Procesando línea: " + line);
@@ -169,7 +173,115 @@ public class MipsGenerator {
         }
         
         System.out.println("DEBUG: Variables encontradas: " + declaredVariables);
-        System.out.println("DEBUG: PARAMETER DETECTION DISABLED - Using manual mapping only");
+        System.out.println("DEBUG: Parámetros reales detectados: " + functionParameters);
+    }
+    
+    private void detectRealFunctionParameters() {
+        System.out.println("🔍 DETECTING real function parameters from PARAM patterns...");
+        
+        for (int i = 0; i < intermediateCode.size(); i++) {
+            String line = intermediateCode.get(i).trim();
+            
+            if (line.contains("CALL ")) {
+                String[] parts = line.split("\\s+");
+                String functionName = null;
+                int paramCount = 0;
+                
+                for (int j = 0; j < parts.length; j++) {
+                    if (parts[j].equals("CALL") && j + 1 < parts.length) {
+                        functionName = parts[j + 1];
+                        if (j + 2 < parts.length) {
+                            try {
+                                paramCount = Integer.parseInt(parts[j + 2]);
+                            } catch (NumberFormatException e) {
+                                paramCount = 0;
+                            }
+                        }
+                        break;
+                    }
+                }
+                
+                if (functionName != null && paramCount > 0) {
+                    functionParamCounts.put(functionName, paramCount);
+                    System.out.println("🎯 DETECTED: " + functionName + " has " + paramCount + " parameters");
+                    
+                    List<String> params = new ArrayList<>();
+                    int paramsSeen = 0;
+                    for (int k = i - 1; k >= 0 && paramsSeen < paramCount; k--) {
+                        String prevLine = intermediateCode.get(k).trim();
+                        if (prevLine.startsWith("PARAM ")) {
+                            paramsSeen++;
+                        } else if (!prevLine.isEmpty() && !prevLine.startsWith("//")) {
+                            break; 
+                        }
+                    }
+                    
+                    for (int p = 0; p < paramCount; p++) {
+                        if (paramCount == 1) {
+                            params.add("n");
+                        } else if (paramCount == 2) {
+                            params.add(p == 0 ? "a" : "b"); 
+                        } else {
+                            params.add("param" + (p + 1)); 
+                        }
+                    }
+                    
+                    functionParameters.put(functionName, params);
+                }
+            }
+        }
+    }
+    
+    private void analyzeFunctionSignatures() {
+        String currentFunc = null;
+        boolean inFunction = false;
+        List<String> currentParams = new ArrayList<>();
+        Set<String> declaredInFunction = new HashSet<>();
+        
+        for (String line : intermediateCode) {
+            if (line.startsWith("FUNCTION ")) {
+                String[] parts = line.split("\\s+");
+                if (parts.length >= 2) {
+                    currentFunc = parts[1];
+                    inFunction = true;
+                    currentParams = new ArrayList<>();
+                    declaredInFunction = new HashSet<>();
+                    System.out.println("🔍 ANALYZING function: " + currentFunc);
+                }
+            } else if (line.startsWith("END ") && inFunction) {
+                functionParameters.put(currentFunc, new ArrayList<>(currentParams));
+                System.out.println("✅ Function " + currentFunc + " parameters: " + currentParams);
+                inFunction = false;
+                currentFunc = null;
+            } else if (inFunction && line.startsWith("DECLARE ")) {
+                String[] parts = line.split("\\s+");
+                if (parts.length >= 3) {
+                    String varName = parts[1];
+                    declaredInFunction.add(varName);
+                }
+            } else if (inFunction && line.contains(" = ") && 
+                      (line.contains(currentFunc) || hasVariableFromParams(line, declaredInFunction))) {
+                extractPotentialParameters(line, currentParams, declaredInFunction);
+            }
+        }
+    }
+    
+    private boolean hasVariableFromParams(String line, Set<String> declared) {
+        for (String var : declared) {
+            if (line.contains(var)) return true;
+        }
+        return false;
+    }
+    
+    private void extractPotentialParameters(String line, List<String> params, Set<String> declared) {
+        String[] tokens = line.split("[\\s=+\\-*/<>!()]+");
+        for (String token : tokens) {
+            token = token.trim();
+            if (isValidVariableName(token) && declared.contains(token) && !params.contains(token)) {
+                params.add(token);
+                System.out.println("🎯 DETECTED parameter: " + token);
+            }
+        }
     }
     
     private void generateDataSection() {
@@ -287,7 +399,7 @@ public class MipsGenerator {
             mipsCode.append("    move $fp, $sp\n");
             
             mipsCode.append("    # Reservar espacio para variables locales\n");
-            mipsCode.append("    addi $sp, $sp, -16\n"); 
+            mipsCode.append("    addi $sp, $sp, -16\n");  
             mipsCode.append("\n");
             
             if (currentFunction.equals("multiplicar")) {
@@ -622,16 +734,14 @@ public class MipsGenerator {
     
     private boolean shouldUseLocalVariable(String varName) {
         if (currentFunction != null) {
-            if (currentFunction.equals("fibonacci") && varName.equals("n")) return true;
-            if (currentFunction.equals("factorial") && varName.equals("n")) return true;
-            if (currentFunction.equals("potencia") && (varName.equals("base") || varName.equals("exp"))) return true;
-            if (currentFunction.equals("mcd") && (varName.equals("a") || varName.equals("b"))) return true;
-            if (currentFunction.equals("suma") && (varName.equals("a") || varName.equals("b"))) return true;
-            
+            List<String> params = functionParameters.get(currentFunction);
+            if (params != null && params.contains(varName)) {
+                return true; 
+            }
         }
         return false; 
     }
-    
+     
     private String getLocalVariableOffset(String varName) {
         if (currentFunction == null) return null;
         
@@ -639,20 +749,20 @@ public class MipsGenerator {
         if (currentFunction.equals("factorial") && varName.equals("n")) return "-4";
         if (currentFunction.equals("potencia")) {
             if (varName.equals("base")) return "-4";  
-            if (varName.equals("exp")) return "-8";  
+            if (varName.equals("exp")) return "-8";   
         }
         if (currentFunction.equals("mcd")) {
             if (varName.equals("a")) return "-4";     
-            if (varName.equals("b")) return "-8";   
+            if (varName.equals("b")) return "-8";      
         }
         
         if (varName.equals("x")) return "-4";   
-        if (varName.equals("y")) return "-8";  
-        if (varName.equals("z")) return "-12"; 
+        if (varName.equals("y")) return "-8";   
+        if (varName.equals("z")) return "-12";  
         if (varName.equals("w")) return "-16";   
         
         if (varName.length() == 1 && varName.matches("[a-z]")) {
-            int slot = varName.charAt(0) - 'a'; 
+            int slot = varName.charAt(0) - 'a';  
             if (slot < 4) {
                 return String.valueOf(-4 * (slot + 1));
             }

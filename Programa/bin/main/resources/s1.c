@@ -1,4 +1,4 @@
-int suma ʃ int a, int b ʅ \
+int carlos ʃ int a, int b ʅ \
     int resultado | a + b ?
     return resultado ?
 /
@@ -14,10 +14,10 @@ int factorial ʃ int n ʅ \
 /
 
 void testBasico ʃ ʅ \
-    int x | 4 ?
-    int y | 4 ?
+    int d | 4 ?
+    int r | 4 ?
     
-    int resultado1 | suma ʃ x, y ʅ ?
+    int resultado1 | carlos ʃ d, r ʅ ?
     write ʃ resultado1 ʅ ? 
     
     int resultado2 | factorial ʃ 5 ʅ ?

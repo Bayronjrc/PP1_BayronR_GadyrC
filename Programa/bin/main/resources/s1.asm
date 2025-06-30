@@ -22,15 +22,15 @@
     t6_var: .word 0
     t7_var: .word 0
     resultado_var: .word 0
+    d_var: .word 0
     t8_var: .word 0
     k_var: .word 0
     n_var: .word 0
+    r_var: .word 0
     resultado1_var: .word 0
     resultado2_var: .word 0
     recurse_var: .word 0
     t_cond_var: .word 0
-    x_var: .word 0
-    y_var: .word 0
     t_inc_var: .word 0
     t1_var: .word 0
     t2_var: .word 0
@@ -41,8 +41,8 @@
 
     # // Código Intermedio Generado
     # // Archivo: src/main/resources/s1_intermediate.txt
-suma:
-    # Prólogo estándar suma
+carlos:
+    # Prólogo estándar carlos
     addi $sp, $sp, -8
     sw $ra, 4($sp)
     sw $fp, 0($sp)
@@ -50,11 +50,11 @@ suma:
     # Reservar espacio para variables locales
     addi $sp, $sp, -16
 
-    # Guardar parámetros en stack frame local
-    sw $a0, -4($fp)   # a local
-    sw $a1, -8($fp)   # b local
-    sw $a0, a_var     # a global
-    sw $a1, b_var     # b global
+    # Función genérica - guardar hasta 4 parámetros en stack frame
+    sw $a0, -4($fp)   # param1 local
+    sw $a1, -8($fp)   # param2 local
+    sw $a2, -12($fp)  # param3 local
+    sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
     # DECLARE a INT
@@ -73,11 +73,11 @@ suma:
     # RETURN resultado
     lw $v0, resultado_var
     # Valor de retorno en $v0
-    j exit_suma
+    j exit_carlos
 
 
-# Epílogo estándar suma
-exit_suma:
+# Epílogo estándar carlos
+exit_carlos:
     # Limpiar variables locales
     addi $sp, $sp, 16    # Liberar espacio de variables locales
     # Restaurar frame pointer y return address
@@ -188,26 +188,26 @@ testBasico:
     sw $a3, -16($fp)  # param4 local
 
     # Inicio de función
-    # DECLARE x INT
-    # x = 4
+    # DECLARE d INT
+    # d = 4
     li $t0, 4
-    sw $t0, x_var
+    sw $t0, d_var
 
-    # DECLARE y INT
-    # y = 4
+    # DECLARE r INT
+    # r = 4
     li $t0, 4
-    sw $t0, y_var
+    sw $t0, r_var
 
-    # PARAM x
-    lw $a0, x_var
-    # ✅ FIXED: Parámetro x cargado en $a0
+    # PARAM d
+    lw $a0, d_var
+    # ✅ FIXED: Parámetro d cargado en $a0
 
-    # PARAM y
-    lw $a1, y_var
-    # ✅ FIXED: Parámetro y cargado en $a1
+    # PARAM r
+    lw $a1, r_var
+    # ✅ FIXED: Parámetro r cargado en $a1
 
-    # t6 = CALL suma 2
-    jal suma
+    # t6 = CALL carlos 2
+    jal carlos
     sw $v0, t6_var
 
     # DECLARE resultado1 INT
